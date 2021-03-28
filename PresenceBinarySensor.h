@@ -6,17 +6,19 @@
 #pragma once
 
 #include <stdint.h>
-#include "BinarySensor.h"
+#include "components/BinarySensor.h"
 #include "HeightSensor.h"
 
 class PresenceBinarySensor : public BinarySensor {
 public:
   PresenceBinarySensor() = delete;
-  PresenceBinarySensor(HeightSensor &heightSensor) :
-    mHeightSensor { heightSensor } {
+  PresenceBinarySensor(uint8_t entityId, HeightSensor &heightSensor) :
+    BinarySensor(entityId), mHeightSensor { heightSensor } {
   }
-
   bool update();
+  virtual DeviceClass getDeviceClass() const {
+    return DeviceClass::Presence;
+  }
 
 private:
   typedef struct {

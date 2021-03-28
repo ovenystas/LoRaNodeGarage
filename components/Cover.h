@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <stdint.h>
+#include "Component.h"
 
 static const String mStateName[] = { "closed", "open", "opening", "closing" };
 static const String mServiceName[] = { "open", "close", "stop", "toggle" };
@@ -13,8 +13,23 @@ static const String mServiceName[] = { "open", "close", "stop", "toggle" };
 /*
  *
  */
-class Cover {
+class Cover: public Component {
 public:
+  // From https://www.home-assistant.io/integrations/cover/ at 2021-03-21
+  enum class DeviceClass {
+    None,
+    Awning,
+    Blind,
+    Curtain,
+    Damper,
+    Door,
+    Garage,
+    Gate,
+    Shade,
+    Shutter,
+    Window
+  };
+
   typedef enum {
     STATE_CLOSED,
     STATE_OPEN,
@@ -29,7 +44,9 @@ public:
     SERVICE_TOGGLE
   } ServiceE;
 
-  Cover() = default;
+  Cover(uint8_t entityId) :
+      Component(entityId) {
+  }
   virtual ~Cover() = default;
 
   virtual bool update() = 0;
@@ -44,6 +61,19 @@ public:
   }
   virtual const String& getServiceName(ServiceE service) const {
     return mServiceName[service];
+  }
+  Component::Type getComponent() const {
+    return Component::Type::Cover;
+  }
+  virtual DeviceClass getDeviceClass() const {
+    return DeviceClass::None;
+  }
+  virtual uint8_t* getDiscoveryMsg(uint8_t* buffer) {
+    buffer[0] = getEntityId();
+    buffer[1] = static_cast<uint8_t>(getComponent());
+    buffer[2] = static_cast<uint8_t>(getDeviceClass());
+    buffer[3] = 0;
+    return buffer;
   }
 
 protected:

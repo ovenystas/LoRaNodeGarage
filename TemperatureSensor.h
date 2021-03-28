@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <DHT.h>
 
-#include "Sensor.h"
+#include "components/Sensor.h"
 #include "Util.h"
 
 typedef int16_t TemperatureT; // Degree C
@@ -16,11 +16,18 @@ typedef int16_t TemperatureT; // Degree C
 class TemperatureSensor: public Sensor<TemperatureT> {
 public:
   TemperatureSensor() = delete;
-  TemperatureSensor(DHT &dht) :
-      mDht { dht } {
+  TemperatureSensor(uint8_t entityId, DHT &dht) :
+    Sensor<TemperatureT>(entityId), mDht { dht } {
   }
 
   bool update();
+
+  DeviceClass getDeviceClass() const override {
+    return DeviceClass::Temperature;
+  }
+  virtual Unit getUnit() const {
+    return Unit::DegreeC;
+  }
 
 private:
   typedef struct {

@@ -7,17 +7,20 @@
 
 #include <stdint.h>
 
-#include "Cover.h"
+#include "components/Cover.h"
 
 
 class GarageCover : public Cover {
 public:
   GarageCover() = delete;
-  GarageCover(uint8_t pinClosed, uint8_t pinOpen) :
-    mPinClosed { pinClosed }, mPinOpen { pinOpen } {
+  GarageCover(uint8_t entityId, uint8_t pinClosed, uint8_t pinOpen) :
+    Cover(entityId), mPinClosed { pinClosed }, mPinOpen { pinOpen } {
   }
   bool update();
   void callService(ServiceE service);
+  virtual DeviceClass getDeviceClass() const override {
+    return DeviceClass::Garage;
+  }
 
   // Cover
 private:

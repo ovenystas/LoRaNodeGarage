@@ -6,7 +6,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "Sensor.h"
+#include "components/Sensor.h"
 #include "DistanceSensor.h"
 #include "Util.h"
 
@@ -15,8 +15,8 @@ typedef int16_t HeightT; // cm
 class HeightSensor: public Sensor<HeightT> {
 public:
   HeightSensor() = delete;
-  HeightSensor(DistanceSensor &distanceSensor) :
-      mDistanseSensor { distanceSensor } {
+  HeightSensor(uint8_t entityId, DistanceSensor &distanceSensor) :
+    Sensor<HeightT>(entityId), mDistanseSensor { distanceSensor } {
   }
   bool update();
 

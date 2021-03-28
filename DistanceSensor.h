@@ -3,21 +3,20 @@
  *      Author: oveny
  */
 
-
 #pragma once
 
 #include <stdint.h>
 #include <NewPing.h>
-#include "Sensor.h"
+#include "components/Sensor.h"
 #include "Util.h"
 
 typedef int16_t DistanceT; // cm
 
-class DistanceSensor :public Sensor<DistanceT> {
+class DistanceSensor: public Sensor<DistanceT> {
 public:
   DistanceSensor() = delete;
-  DistanceSensor(NewPing& sonar) :
-      mSonar { sonar } {
+  DistanceSensor(uint8_t entityId, NewPing &sonar) :
+    Sensor<DistanceT>(entityId), mSonar { sonar } {
   }
   bool update();
 
@@ -28,5 +27,5 @@ private:
   } ConfigT;
 
   ConfigT mConfig;
-  NewPing& mSonar;
+  NewPing &mSonar;
 };

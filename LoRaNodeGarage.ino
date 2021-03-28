@@ -28,24 +28,26 @@
 
 #define COVER_OPEN_PIN 8
 #define COVER_CLOSED_PIN 9
+#define COVER_RELAY_PIN A0
 
 #define UPDATE_SENSORS_INTERVAL 1000
 
 static void updateSensors();
 static void printSensors(Stream& stream);
+static void handleLoraMessage();
 
 DHT dht(DHTPIN, DHTTYPE);
-NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN);
+NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 
-byte id = 1;
 uint32_t nextRunTime = UPDATE_SENSORS_INTERVAL;
 
-GarageCover garageCover = GarageCover(COVER_CLOSED_PIN, COVER_OPEN_PIN);
-TemperatureSensor temperatureSensor = TemperatureSensor(dht);
-HumiditySensor humiditySensor = HumiditySensor(dht);
-DistanceSensor distanceSensor = DistanceSensor(sonar);
-HeightSensor heightSensor = HeightSensor(distanceSensor);
-PresenceBinarySensor carPresenceSensor = PresenceBinarySensor(heightSensor);
+GarageCover garageCover = GarageCover(1, COVER_CLOSED_PIN, COVER_OPEN_PIN);
+TemperatureSensor temperatureSensor = TemperatureSensor(2, dht);
+HumiditySensor humiditySensor = HumiditySensor(3, dht);
+DistanceSensor distanceSensor = DistanceSensor(4, sonar);
+HeightSensor heightSensor = HeightSensor(5, distanceSensor);
+PresenceBinarySensor carPresenceSensor = PresenceBinarySensor(6, heightSensor);
+
 LoRaHandler lora;
 
 void setup() {
@@ -62,12 +64,20 @@ void setup() {
     while (1);
   }
 
+  uint8_t buffer[LORA_DISCOVERY_MSG_LENGTH];
+  lora.sendDiscoveryMsg(garageCover.getDiscoveryMsg(buffer)),
+  lora.sendDiscoveryMsg(temperatureSensor.getDiscoveryMsg(buffer));
+  lora.sendDiscoveryMsg(humiditySensor.getDiscoveryMsg(buffer));
+  lora.sendDiscoveryMsg(heightSensor.getDiscoveryMsg(buffer));
+  lora.sendDiscoveryMsg(distanceSensor.getDiscoveryMsg(buffer));
+  lora.sendDiscoveryMsg(carPresenceSensor.getDiscoveryMsg(buffer));
+
   dht.begin();
-}
+ }
 
 void loop() {
   if (lora.loraRx()) {
-    lora.handleLoRaMessage();
+    handleLoraMessage();
   }
 
   auto curMillis = millis();
@@ -81,8 +91,6 @@ void loop() {
     printSensors(Serial);
 #endif
   }
-
-  //lora.loraTx();
 }
 
 static void updateSensors() {
@@ -92,45 +100,49 @@ static void updateSensors() {
     Serial.print(F("GarageCover: "));
     Serial.println(garageCover.getStateName());
 #endif
-    //lora.send(state);
+    lora.sendValue(garageCover.getEntityId(),
+        static_cast<uint8_t>(garageCover.getState()));
   }
 
   if (distanceSensor.update()) {
-    auto distance = distanceSensor.getValue();
+    DistanceT distance = distanceSensor.getValue();
 #ifdef DEBUG_SENSOR_REPORT
     printMillis(Serial);
     Serial.print(F("Distance: "));
     Serial.print(distance);
     Serial.println("cm");
 #endif
-    //lora.send(distance);
+    lora.sendValue(distanceSensor.getEntityId(),
+        static_cast<uint16_t>(distance));
     distanceSensor.setReported();
   }
 
   if (heightSensor.update()) {
-    auto height = heightSensor.getValue();
+    HeightT height = heightSensor.getValue();
 #ifdef DEBUG_SENSOR_REPORT
     printMillis(Serial);
     Serial.print(F("Height: "));
     Serial.print(height);
     Serial.println("cm");
 #endif
-    //lora.send(height);
+    lora.sendValue(heightSensor.getEntityId(),
+        static_cast<uint16_t>(height));
     heightSensor.setReported();
   }
 
   if (carPresenceSensor.update()) {
-    auto carHome = carPresenceSensor.getState();
+    bool carHome = carPresenceSensor.getState();
 #ifdef DEBUG_SENSOR_REPORT
     printMillis(Serial);
     Serial.print(F("CarPresence: "));
     Serial.println(carHome);
 #endif
-    //lora.send(carHome);
+    lora.sendValue(carPresenceSensor.getEntityId(),
+        static_cast<uint8_t>(carHome));
   }
 
   if (temperatureSensor.update()) {
-    auto temperature = temperatureSensor.getValue();
+    TemperatureT temperature = temperatureSensor.getValue();
 #ifdef DEBUG_SENSOR_REPORT
     printMillis(Serial);
     Serial.print(F("Temperature: "));
@@ -139,19 +151,21 @@ static void updateSensors() {
     Serial.print(temperature % 10);
     Serial.println('C');
 #endif
-    //lora.send(temperature);
+    lora.sendValue(temperatureSensor.getEntityId(),
+        static_cast<uint16_t>(temperature));
     temperatureSensor.setReported();
   }
 
   if (humiditySensor.update()) {
-    auto humidity = humiditySensor.getValue();
+    HumidityT humidity = humiditySensor.getValue();
 #ifdef DEBUG_SENSOR_REPORT
     printMillis(Serial);
     Serial.print(F("Humidity: "));
     Serial.print(humidity);
     Serial.println('%');
 #endif
-    //lora.send(humidity);
+    lora.sendValue(humiditySensor.getEntityId(),
+        static_cast<uint16_t>(humidity));
     humiditySensor.setReported();
   }
 }
@@ -173,4 +187,16 @@ static void printSensors(Stream& stream) {
   stream.print(F("C Hum:"));
   stream.print(humiditySensor.getValue());
   stream.println('%');
+}
+
+static void handleLoraMessage() {
+  String msg = "";
+  if (msg == "Cover open" ||
+      msg == "Cover close" ||
+      msg == "Cover stop" ||
+      msg == "Cover toggle") {
+    digitalWrite(COVER_RELAY_PIN, HIGH);
+    delay(500);
+    digitalWrite(COVER_RELAY_PIN, LOW);
+  }
 }
