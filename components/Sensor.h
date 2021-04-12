@@ -9,6 +9,8 @@
 #include "Unit.h"
 #include "Util.h"
 
+#include <Stream.h>
+
 /*
  *
  */
@@ -84,7 +86,7 @@ public:
   }
 
   virtual uint8_t* getDiscoveryMsg(uint8_t* buffer) {
-    buffer[0] = getEntityId();
+    buffer[0] = mEntityId;
     buffer[1] = static_cast<uint8_t>(getComponent());
     buffer[2] = static_cast<uint8_t>(getDeviceClass());
     buffer[3] = static_cast<uint8_t>(mUnit.getType());

@@ -7,6 +7,8 @@
 
 #include "Component.h"
 
+#include <Stream.h>
+
 static const String CoverStateName[] = { "closed", "open", "opening", "closing" };
 static const String CoverServiceName[] = { "open", "close", "stop", "toggle" };
 
@@ -76,20 +78,9 @@ public:
     return DeviceClass::None;
   }
 
-  virtual uint8_t* getDiscoveryMsg(uint8_t* buffer) {
-    buffer[0] = getEntityId();
-    buffer[1] = static_cast<uint8_t>(getComponent());
-    buffer[2] = static_cast<uint8_t>(getDeviceClass());
-    buffer[3] = 0;
-    buffer[4] = 0;
-    return buffer;
-  }
+  virtual uint8_t* getDiscoveryMsg(uint8_t* buffer);
 
-  void print(Stream& stream) {
-    stream.print(mName);
-    stream.print(": ");
-    stream.print(CoverStateName[mState]);
-  }
+  void print(Stream& stream);
 
 protected:
   StateE mState = { };
