@@ -13,3 +13,4 @@
 
 void printMillis(Stream& stream);
 void printUptime(Stream& stream);
+void printVersion(Stream& stream, int major, int minor, int patch);

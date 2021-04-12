@@ -15,9 +15,11 @@ typedef int16_t DistanceT; // cm
 class DistanceSensor: public Sensor<DistanceT> {
 public:
   DistanceSensor() = delete;
-  DistanceSensor(uint8_t entityId, NewPing &sonar) :
-    Sensor<DistanceT>(entityId), mSonar { sonar } {
+
+  DistanceSensor(uint8_t entityId, const char* name, NewPing& sonar) :
+      Sensor<DistanceT>(entityId, name, Unit::TypeE::CentiMeter), mSonar { sonar } {
   }
+
   bool update();
 
 private:
@@ -27,5 +29,5 @@ private:
   } ConfigT;
 
   ConfigT mConfig;
-  NewPing &mSonar;
+  NewPing& mSonar;
 };

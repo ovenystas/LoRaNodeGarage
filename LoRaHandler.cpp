@@ -5,8 +5,10 @@
  *      Author: oveny
  */
 
-#include "LoRaHandler.h"
 #include <LoRa.h>
+
+#include "LoRaHandler.h"
+#include "Util.h"
 
 int LoRaHandler::begin() {
   return LoRa.begin(LORA_FREQUENCY);
@@ -31,7 +33,7 @@ int LoRaHandler::loraRx() {
     Serial.print(',');
 
     while (LoRa.available()) {
-      Serial.print((char)LoRa.read());
+      Serial.print(static_cast<char>(LoRa.read()));
     }
 
     // print RSSI of packet
@@ -41,9 +43,11 @@ int LoRaHandler::loraRx() {
     int ackSentStatus = sendAckIfRequested(&rx_header);
     if (ackSentStatus == 1) {
       Serial.print(", ACK sent");
-    } else if (ackSentStatus == 0) {
+    }
+    else if (ackSentStatus == 0) {
       Serial.print(", ACK send failed");
-    } else {
+    }
+    else {
       // Do nothing
     }
     Serial.println();
@@ -51,16 +55,31 @@ int LoRaHandler::loraRx() {
   return packetSize;
 }
 
+void LoRaHandler::printMessage(const LoRaMessageT* msg) {
+  Serial.print("H:");
+  printHeader(&msg->header);
+  Serial.print(" P:");
+  printPayload(msg->payload, msg->header.len);
+  Serial.println();
+}
+
 void LoRaHandler::printHeader(const LoRaHeaderT* header) {
-    Serial.print(header->dst);
-    Serial.print(',');
-    Serial.print(header->src);
-    Serial.print(',');
-    Serial.print(header->id);
-    Serial.print(",0x");
-    Serial.print(header->flags, HEX);
-    Serial.print(',');
-    Serial.print(header->len);
+  Serial.print(header->dst);
+  Serial.print(',');
+  Serial.print(header->src);
+  Serial.print(',');
+  Serial.print(header->id);
+  Serial.print(",0x");
+  Serial.print(header->flags, HEX);
+  Serial.print(',');
+  Serial.print(header->len);
+}
+
+void LoRaHandler::printPayload(const uint8_t* payload, uint8_t len) {
+  for (uint8_t i = 0; i < len; i++) {
+    Serial.print(payload[i], HEX);
+    Serial.print(' ');
+  }
 }
 
 void LoRaHandler::sendHeader(const LoRaHeaderT* header) {
@@ -72,6 +91,12 @@ void LoRaHandler::sendHeader(const LoRaHeaderT* header) {
 }
 
 int LoRaHandler::sendMsg(const LoRaMessageT* msg) {
+#ifdef DEBUG_LORA_MESSAGE
+  printMillis(Serial);
+  Serial.print(F("LoRaTx: "));
+  printMessage(msg);
+#endif
+
   LoRa.beginPacket();
   sendHeader(&msg->header);
   LoRa.write(msg->payload, msg->header.len);
@@ -80,17 +105,17 @@ int LoRaHandler::sendMsg(const LoRaMessageT* msg) {
 
 int LoRaHandler::sendAckIfRequested(const LoRaHeaderT* rx_header) {
   if (rx_header->flags & FLAGS_REQ_ACK) {
-     LoRaHeaderT tx_header;
-     tx_header.dst = rx_header->src;
-     tx_header.src = MY_ADDRESS;
-     tx_header.id = rx_header->id;
-     tx_header.flags = FLAGS_ACK;
+    LoRaHeaderT tx_header;
+    tx_header.dst = rx_header->src;
+    tx_header.src = MY_ADDRESS;
+    tx_header.id = rx_header->id;
+    tx_header.flags = FLAGS_ACK;
 
-     LoRa.beginPacket();
-     sendHeader(&tx_header);
-     LoRa.print('!');
+    LoRa.beginPacket();
+    sendHeader(&tx_header);
+    LoRa.print('!');
 
-     return LoRa.endPacket();
+    return LoRa.endPacket();
   }
   return 2;
 }

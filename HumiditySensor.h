@@ -16,8 +16,8 @@ typedef int8_t HumidityT; // %
 class HumiditySensor: public Sensor<HumidityT> {
 public:
   HumiditySensor() = delete;
-  HumiditySensor(uint8_t entityId, DHT &dht) :
-    Sensor<HumidityT>(entityId), mDht { dht } {
+  HumiditySensor(uint8_t entityId, const char* name, DHT& dht) :
+      Sensor<HumidityT>(entityId, name, Unit::TypeE::Percent), mDht { dht } {
   }
 
   bool update();
@@ -37,5 +37,5 @@ private:
   } ConfigT;
 
   ConfigT mConfig;
-  DHT &mDht;
+  DHT& mDht;
 };

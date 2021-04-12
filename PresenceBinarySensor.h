@@ -9,11 +9,11 @@
 #include "components/BinarySensor.h"
 #include "HeightSensor.h"
 
-class PresenceBinarySensor : public BinarySensor {
+class PresenceBinarySensor: public BinarySensor {
 public:
   PresenceBinarySensor() = delete;
-  PresenceBinarySensor(uint8_t entityId, HeightSensor &heightSensor) :
-    BinarySensor(entityId), mHeightSensor { heightSensor } {
+  PresenceBinarySensor(uint8_t entityId, const char* name, HeightSensor& heightSensor) :
+      BinarySensor(entityId, name), mHeightSensor { heightSensor } {
   }
   bool update();
   virtual DeviceClass getDeviceClass() const {

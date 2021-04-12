@@ -8,32 +8,49 @@
 #include "GarageCover.h"
 #include "Util.h"
 
+bool GarageCover::isClosed(bool closedSensor, bool openSensor) {
+  return closedSensor == LOW && openSensor == HIGH;
+}
+
+bool GarageCover::isOpen(bool closedSensor, bool openSensor) {
+  return closedSensor == HIGH && openSensor == LOW;
+}
+
+bool GarageCover::isClosing(bool closedSensor, bool openSensor) {
+  return closedSensor == HIGH && openSensor == HIGH
+      && (mState == Cover::STATE_CLOSING || mState == Cover::STATE_OPEN);
+}
+
+bool GarageCover::isOpening(bool closedSensor, bool openSensor) {
+  return closedSensor == HIGH && openSensor == HIGH
+      && (mState == Cover::STATE_OPENING || mState == Cover::STATE_CLOSED);
+}
+
+Cover::StateE GarageCover::determineState(bool closedSensor, bool openSensor) {
+  if (isClosed(closedSensor, openSensor)) {
+    return Cover::STATE_CLOSED;
+  }
+
+  if (isOpen(closedSensor, openSensor)) {
+    return Cover::STATE_OPEN;
+  }
+
+  if (isClosing(closedSensor, openSensor)) {
+    return Cover::STATE_CLOSING;
+  }
+
+  if (isOpening(closedSensor, openSensor)) {
+    return Cover::STATE_OPENING;
+  }
+
+  return mState; // Error condition, both sensors can't be LOW.
+}
+
 bool GarageCover::update() {
-  auto closedSensor = digitalRead(mPinClosed);
-  auto openSensor = digitalRead(mPinOpen);
+  bool closedSensor = digitalRead(mPinClosed);
+  bool openSensor = digitalRead(mPinOpen);
 
-  StateE newState;
-  if (closedSensor == LOW && openSensor == HIGH) {
-    newState = Cover::STATE_CLOSED;
-  }
-  else if (closedSensor == HIGH && openSensor == LOW) {
-    newState = Cover::STATE_OPEN;
-  }
-  else if (closedSensor == HIGH && openSensor == HIGH) {
-    if (mState == Cover::STATE_CLOSED) {
-      newState = Cover::STATE_OPENING;
-    }
-    else if (mState == Cover::STATE_OPEN) {
-      newState = Cover::STATE_CLOSING;
-    }
-    else {
-      newState = mState; // Still in same state, OPENING or CLOSING.
-    }
-  }
-  else {
-    newState = mState; // Error condition, both sensors can't be LOW.
-  }
-
+  StateE newState = determineState(closedSensor, openSensor);
   bool hasChanged = newState != mState;
 
   mState = newState;

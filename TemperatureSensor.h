@@ -16,8 +16,8 @@ typedef int16_t TemperatureT; // Degree C
 class TemperatureSensor: public Sensor<TemperatureT> {
 public:
   TemperatureSensor() = delete;
-  TemperatureSensor(uint8_t entityId, DHT &dht) :
-    Sensor<TemperatureT>(entityId), mDht { dht } {
+  TemperatureSensor(uint8_t entityId, const char* name, DHT& dht) :
+      Sensor<TemperatureT>(entityId, name, Unit::TypeE::DegreeC, 1), mDht { dht } {
   }
 
   bool update();
@@ -37,5 +37,5 @@ private:
   } ConfigT;
 
   ConfigT mConfig;
-  DHT &mDht;
+  DHT& mDht;
 };
