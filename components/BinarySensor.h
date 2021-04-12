@@ -8,36 +8,6 @@
 #include "Component.h"
 #include "Stream.h"
 
-static const String BinarySensorStateName[] = { "off", "on" };
-
-//static const String BinarySensorStateName[25][2] = {
-//    { "off", "on" },
-//    { "normal", "low" },
-//    { "off", "on" },
-//    { "normal", "cold" },
-//    { "disconnected", "connected" },
-//    { "closed", "open" },
-//    { "closed", "open" },
-//    { "clear", "detected" },
-//    { "normal", "hot" },
-//    { "off", "on" },
-//    { "locked", "unlocked" },
-//    { "dry", "wet" },
-//    { "clear", "detected" },
-//    { "off", "on" },
-//    { "clear", "detected" },
-//    { "closed", "open" },
-//    { "off", "on" },
-//    { "off", "on" },
-//    { "away", "home" },
-//    { "OK", "problem" },
-//    { "safe", "unsafe" },
-//    { "clear", "detected" },
-//    { "clear", "detected" },
-//    { "clear", "detected" },
-//    { "closed", "open" },
-//};
-
 /*
  *
  */
@@ -80,7 +50,57 @@ public:
 
   virtual bool update() = 0;
 
-  virtual bool getState() const { return mState; }
+  virtual bool getState() const {
+    return mState;
+  }
+
+  const char* getStateName() const {
+    switch (getDeviceClass()) {
+      case DeviceClass::Battery:
+        return mState ? "low" : "normal";
+
+      case DeviceClass::Cold:
+        return mState ? "cold" : "normal";
+
+      case DeviceClass::Heat:
+        return mState ? "hot" : "normal";
+
+      case DeviceClass::Connectivity:
+        return mState ? "connected" : "disconnected";
+
+      case DeviceClass::Door:
+      case DeviceClass::GarageDoor:
+      case DeviceClass::Opening:
+      case DeviceClass::Window:
+        return mState ? "open" : "closed";
+
+      case DeviceClass::Lock:
+        return mState ? "unlocked" : "locked";
+
+      case DeviceClass::Moisture:
+        return mState ? "wet" : "dry";
+
+      case DeviceClass::Gas:
+      case DeviceClass::Motion:
+      case DeviceClass::Occupancy:
+      case DeviceClass::Smoke:
+      case DeviceClass::Sound:
+      case DeviceClass::Vibration:
+        return mState ? "detected" : "clear";
+
+      case DeviceClass::Presence:
+        return mState ? "home" : "away";
+
+      case DeviceClass::Problem:
+        return mState ? "problem" : "OK";
+
+      case DeviceClass::Safety:
+        return mState ? "unsafe" : "safe";
+
+      default:
+        return mState ? "on" : "off";
+    }
+  }
 
   Component::Type getComponent() const {
     return Component::Type::BinarySensor;
@@ -102,7 +122,7 @@ public:
   void print(Stream& stream) {
     stream.print(mName);
     stream.print(": ");
-    stream.print(BinarySensorStateName[mState]);
+    stream.print(getStateName());
 //        BinarySensorStateName[static_cast<uint8_t>(getDeviceClass())][mState]);
   }
 
