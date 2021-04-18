@@ -15,11 +15,12 @@ public:
 
   GarageCover(uint8_t entityId, const char* name, uint8_t pinClosed, uint8_t pinOpen) :
       Cover(entityId, name), mPinClosed { pinClosed }, mPinOpen { pinOpen } {
+
     pinMode(pinClosed, INPUT_PULLUP);
     pinMode(pinOpen, INPUT_PULLUP);
   }
 
-  bool update();
+  bool update() override;
 
   void callService(ServiceE service);
 

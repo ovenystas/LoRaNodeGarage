@@ -21,7 +21,7 @@ public:
           distanceSensor } {
   }
 
-  bool update();
+  bool update() override;
 
 private:
   typedef struct {

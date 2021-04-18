@@ -16,15 +16,17 @@ typedef int16_t TemperatureT; // Degree C
 class TemperatureSensor: public Sensor<TemperatureT> {
 public:
   TemperatureSensor() = delete;
+
   TemperatureSensor(uint8_t entityId, const char* name, DHT& dht) :
       Sensor<TemperatureT>(entityId, name, Unit::TypeE::DegreeC, 1), mDht { dht } {
   }
 
-  bool update();
+  bool update() override;
 
   DeviceClass getDeviceClass() const override {
     return DeviceClass::Temperature;
   }
+
   virtual Unit getUnit() const {
     return Unit::DegreeC;
   }

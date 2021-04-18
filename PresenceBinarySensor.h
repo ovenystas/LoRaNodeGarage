@@ -12,10 +12,13 @@
 class PresenceBinarySensor: public BinarySensor {
 public:
   PresenceBinarySensor() = delete;
+
   PresenceBinarySensor(uint8_t entityId, const char* name, HeightSensor& heightSensor) :
       BinarySensor(entityId, name), mHeightSensor { heightSensor } {
   }
-  bool update();
+
+  bool update() override;
+
   virtual DeviceClass getDeviceClass() const {
     return DeviceClass::Presence;
   }

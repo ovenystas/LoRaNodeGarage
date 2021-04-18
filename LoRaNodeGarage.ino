@@ -43,9 +43,6 @@
 
 #define UPDATE_SENSORS_INTERVAL 1000
 
-static void updateSensors();
-static void handleLoraMessage();
-
 #ifdef DEBUG_SENSOR_VALUES
 static void printAllSensors(Stream& stream);
 #endif
@@ -71,36 +68,25 @@ void setup() {
   while (!Serial)
     ;
 
-  Serial.print(F("Lora Garage Node v"));
+  Serial.print(F("LoRa Garage Node v"));
   printVersion(Serial, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
   Serial.print(F(", address="));
   Serial.print(MY_ADDRESS);
   Serial.print(F(", gateway="));
   Serial.println(GATEWAY_ADDRESS);
 
-  if (!lora.begin()) {
+  if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onConfigReqMsg, &onServiceReqMsg)) {
     Serial.println(F("Starting LoRa failed!"));
     while (1)
       ;
   }
 
-  uint8_t buffer[LORA_DISCOVERY_ITEM_LENGTH];
-  lora.beginDiscoveryMsg();
-  lora.addDiscoveryItem(garageCover.getDiscoveryMsg(buffer));
-  lora.addDiscoveryItem(temperatureSensor.getDiscoveryMsg(buffer));
-  lora.addDiscoveryItem(humiditySensor.getDiscoveryMsg(buffer));
-  lora.addDiscoveryItem(distanceSensor.getDiscoveryMsg(buffer));
-  lora.addDiscoveryItem(heightSensor.getDiscoveryMsg(buffer));
-  lora.addDiscoveryItem(carPresenceSensor.getDiscoveryMsg(buffer));
-  lora.endMsg();
-
+  sendLoraDiscoveryMsg();
   dht.begin();
 }
 
 void loop() {
-  if (lora.loraRx()) {
-    handleLoraMessage();
-  }
+  lora.loraRx();
 
   auto curMillis = millis();
   if (curMillis >= nextRunTime) {
@@ -113,6 +99,20 @@ void loop() {
     printAllSensors(Serial);
 #endif
   }
+}
+
+void onDiscoveryReqMsg() {
+  sendLoraDiscoveryMsg();
+}
+
+void onValueReqMsg() {
+  sendAllSensorValues();
+}
+
+void onConfigReqMsg() {
+}
+
+void onServiceReqMsg() {
 }
 
 static void updateSensors() {
@@ -168,15 +168,41 @@ static void updateSensors() {
   }
 }
 
-static void handleLoraMessage() {
-  String msg = "";
-  if (msg == "Cover open" || msg == "Cover close" || msg == "Cover stop"
-      || msg == "Cover toggle") {
+static void sendAllSensorValues() {
+  lora.beginValueMsg();
 
-    digitalWrite(COVER_RELAY_PIN, HIGH);
-    delay(500);
-    digitalWrite(COVER_RELAY_PIN, LOW);
-  }
+  lora.addValueItem(garageCover.getEntityId(),
+      static_cast<uint8_t>(garageCover.getState()));
+
+  lora.addValueItem(distanceSensor.getEntityId(), distanceSensor.getValue());
+  distanceSensor.setReported();
+
+  lora.addValueItem(heightSensor.getEntityId(), heightSensor.getValue());
+  heightSensor.setReported();
+
+  lora.addValueItem(carPresenceSensor.getEntityId(),
+      carPresenceSensor.getState());
+
+  lora.addValueItem(temperatureSensor.getEntityId(),
+      temperatureSensor.getValue());
+  temperatureSensor.setReported();
+
+  lora.addValueItem(humiditySensor.getEntityId(), humiditySensor.getValue());
+  humiditySensor.setReported();
+
+  lora.endMsg();
+}
+
+static void sendLoraDiscoveryMsg() {
+  uint8_t buffer[LORA_DISCOVERY_ITEM_LENGTH];
+  lora.beginDiscoveryMsg();
+  lora.addDiscoveryItem(garageCover.getDiscoveryMsg(buffer));
+  lora.addDiscoveryItem(temperatureSensor.getDiscoveryMsg(buffer));
+  lora.addDiscoveryItem(humiditySensor.getDiscoveryMsg(buffer));
+  lora.addDiscoveryItem(distanceSensor.getDiscoveryMsg(buffer));
+  lora.addDiscoveryItem(heightSensor.getDiscoveryMsg(buffer));
+  lora.addDiscoveryItem(carPresenceSensor.getDiscoveryMsg(buffer));
+  lora.endMsg();
 }
 
 #ifdef DEBUG_SENSOR_VALUES

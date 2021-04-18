@@ -20,7 +20,7 @@ public:
       Sensor<DistanceT>(entityId, name, Unit::TypeE::CentiMeter), mSonar { sonar } {
   }
 
-  bool update();
+  bool update() override;
 
 private:
   typedef struct {

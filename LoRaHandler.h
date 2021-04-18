@@ -58,8 +58,14 @@ struct LoRaHeaderT {
 #define LORA_HEADER_LENGTH sizeof(LoRaHeaderT)
 #define LORA_MAX_PAYLOAD_LENGTH (LORA_MAX_MESSAGE_LENGTH - LORA_HEADER_LENGTH)
 
-struct LoRaMessageT {
+struct LoRaTxMessageT {
   LoRaHeaderT header;
+  uint8_t payload[LORA_MAX_PAYLOAD_LENGTH];
+} __attribute__((packed, aligned(1)));
+
+struct LoRaRxMessageT {
+  LoRaHeaderT header;
+  int8_t rssi;
   uint8_t payload[LORA_MAX_PAYLOAD_LENGTH];
 } __attribute__((packed, aligned(1)));
 
@@ -101,16 +107,31 @@ public:
     value_req,
     value_msg,
     config_req,
-    config_msg
+    config_msg,
+    service_req
   };
+
+  const uint8_t msgTypeMask = 0x0f;
 
   friend inline uint8_t& operator |=(uint8_t& a, const MsgType b) {
     return (a |= static_cast<uint8_t>(b));
   }
 
+  typedef void (*OnDiscoveryReqMsgFunc)(void);
+  typedef void (*OnValueReqMsgFunc)(void);
+  typedef void (*OnConfigReqMsgFunc)(void);
+  typedef void (*OnServiceReqMsgFunc)(void);
+
   int begin();
+  int begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc,
+      OnValueReqMsgFunc onValueReqMsgFunc,
+      OnConfigReqMsgFunc onConfigReqMsgFunc,
+      OnServiceReqMsgFunc onServiceReqMsgFunc);
+
   int loraRx();
   int loraTx();
+
+  int8_t parseMsg(LoRaRxMessageT& rxMsg);
 
   void beginDiscoveryMsg();
   void endMsg();
@@ -134,13 +155,19 @@ public:
   void setDefaultHeader(LoRaHeaderT* header, uint8_t length);
 
 private:
-  void printMessage(const LoRaMessageT* msg);
+  void printMessage(const LoRaTxMessageT* msg);
   void printHeader(const LoRaHeaderT* header);
   void printPayload(const uint8_t* payload, uint8_t len);
-  void sendHeader(const LoRaHeaderT* header);
+
   int sendAckIfRequested(const LoRaHeaderT* rx_header);
-  void sendMsg(const LoRaMessageT* msg);
+  void sendMsg(const LoRaTxMessageT* msg);
+  void sendPing(const LoRaHeaderT* rxHeader, int8_t rssi);
 
   uint8_t mSeqId = { 0 };
-  LoRaMessageT mMsgTx;
+  LoRaTxMessageT mMsgTx;
+
+  OnDiscoveryReqMsgFunc mOnDiscoveryReqMsgFunc = { nullptr };
+  OnValueReqMsgFunc mOnValueReqMsgFunc = { nullptr };
+  OnConfigReqMsgFunc mOnConfigReqMsgFunc = { nullptr };
+  OnServiceReqMsgFunc mOnServiceReqMsgFunc = { nullptr };
 };
