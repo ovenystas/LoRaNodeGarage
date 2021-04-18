@@ -74,9 +74,10 @@ int LoRaHandler::loraRx() {
 
 int8_t LoRaHandler::parseMsg(LoRaRxMessageT& rxMsg) {
   MsgType msgType = static_cast<MsgType>(rxMsg.header.flags & msgTypeMask);
+
   switch (msgType) {
     case MsgType::ping_req:
-      sendPing(&rxMsg.header, rxMsg.rssi);
+      sendPing(rxMsg.header.src, rxMsg.rssi);
       break;
 
     case MsgType::discovery_req:
@@ -171,10 +172,10 @@ int LoRaHandler::sendAckIfRequested(const LoRaHeaderT* rxHeader) {
   return 0;
 }
 
-void LoRaHandler::sendPing(const LoRaHeaderT* rxHeader, int8_t rssi) {
+void LoRaHandler::sendPing(const uint8_t toAddr, int8_t rssi) {
   LoRaTxMessageT msg;
   setDefaultHeader(&msg.header, 1);
-  msg.header.dst = rxHeader->src;
+  msg.header.dst = toAddr;
   msg.header.flags |= MsgType::ping_msg;
   msg.payload[0] = rssi;
 }

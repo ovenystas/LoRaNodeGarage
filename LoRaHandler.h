@@ -6,8 +6,14 @@
  */
 
 /*
+ * Ping request:
+ *   Empty payload
+ *
  * Ping message:
  *   Byte 0: RSSI in ping request message
+ *
+ * Discovery request:
+ *   Empty payload
  *
  * Discovery message:
  *   Byte 0:    Number of entities (1-9)
@@ -20,13 +26,22 @@
  *   Byte 6-10: Repeat Byte 1-5 for second entity
  *   Byte 11-n: Repeat Byte 1-5 for third to n entity
  *
+ * Value request:
+ *   Empty payload
+ *
  * Value message:
  *   Byte 0:       Number of entities (1-k)
  *   Byte 1:       Entity Id
  *   Byte 2-n:     Value in big endian style (1,2 or 4 bytes)
  *   Byte (n+1)-m: Repeat Byte 2-n for second entity
  *
+ * Config request:
+ *   Byte 0: ?
+ *
  * Config message:
+ *   Byte 0: ?
+ *
+ * Service request:
  *   Byte 0: ?
  *
  */
@@ -161,7 +176,7 @@ private:
 
   int sendAckIfRequested(const LoRaHeaderT* rx_header);
   void sendMsg(const LoRaTxMessageT* msg);
-  void sendPing(const LoRaHeaderT* rxHeader, int8_t rssi);
+  void sendPing(const uint8_t toAddr, int8_t rssi);
 
   uint8_t mSeqId = { 0 };
   LoRaTxMessageT mMsgTx;
