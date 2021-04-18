@@ -84,13 +84,15 @@ void setup() {
       ;
   }
 
-  uint8_t buffer[LORA_DISCOVERY_MSG_LENGTH];
-  lora.sendDiscoveryMsg(garageCover.getDiscoveryMsg(buffer));
-  lora.sendDiscoveryMsg(temperatureSensor.getDiscoveryMsg(buffer));
-  lora.sendDiscoveryMsg(humiditySensor.getDiscoveryMsg(buffer));
-  lora.sendDiscoveryMsg(distanceSensor.getDiscoveryMsg(buffer));
-  lora.sendDiscoveryMsg(heightSensor.getDiscoveryMsg(buffer));
-  lora.sendDiscoveryMsg(carPresenceSensor.getDiscoveryMsg(buffer));
+  uint8_t buffer[LORA_DISCOVERY_ITEM_LENGTH];
+  lora.beginDiscoveryMsg();
+  lora.addDiscoveryItem(garageCover.getDiscoveryMsg(buffer));
+  lora.addDiscoveryItem(temperatureSensor.getDiscoveryMsg(buffer));
+  lora.addDiscoveryItem(humiditySensor.getDiscoveryMsg(buffer));
+  lora.addDiscoveryItem(distanceSensor.getDiscoveryMsg(buffer));
+  lora.addDiscoveryItem(heightSensor.getDiscoveryMsg(buffer));
+  lora.addDiscoveryItem(carPresenceSensor.getDiscoveryMsg(buffer));
+  lora.endMsg();
 
   dht.begin();
 }
@@ -114,41 +116,55 @@ void loop() {
 }
 
 static void updateSensors() {
+  bool valueAdded = false;
+
+  lora.beginValueMsg();
+
   if (garageCover.update()) {
     LOG_SENSOR(garageCover);
-    lora.sendValue(garageCover.getEntityId(),
+    lora.addValueItem(garageCover.getEntityId(),
         static_cast<uint8_t>(garageCover.getState()));
+    valueAdded = true;
   }
 
   if (distanceSensor.update()) {
     LOG_SENSOR(distanceSensor);
-    lora.sendValue(distanceSensor.getEntityId(), distanceSensor.getValue());
+    lora.addValueItem(distanceSensor.getEntityId(), distanceSensor.getValue());
     distanceSensor.setReported();
+    valueAdded = true;
   }
 
   if (heightSensor.update()) {
     LOG_SENSOR(heightSensor);
-    lora.sendValue(heightSensor.getEntityId(), heightSensor.getValue());
+    lora.addValueItem(heightSensor.getEntityId(), heightSensor.getValue());
     heightSensor.setReported();
+    valueAdded = true;
   }
 
   if (carPresenceSensor.update()) {
     LOG_SENSOR(carPresenceSensor);
-    lora.sendValue(carPresenceSensor.getEntityId(),
+    lora.addValueItem(carPresenceSensor.getEntityId(),
         carPresenceSensor.getState());
+    valueAdded = true;
   }
 
   if (temperatureSensor.update()) {
     LOG_SENSOR(temperatureSensor);
-    lora.sendValue(temperatureSensor.getEntityId(),
+    lora.addValueItem(temperatureSensor.getEntityId(),
         temperatureSensor.getValue());
     temperatureSensor.setReported();
+    valueAdded = true;
   }
 
   if (humiditySensor.update()) {
     LOG_SENSOR(humiditySensor);
-    lora.sendValue(humiditySensor.getEntityId(), humiditySensor.getValue());
+    lora.addValueItem(humiditySensor.getEntityId(), humiditySensor.getValue());
     humiditySensor.setReported();
+    valueAdded = true;
+  }
+
+  if (valueAdded) {
+    lora.endMsg();
   }
 }
 
