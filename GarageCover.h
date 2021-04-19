@@ -13,19 +13,22 @@ class GarageCover: public Cover {
 public:
   GarageCover() = delete;
 
-  GarageCover(uint8_t entityId, const char* name, uint8_t pinClosed, uint8_t pinOpen) :
-      Cover(entityId, name), mPinClosed { pinClosed }, mPinOpen { pinOpen } {
+  GarageCover(uint8_t entityId, const char* name,
+      uint8_t pinClosed, uint8_t pinOpen, uint8_t pinRelay) :
+      Cover(entityId, name),
+      mPinClosed { pinClosed }, mPinOpen { pinOpen }, mPinRelay { pinRelay } {
 
     pinMode(pinClosed, INPUT_PULLUP);
     pinMode(pinOpen, INPUT_PULLUP);
+    pinMode(pinRelay, OUTPUT);
   }
 
   bool update() override;
 
-  void callService(ServiceE service);
+  void callService(const Cover::Service service) override;
 
   virtual DeviceClass getDeviceClass() const override {
-    return DeviceClass::Garage;
+    return DeviceClass::garage;
   }
 
   // Cover
@@ -34,7 +37,7 @@ private:
   void closeCover();
   void stopCover();
   void toggleCover();
-  Cover::StateE determineState(bool closedSensor, bool openSensor);
+  Cover::State determineState(bool closedSensor, bool openSensor);
   bool isClosed(bool closedSensor, bool openSensor);
   bool isOpen(bool closedSensor, bool openSensor);
   bool isClosing(bool closedSensor, bool openSensor);
@@ -42,4 +45,5 @@ private:
 
   uint8_t mPinClosed;
   uint8_t mPinOpen;
+  uint8_t mPinRelay;
 };

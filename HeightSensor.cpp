@@ -3,9 +3,11 @@
  *      Author: oveny
  */
 
-#include "HeightSensor.h"
 #include <Arduino.h>
+
+#include "HeightSensor.h"
 #include "Util.h"
+#include "components/Sensor.h"
 
 bool HeightSensor::update() {
   auto newValue = mConfig.zeroValue - mDistanseSensor.getValue();

@@ -4,8 +4,10 @@
  */
 
 #include <Arduino.h>
+
 #include "HumiditySensor.h"
 #include "Util.h"
+#include "components/Sensor.h"
 
 bool HumiditySensor::update() {
   HumidityT newValue = round(mDht.readHumidity()) + mConfig.compensation;

@@ -25,6 +25,7 @@ public:
 private:
   typedef struct {
     DistanceT reportHysteresis = { 10 }; // cm
+    uint16_t measureInterval = { 60 }; // s
     uint16_t reportInterval = { 60 }; // s
   } ConfigT;
 

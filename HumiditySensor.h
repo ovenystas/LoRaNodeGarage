@@ -35,6 +35,7 @@ private:
   typedef struct {
     HumidityT compensation = { };       // %
     HumidityT reportHysteresis = { 2 }; // %
+    uint16_t measureInterval = { 60 }; // s
     uint16_t reportInterval = { 60 };  // s
   } ConfigT;
 

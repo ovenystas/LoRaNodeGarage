@@ -19,32 +19,32 @@ class Cover: public Component {
 public:
   // From https://www.home-assistant.io/integrations/cover/ at 2021-03-21
   enum class DeviceClass {
-    None,
-    Awning,
-    Blind,
-    Curtain,
-    Damper,
-    Door,
-    Garage,
-    Gate,
-    Shade,
-    Shutter,
-    Window
+    none,
+    awning,
+    blind,
+    curtain,
+    damper,
+    door,
+    garage,
+    gate,
+    shade,
+    shutter,
+    window
   };
 
-  typedef enum {
-    STATE_CLOSED,
-    STATE_OPEN,
-    STATE_OPENING,
-    STATE_CLOSING
-  } StateE;
+  enum class State {
+    closed,
+    open,
+    opening,
+    closing
+  };
 
-  typedef enum {
-    SERVICE_OPEN,
-    SERVICE_CLOSE,
-    SERVICE_STOP,
-    SERVICE_TOGGLE
-  } ServiceE;
+  enum class Service {
+    open,
+    close,
+    stop,
+    toggle
+  };
 
   Cover(uint8_t entityId, const char* name) :
       Component(entityId, name) {
@@ -54,20 +54,22 @@ public:
 
   virtual bool update() = 0;
 
-  virtual StateE getState() const {
+  virtual void callService(const Service service) = 0;
+
+  virtual State getState() const {
     return mState;
   }
 
   virtual const String& getStateName() const {
-    return CoverStateName[mState];
+    return CoverStateName[static_cast<uint8_t>(mState)];
   }
 
-  virtual const String& getStateName(StateE state) const {
-    return CoverStateName[state];
+  virtual const String& getStateName(State state) const {
+    return CoverStateName[static_cast<uint8_t>(state)];
   }
 
-  virtual const String& getServiceName(ServiceE service) const {
-    return CoverServiceName[service];
+  virtual const String& getServiceName(Service service) const {
+    return CoverServiceName[static_cast<uint8_t>(service)];
   }
 
   Component::Type getComponent() const {
@@ -75,7 +77,7 @@ public:
   }
 
   virtual DeviceClass getDeviceClass() const {
-    return DeviceClass::None;
+    return DeviceClass::none;
   }
 
   virtual uint8_t* getDiscoveryMsg(uint8_t* buffer);
@@ -83,5 +85,5 @@ public:
   void print(Stream& stream);
 
 protected:
-  StateE mState = { };
+  State mState = { };
 };

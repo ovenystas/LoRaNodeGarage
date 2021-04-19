@@ -52,8 +52,8 @@ NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 
 uint32_t nextRunTime = UPDATE_SENSORS_INTERVAL;
 
-GarageCover garageCover = GarageCover(1, "Port", COVER_CLOSED_PIN,
-    COVER_OPEN_PIN);
+GarageCover garageCover = GarageCover(1, "Port",
+    COVER_CLOSED_PIN, COVER_OPEN_PIN, COVER_RELAY_PIN);
 TemperatureSensor temperatureSensor = TemperatureSensor(2, "Temperature", dht);
 HumiditySensor humiditySensor = HumiditySensor(3, "Humidity", dht);
 DistanceSensor distanceSensor = DistanceSensor(4, "Distance", sonar);
@@ -112,7 +112,10 @@ void onValueReqMsg() {
 void onConfigReqMsg() {
 }
 
-void onServiceReqMsg() {
+void onServiceReqMsg(const LoRaServiceItemT& item) {
+  if (item.entityId == garageCover.getEntityId()) {
+    garageCover.callService(static_cast<Cover::Service>(item.service));
+  }
 }
 
 static void updateSensors() {

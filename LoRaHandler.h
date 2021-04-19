@@ -42,7 +42,8 @@
  *   Byte 0: ?
  *
  * Service request:
- *   Byte 0: ?
+ *   Byte 0: EntityId
+ *   Byte 1: Service
  *
  */
 #pragma once
@@ -112,6 +113,11 @@ struct LoRaValuePayloadT {
   uint8_t subPayload[LORA_MAX_PAYLOAD_LENGTH - sizeof(numberOfEntities)];;
 } __attribute__((packed, aligned(1)));
 
+struct LoRaServiceItemT {
+  uint8_t entityId;
+  uint8_t service;
+} __attribute__((packed, aligned(1)));
+
 class LoRaHandler {
 public:
   enum class MsgType : uint8_t {
@@ -135,7 +141,7 @@ public:
   typedef void (*OnDiscoveryReqMsgFunc)(void);
   typedef void (*OnValueReqMsgFunc)(void);
   typedef void (*OnConfigReqMsgFunc)(void);
-  typedef void (*OnServiceReqMsgFunc)(void);
+  typedef void (*OnServiceReqMsgFunc)(const LoRaServiceItemT&);
 
   int begin();
   int begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc,

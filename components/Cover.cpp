@@ -18,5 +18,5 @@ uint8_t* Cover::getDiscoveryMsg(uint8_t* buffer) {
 void Cover::print(Stream& stream) {
   stream.print(mName);
   stream.print(": ");
-  stream.print(CoverStateName[mState]);
+  stream.print(CoverStateName[static_cast<uint8_t>(mState)]);
 }

@@ -100,7 +100,10 @@ int8_t LoRaHandler::parseMsg(LoRaRxMessageT& rxMsg) {
 
     case MsgType::service_req:
       if (mOnServiceReqMsgFunc) {
-        mOnServiceReqMsgFunc();
+        if (rxMsg.header.len == sizeof(LoRaServiceItemT)) {
+          LoRaServiceItemT* item = reinterpret_cast<LoRaServiceItemT*>(rxMsg.payload);
+          mOnServiceReqMsgFunc(*item);
+        }
       }
       break;
 

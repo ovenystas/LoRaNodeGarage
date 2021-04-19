@@ -3,8 +3,9 @@
  *      Author: oveny
  */
 
-#include "PresenceBinarySensor.h"
 #include <Arduino.h>
+
+#include "PresenceBinarySensor.h"
 #include "Util.h"
 
 bool PresenceBinarySensor::update() {

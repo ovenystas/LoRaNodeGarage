@@ -35,6 +35,7 @@ private:
   typedef struct {
     TemperatureT compensation;
     TemperatureT reportHysteresis = { 2 }; // d°C
+    uint16_t measureInterval = { 60 }; // s
     uint16_t reportInterval = { 60 }; // s
   } ConfigT;
 
