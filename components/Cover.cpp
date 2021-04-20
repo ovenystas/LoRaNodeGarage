@@ -20,3 +20,11 @@ void Cover::print(Stream& stream) {
   stream.print(": ");
   stream.print(CoverStateName[static_cast<uint8_t>(mState)]);
 }
+
+void Cover::print(Stream& stream, Cover::Service service) {
+  stream.print(mName);
+  stream.print(": Service ");
+  stream.print(getServiceName(service));
+  stream.print(" called when in state ");
+  stream.print(CoverStateName[static_cast<uint8_t>(mState)]);
+}

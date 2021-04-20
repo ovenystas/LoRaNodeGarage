@@ -84,6 +84,8 @@ public:
 
   void print(Stream& stream);
 
+  void print(Stream& stream, Cover::Service service);
+
 protected:
   State mState = { };
 };

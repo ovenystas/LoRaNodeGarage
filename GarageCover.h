@@ -31,17 +31,15 @@ public:
     return DeviceClass::garage;
   }
 
-  // Cover
 private:
-  void openCover();
-  void closeCover();
-  void stopCover();
-  void toggleCover();
-  Cover::State determineState(bool closedSensor, bool openSensor);
+  Cover::State determineState();
+
   bool isClosed(bool closedSensor, bool openSensor);
   bool isOpen(bool closedSensor, bool openSensor);
   bool isClosing(bool closedSensor, bool openSensor);
   bool isOpening(bool closedSensor, bool openSensor);
+
+  void activateRelay(uint8_t times);
 
   uint8_t mPinClosed;
   uint8_t mPinOpen;

@@ -27,7 +27,10 @@ bool GarageCover::isOpening(bool closedSensor, bool openSensor) {
       && (mState == Cover::State::opening || mState == Cover::State::closed);
 }
 
-Cover::State GarageCover::determineState(bool closedSensor, bool openSensor) {
+Cover::State GarageCover::determineState() {
+  bool closedSensor = digitalRead(mPinClosed);
+  bool openSensor = digitalRead(mPinOpen);
+
   if (isClosed(closedSensor, openSensor)) {
     return Cover::State::closed;
   }
@@ -48,10 +51,7 @@ Cover::State GarageCover::determineState(bool closedSensor, bool openSensor) {
 }
 
 bool GarageCover::update() {
-  bool closedSensor = digitalRead(mPinClosed);
-  bool openSensor = digitalRead(mPinOpen);
-
-  State newState = determineState(closedSensor, openSensor);
+  State newState = determineState();
   bool hasChanged = newState != mState;
 
   mState = newState;
@@ -60,39 +60,52 @@ bool GarageCover::update() {
 }
 
 void GarageCover::callService(const Cover::Service service) {
-  bool closedSensor = digitalRead(mPinClosed);
-  bool openSensor = digitalRead(mPinOpen);
-  State state = determineState(closedSensor, openSensor);
+  State state = determineState();
 
   switch (service) {
     case Cover::Service::open:
       if (state == Cover::State::closed) {
-        // relay 1 click
+        activateRelay(1);
       } else if (state == Cover::State::closing) {
-        // relay 2 click
+        activateRelay(2);
       }
       break;
 
     case Cover::Service::close:
       if (state == Cover::State::open) {
-        // relay 1 click
+        activateRelay(1);
       } else if (state == Cover::State::opening) {
-        // relay 2 click
+        activateRelay(2);
       }
       break;
 
     case Cover::Service::stop:
       if (state == Cover::State::opening || state == Cover::State::closing) {
-        // relay 1 click
+        activateRelay(1);
       }
       break;
 
     case Cover::Service::toggle:
       if (state == Cover::State::open || state == Cover::State::closed) {
-        // relay 1 click
+        activateRelay(1);
       } else if (state == Cover::State::opening || state == Cover::State::closing) {
-        // relay 2 click
+        activateRelay(2);
       }
       break;
+  }
+}
+
+void GarageCover::activateRelay(uint8_t times) {
+  if (times > 2) {
+    times = 2;
+  }
+
+  for (uint8_t i = 0; i < times; i++) {
+    digitalWrite(mPinRelay, HIGH);
+    delay(500);
+    digitalWrite(mPinRelay, LOW);
+    if (i < times - 1) {
+      delay(500);
+    }
   }
 }

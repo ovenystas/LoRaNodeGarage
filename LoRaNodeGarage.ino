@@ -25,9 +25,11 @@
 #define DEBUG_SENSOR_REPORT
 
 #ifdef DEBUG_SENSOR_REPORT
-# define LOG_SENSOR(sensor) printMillis(Serial); sensor.print(Serial); Serial.println()
+# define LOG_SENSOR(sensor) printMillis(Serial); (sensor).print(Serial); Serial.println()
+# define LOG_COVER_SERVICE(cover, service) printMillis(Serial); (cover).print(Serial, (service)); Serial.println()
 #else
 # define LOG_SENSOR(sensor)
+# define LOG_COVER_SERVICE(sensor, service)
 #endif
 
 #define DHTPIN 4
@@ -53,7 +55,7 @@ NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 uint32_t nextRunTime = UPDATE_SENSORS_INTERVAL;
 
 GarageCover garageCover = GarageCover(1, "Port",
-    COVER_CLOSED_PIN, COVER_OPEN_PIN, COVER_RELAY_PIN);
+COVER_CLOSED_PIN, COVER_OPEN_PIN, COVER_RELAY_PIN);
 TemperatureSensor temperatureSensor = TemperatureSensor(2, "Temperature", dht);
 HumiditySensor humiditySensor = HumiditySensor(3, "Humidity", dht);
 DistanceSensor distanceSensor = DistanceSensor(4, "Distance", sonar);
@@ -65,8 +67,9 @@ LoRaHandler lora;
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial)
-    ;
+  while (!Serial) {
+    // Do nothing
+  }
 
   Serial.print(F("LoRa Garage Node v"));
   printVersion(Serial, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -75,10 +78,12 @@ void setup() {
   Serial.print(F(", gateway="));
   Serial.println(GATEWAY_ADDRESS);
 
-  if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onConfigReqMsg, &onServiceReqMsg)) {
+  if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onConfigReqMsg,
+      &onServiceReqMsg)) {
     Serial.println(F("Starting LoRa failed!"));
-    while (1)
-      ;
+    while (1) {
+      // Do nothing
+    }
   }
 
   sendLoraDiscoveryMsg();
@@ -114,7 +119,9 @@ void onConfigReqMsg() {
 
 void onServiceReqMsg(const LoRaServiceItemT& item) {
   if (item.entityId == garageCover.getEntityId()) {
-    garageCover.callService(static_cast<Cover::Service>(item.service));
+    Cover::Service service = static_cast<Cover::Service>(item.service);
+    LOG_COVER_SERVICE(garageCover, service);
+    garageCover.callService(service);
   }
 }
 
