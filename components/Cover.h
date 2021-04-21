@@ -56,7 +56,7 @@ public:
 
   virtual void callService(const Service service) = 0;
 
-  virtual State getState() const {
+  inline State getState() const {
     return mState;
   }
 
@@ -73,7 +73,7 @@ public:
   }
 
   Component::Type getComponent() const {
-    return Component::Type::Cover;
+    return Component::Type::cover;
   }
 
   virtual DeviceClass getDeviceClass() const {
@@ -87,5 +87,10 @@ public:
   void print(Stream& stream, Cover::Service service);
 
 protected:
+  inline void setState(State state) {
+    mState = state;
+  }
+
+private:
   State mState = { };
 };

@@ -10,10 +10,6 @@
 #include "LoRaHandler.h"
 #include "Util.h"
 
-int LoRaHandler::begin() {
-  return LoRa.begin(LORA_FREQUENCY);
-}
-
 int LoRaHandler::begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc,
     OnValueReqMsgFunc onValueReqMsgFunc,
     OnConfigReqMsgFunc onConfigReqMsgFunc,
@@ -24,7 +20,7 @@ int LoRaHandler::begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc,
   mOnConfigReqMsgFunc = onConfigReqMsgFunc;
   mOnServiceReqMsgFunc = onServiceReqMsgFunc;
 
-  return begin();
+  return LoRa.begin(LORA_FREQUENCY);
 }
 
 int LoRaHandler::loraRx() {

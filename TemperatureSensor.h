@@ -11,34 +11,30 @@
 #include "components/Sensor.h"
 #include "Util.h"
 
-typedef int16_t TemperatureT; // Degree C
+using TemperatureT = int16_t; // Degree C
 
 class TemperatureSensor: public Sensor<TemperatureT> {
 public:
   TemperatureSensor() = delete;
 
   TemperatureSensor(uint8_t entityId, const char* name, DHT& dht) :
-      Sensor<TemperatureT>(entityId, name, Unit::TypeE::DegreeC, 1), mDht { dht } {
+      Sensor<TemperatureT>(entityId, name, Unit::Type::C, 1), mDht { dht } {
   }
 
   bool update() override;
 
   DeviceClass getDeviceClass() const override {
-    return DeviceClass::Temperature;
-  }
-
-  virtual Unit getUnit() const {
-    return Unit::DegreeC;
+    return DeviceClass::temperature;
   }
 
 private:
-  typedef struct {
+  struct Config {
     TemperatureT compensation;
     TemperatureT reportHysteresis = { 2 }; // d°C
     uint16_t measureInterval = { 60 }; // s
     uint16_t reportInterval = { 60 }; // s
-  } ConfigT;
+  };
 
-  ConfigT mConfig;
+  Config mConfig;
   DHT& mDht;
 };

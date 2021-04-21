@@ -19,12 +19,12 @@ bool GarageCover::isOpen(bool closedSensor, bool openSensor) {
 
 bool GarageCover::isClosing(bool closedSensor, bool openSensor) {
   return closedSensor == HIGH && openSensor == HIGH
-      && (mState == Cover::State::closing || mState == Cover::State::open);
+      && (getState() == Cover::State::closing || getState() == Cover::State::open);
 }
 
 bool GarageCover::isOpening(bool closedSensor, bool openSensor) {
   return closedSensor == HIGH && openSensor == HIGH
-      && (mState == Cover::State::opening || mState == Cover::State::closed);
+      && (getState() == Cover::State::opening || getState() == Cover::State::closed);
 }
 
 Cover::State GarageCover::determineState() {
@@ -47,14 +47,14 @@ Cover::State GarageCover::determineState() {
     return Cover::State::opening;
   }
 
-  return mState; // Error condition, both sensors can't be LOW.
+  return getState(); // Error condition, both sensors can't be LOW.
 }
 
 bool GarageCover::update() {
   State newState = determineState();
-  bool hasChanged = newState != mState;
+  bool hasChanged = newState != getState();
 
-  mState = newState;
+  setState(newState);
 
   return hasChanged;
 }

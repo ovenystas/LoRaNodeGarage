@@ -16,31 +16,31 @@ class BinarySensor: public Component {
 public:
   // From https://www.home-assistant.io/integrations/binary_sensor/ at 2021-03-21
   enum class DeviceClass {
-    None,
-    Battery,
-    BatteryCharging,
-    Cold,
-    Connectivity,
-    Door,
-    GarageDoor,
-    Gas,
-    Heat,
-    Light,
-    Lock,
-    Moisture,
-    Motion,
-    Moving,
-    Occupancy,
-    Opening,
-    Plug,
-    Power,
-    Presence,
-    Problem,
-    Safety,
-    Smoke,
-    Sound,
-    Vibration,
-    Window
+    none,
+    battery,
+    batteryCharging,
+    cold,
+    connectivity,
+    door,
+    garageDoor,
+    gas,
+    heat,
+    light,
+    lock,
+    moisture,
+    motion,
+    moving,
+    occupancy,
+    opening,
+    plug,
+    power,
+    presence,
+    problem,
+    safety,
+    smoke,
+    sound,
+    vibration,
+    window
   };
 
   BinarySensor(uint8_t entityId, const char* name) :
@@ -51,18 +51,18 @@ public:
 
   virtual bool update() = 0;
 
-  virtual bool getState() const {
+  bool getState() const {
     return mState;
   }
 
   const __FlashStringHelper* getStateName();
 
   Component::Type getComponent() const {
-    return Component::Type::BinarySensor;
+    return Component::Type::binarySensor;
   }
 
   virtual DeviceClass getDeviceClass() const {
-    return DeviceClass::None;
+    return DeviceClass::none;
   }
 
   virtual uint8_t* getDiscoveryMsg(uint8_t* buffer);
@@ -70,5 +70,10 @@ public:
   void print(Stream& stream);
 
 protected:
+  inline void setState(bool state) {
+    mState = state;
+  }
+
+private:
   bool mState = {};
 };

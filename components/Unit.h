@@ -10,34 +10,34 @@ static const String UnitName[] = { "", "C", "F", "K", "%", "km", "m", "dm",
 
 class Unit {
 public:
-  typedef enum {
-    None,
-    DegreeC,
-    DegreeF,
-    DegreeK,
-    Percent,
-    KiloMeter,
-    Meter,
-    DeciMeter,
-    CentiMeter,
-    MilliMeter,
-    MicroMeter,
-  } TypeE;
+  enum class Type {
+    none,
+    C,
+    F,
+    K,
+    percent,
+    km,
+    m,
+    dm,
+    cm,
+    mm,
+    um,
+  };
 
-  Unit(TypeE type) :
+  Unit(Type type) :
     mType { type } {
   }
 
   virtual ~Unit() = default;
 
-  TypeE getType() const {
+  Type getType() const {
     return mType;
   }
 
   const String& getName() const {
-    return UnitName[mType];
+    return UnitName[static_cast<uint8_t>(mType)];
   }
 
-protected:
-  const TypeE mType = { None };
+private:
+  const Type mType = { Type::none };
 };

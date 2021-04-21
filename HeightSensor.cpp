@@ -12,12 +12,12 @@
 bool HeightSensor::update() {
   auto newValue = mConfig.zeroValue - mDistanseSensor.getValue();
 
-  bool largeChange = (abs(newValue - mLastReportedValue)
-      > mConfig.reportHysteresis);
+  bool largeChange = absDiffSinceReportedValue(newValue)
+      > mConfig.reportHysteresis;
 
-  mValue = newValue;
+  setValue(newValue);
 
-  bool reportIsDue = (seconds() - mLastReportTime) > mConfig.reportInterval;
+  bool reportIsDue = timeSinceLastReport() > mConfig.reportInterval;
 
   return (largeChange || reportIsDue);
 }

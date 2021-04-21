@@ -11,8 +11,6 @@
 
 class GarageCover: public Cover {
 public:
-  GarageCover() = delete;
-
   GarageCover(uint8_t entityId, const char* name,
       uint8_t pinClosed, uint8_t pinOpen, uint8_t pinRelay) :
       Cover(entityId, name),

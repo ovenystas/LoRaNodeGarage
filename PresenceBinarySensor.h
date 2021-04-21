@@ -19,18 +19,18 @@ public:
 
   bool update() override;
 
-  virtual DeviceClass getDeviceClass() const {
-    return DeviceClass::Presence;
+  DeviceClass getDeviceClass() const override {
+    return DeviceClass::presence;
   }
 
 private:
-  typedef struct {
+  struct Config {
     HeightT lowLimit = { 180 };
     HeightT highLimit = { 200 };
     uint16_t minTime = { 10000 };
-  } ConfigT;
+  };
 
-  ConfigT mConfig;
+  Config mConfig;
   HeightSensor& mHeightSensor;
   uint32_t mLastChangedTime = { };
   bool mStableState = { };

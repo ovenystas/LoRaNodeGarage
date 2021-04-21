@@ -23,12 +23,17 @@
 
 #define DEBUG_SENSOR_VALUES
 #define DEBUG_SENSOR_REPORT
+#define DEBUG_COVER
 
 #ifdef DEBUG_SENSOR_REPORT
 # define LOG_SENSOR(sensor) printMillis(Serial); (sensor).print(Serial); Serial.println()
-# define LOG_COVER_SERVICE(cover, service) printMillis(Serial); (cover).print(Serial, (service)); Serial.println()
 #else
 # define LOG_SENSOR(sensor)
+#endif
+
+#ifdef DEBUG_COVER
+# define LOG_COVER_SERVICE(cover, service) printMillis(Serial); (cover).print(Serial, (service)); Serial.println()
+#else
 # define LOG_COVER_SERVICE(sensor, service)
 #endif
 

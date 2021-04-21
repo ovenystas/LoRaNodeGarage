@@ -10,25 +10,23 @@
 #include "components/Sensor.h"
 #include "Util.h"
 
-typedef int16_t DistanceT; // cm
+using DistanceT = int16_t; // cm
 
 class DistanceSensor: public Sensor<DistanceT> {
 public:
-  DistanceSensor() = delete;
-
   DistanceSensor(uint8_t entityId, const char* name, NewPing& sonar) :
-      Sensor<DistanceT>(entityId, name, Unit::TypeE::CentiMeter), mSonar { sonar } {
+      Sensor<DistanceT>(entityId, name, Unit::Type::cm), mSonar { sonar } {
   }
 
   bool update() override;
 
 private:
-  typedef struct {
+  struct Config {
     DistanceT reportHysteresis = { 10 }; // cm
     uint16_t measureInterval = { 60 }; // s
     uint16_t reportInterval = { 60 }; // s
-  } ConfigT;
+  };
 
-  ConfigT mConfig;
+  Config mConfig;
   NewPing& mSonar;
 };

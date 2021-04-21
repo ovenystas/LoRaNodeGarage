@@ -138,16 +138,15 @@ public:
     return (a |= static_cast<uint8_t>(b));
   }
 
-  typedef void (*OnDiscoveryReqMsgFunc)(void);
-  typedef void (*OnValueReqMsgFunc)(void);
-  typedef void (*OnConfigReqMsgFunc)(void);
-  typedef void (*OnServiceReqMsgFunc)(const LoRaServiceItemT&);
+  using OnDiscoveryReqMsgFunc = void (*)(void);
+  using OnValueReqMsgFunc = void (*)(void);
+  using OnConfigReqMsgFunc = void (*)(void);
+  using OnServiceReqMsgFunc = void (*)(const LoRaServiceItemT&);
 
-  int begin();
-  int begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc,
-      OnValueReqMsgFunc onValueReqMsgFunc,
-      OnConfigReqMsgFunc onConfigReqMsgFunc,
-      OnServiceReqMsgFunc onServiceReqMsgFunc);
+  int begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc = nullptr,
+      OnValueReqMsgFunc onValueReqMsgFunc = nullptr,
+      OnConfigReqMsgFunc onConfigReqMsgFunc = nullptr,
+      OnServiceReqMsgFunc onServiceReqMsgFunc = nullptr);
 
   int loraRx();
   int loraTx();

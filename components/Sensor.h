@@ -19,19 +19,19 @@ class Sensor: public Component {
 public:
   // From https://www.home-assistant.io/integrations/sensor/ at 2021-03-21
   enum class DeviceClass {
-    None,
-    Battery,
-    Current,
-    Energy,
-    Humidity,
-    Illuminance,
-    SignalStrength,
-    Temperature,
-    Power,
-    PowerFactor,
-    Pressure,
-    Timestamp,
-    Voltage
+    none,
+    battery,
+    current,
+    energy,
+    humidity,
+    illuminance,
+    signalStrength,
+    temperature,
+    power,
+    powerFactor,
+    pressure,
+    timestamp,
+    voltage
   };
 
   Sensor(uint8_t entityId) :
@@ -42,11 +42,11 @@ public:
       Component(entityId, name) {
   }
 
-  Sensor(uint8_t entityId, const char* name, Unit::TypeE unitType) :
+  Sensor(uint8_t entityId, const char* name, Unit::Type unitType) :
       Component(entityId, name), mUnit(unitType) {
   }
 
-  Sensor(uint8_t entityId, const char* name, Unit::TypeE unitType,
+  Sensor(uint8_t entityId, const char* name, Unit::Type unitType,
       uint8_t precision) :
       Component(entityId, name), mUnit(unitType) {
 
@@ -60,7 +60,7 @@ public:
 
   virtual bool update() = 0;
 
-  virtual T getValue() const {
+  inline T getValue() const {
     return mValue;
   }
 
@@ -70,14 +70,14 @@ public:
   }
 
   Component::Type getComponent() const {
-    return Component::Type::Sensor;
+    return Component::Type::sensor;
   }
 
   virtual DeviceClass getDeviceClass() const {
-    return DeviceClass::None;
+    return DeviceClass::none;
   }
 
-  virtual Unit::TypeE getUnitType() const {
+  virtual Unit::Type getUnitType() const {
     return mUnit.getType();
   }
 
@@ -86,7 +86,7 @@ public:
   }
 
   virtual uint8_t* getDiscoveryMsg(uint8_t* buffer) {
-    buffer[0] = mEntityId;
+    buffer[0] = getEntityId();
     buffer[1] = static_cast<uint8_t>(getComponent());
     buffer[2] = static_cast<uint8_t>(getDeviceClass());
     buffer[3] = static_cast<uint8_t>(mUnit.getType());
@@ -95,7 +95,7 @@ public:
   }
 
   void print(Stream& stream) {
-    stream.print(mName);
+    stream.print(getName());
     stream.print(": ");
     if (mScaleFactor == 1) {
       stream.print(mValue);
@@ -109,11 +109,24 @@ public:
     stream.print(mUnit.getName());
   }
 
+  uint32_t timeSinceLastReport() const {
+    return seconds() - mLastReportTime;
+  }
+
+  T absDiffSinceReportedValue(T newValue) const {
+    return abs(newValue - mLastReportedValue);
+  }
+
 protected:
+  inline void setValue(T value) {
+    mValue = value;
+  }
+
+private:
   T mValue = { };
   T mLastReportedValue = { };
   uint32_t mLastReportTime = { }; // s
-  Unit mUnit = { Unit::TypeE::None };
+  Unit mUnit = { Unit::Type::none };
   uint8_t mPrecision = { };
   int16_t mScaleFactor = { 1 };
 };

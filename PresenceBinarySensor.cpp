@@ -13,14 +13,12 @@ bool PresenceBinarySensor::update() {
 
   auto newState = (height >= mConfig.lowLimit) && (height <= mConfig.highLimit);
 
-  bool hasChanged = newState != mState;
-
-  if (hasChanged) {
+  if (newState != getState()) {
     mLastChangedTime = millis();
     mStableState = false;
   }
 
-  mState = newState;
+  setState(newState);
 
   bool enteredStableState = !mStableState
       && millis() >= mLastChangedTime + mConfig.minTime;

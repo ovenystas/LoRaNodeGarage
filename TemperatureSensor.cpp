@@ -13,12 +13,12 @@ bool TemperatureSensor::update() {
   TemperatureT newValue = round(mDht.readTemperature() * 10)
       + mConfig.compensation;
 
-  bool largeChange = (abs(newValue - mLastReportedValue)
-      > mConfig.reportHysteresis);
+  bool largeChange = absDiffSinceReportedValue(newValue)
+      > mConfig.reportHysteresis;
 
-  mValue = newValue;
+  setValue(newValue);
 
-  bool reportIsDue = (seconds() - mLastReportTime) > mConfig.reportInterval;
+  bool reportIsDue = timeSinceLastReport() > mConfig.reportInterval;
 
   return (largeChange || reportIsDue);
 }
