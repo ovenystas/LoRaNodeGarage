@@ -6,7 +6,10 @@
 #pragma once
 
 #include <stdint.h>
+
 #include "components/Sensor.h"
+#include "components/ConfigItem.h"
+#include "components/Unit.h"
 #include "DistanceSensor.h"
 #include "Util.h"
 
@@ -19,14 +22,23 @@ public:
           distanceSensor } {
   }
 
-  bool update() override;
+  bool update() final;
+
+  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 
 private:
   struct Config {
-    HeightT zeroValue = { 250 };        // cm
-    HeightT reportHysteresis = { 10 };  // cm
-    uint16_t reportInterval = { 60 };   // s
-    uint16_t stableTime = { 5000 };     // ms
+    ConfigItem<DistanceT> reportHysteresis =
+      { ConfigItem<DistanceT>(0, 10, Unit::Type::cm, 0) };
+
+    ConfigItem<uint16_t> reportInterval =
+      { ConfigItem<uint16_t>(1, 60, Unit::Type::s, 0) };
+
+    ConfigItem<uint16_t> stableTime =
+      { ConfigItem<uint16_t>(2, 5000, Unit::Type::ms, 0) };
+
+    ConfigItem<HeightT> zeroValue =
+      { ConfigItem<HeightT>(3, 60, Unit::Type::cm, 0) };
   };
 
   Config mConfig;

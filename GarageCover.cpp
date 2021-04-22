@@ -59,6 +59,15 @@ bool GarageCover::update() {
   return hasChanged;
 }
 
+uint8_t GarageCover::getDiscoveryMsg(uint8_t* buffer) {
+  uint8_t length = Cover::getDiscoveryMsg(buffer);
+  uint8_t& numberOfConfigs = buffer[length++];
+
+  numberOfConfigs = 0;
+
+  return length;
+}
+
 void GarageCover::callService(const Cover::Service service) {
   State state = determineState();
 

@@ -60,7 +60,7 @@ NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 uint32_t nextRunTime = UPDATE_SENSORS_INTERVAL;
 
 GarageCover garageCover = GarageCover(1, "Port",
-COVER_CLOSED_PIN, COVER_OPEN_PIN, COVER_RELAY_PIN);
+    COVER_CLOSED_PIN, COVER_OPEN_PIN, COVER_RELAY_PIN);
 TemperatureSensor temperatureSensor = TemperatureSensor(2, "Temperature", dht);
 HumiditySensor humiditySensor = HumiditySensor(3, "Humidity", dht);
 DistanceSensor distanceSensor = DistanceSensor(4, "Distance", sonar);
@@ -91,7 +91,7 @@ void setup() {
     }
   }
 
-  sendLoraDiscoveryMsg();
+  sendAllLoraDiscoveryMsgs();
   dht.begin();
 }
 
@@ -111,15 +111,80 @@ void loop() {
   }
 }
 
-void onDiscoveryReqMsg() {
-  sendLoraDiscoveryMsg();
+void onDiscoveryReqMsg(uint8_t entityId) {
+  if (entityId == 255) {
+    sendAllLoraDiscoveryMsgs();
+    return;
+  }
+
+  sendLoraDiscoveryMsg(entityId);
 }
 
-void onValueReqMsg() {
-  sendAllSensorValues();
+static void addValueItem(BinarySensor& binarySensor) {
+  lora.addValueItem(binarySensor.getEntityId(), binarySensor.getState());
 }
 
-void onConfigReqMsg() {
+static void addValueItem(Cover& cover) {
+  lora.addValueItem(cover.getEntityId(), static_cast<uint8_t>(cover.getState()));
+}
+
+template <typename T>
+static void addValueItem(Sensor<T>& sensor) {
+  lora.addValueItem(sensor.getEntityId(), sensor.getValue());
+}
+
+void sendSensorValue(uint8_t entityId) {
+  lora.beginValueMsg();
+
+  switch (entityId) {
+    case 0:
+      addValueItem(garageCover);
+      garageCover.setReported();
+      break;
+
+    case 1:
+      addValueItem(distanceSensor);
+      distanceSensor.setReported();
+      break;
+
+    case 2:
+      addValueItem(heightSensor);
+      heightSensor.setReported();
+      break;
+
+    case 3:
+      addValueItem(carPresenceSensor);
+      carPresenceSensor.setReported();
+      break;
+
+    case 4:
+      addValueItem(temperatureSensor);
+      temperatureSensor.setReported();
+      break;
+
+    case 5:
+      addValueItem(humiditySensor);
+      humiditySensor.setReported();
+      break;
+
+    default:
+      return;
+  }
+
+  lora.endMsg();
+}
+
+void onValueReqMsg(uint8_t entityId) {
+  if (entityId == 255) {
+    sendAllSensorValues();
+    return;
+  }
+
+  sendSensorValue(entityId);
+}
+
+void onConfigReqMsg(uint8_t entityId) {
+  sendAllConfigValues(entityId);
 }
 
 void onServiceReqMsg(const LoRaServiceItemT& item) {
@@ -139,19 +204,22 @@ static void updateSensors() {
     LOG_SENSOR(garageCover);
     lora.addValueItem(garageCover.getEntityId(),
         static_cast<uint8_t>(garageCover.getState()));
+    garageCover.setReported();
     valueAdded = true;
   }
 
   if (distanceSensor.update()) {
     LOG_SENSOR(distanceSensor);
-    lora.addValueItem(distanceSensor.getEntityId(), distanceSensor.getValue());
+    lora.addValueItem(distanceSensor.getEntityId(),
+        distanceSensor.getValue());
     distanceSensor.setReported();
     valueAdded = true;
   }
 
   if (heightSensor.update()) {
     LOG_SENSOR(heightSensor);
-    lora.addValueItem(heightSensor.getEntityId(), heightSensor.getValue());
+    lora.addValueItem(heightSensor.getEntityId(),
+        heightSensor.getValue());
     heightSensor.setReported();
     valueAdded = true;
   }
@@ -160,6 +228,7 @@ static void updateSensors() {
     LOG_SENSOR(carPresenceSensor);
     lora.addValueItem(carPresenceSensor.getEntityId(),
         carPresenceSensor.getState());
+    carPresenceSensor.setReported();
     valueAdded = true;
   }
 
@@ -173,7 +242,8 @@ static void updateSensors() {
 
   if (humiditySensor.update()) {
     LOG_SENSOR(humiditySensor);
-    lora.addValueItem(humiditySensor.getEntityId(), humiditySensor.getValue());
+    lora.addValueItem(humiditySensor.getEntityId(),
+        humiditySensor.getValue());
     humiditySensor.setReported();
     valueAdded = true;
   }
@@ -186,37 +256,95 @@ static void updateSensors() {
 static void sendAllSensorValues() {
   lora.beginValueMsg();
 
-  lora.addValueItem(garageCover.getEntityId(),
-      static_cast<uint8_t>(garageCover.getState()));
+  addValueItem(garageCover);
+  garageCover.setReported();
 
-  lora.addValueItem(distanceSensor.getEntityId(), distanceSensor.getValue());
+  addValueItem(distanceSensor);
   distanceSensor.setReported();
 
-  lora.addValueItem(heightSensor.getEntityId(), heightSensor.getValue());
+  addValueItem(heightSensor);
   heightSensor.setReported();
 
-  lora.addValueItem(carPresenceSensor.getEntityId(),
-      carPresenceSensor.getState());
+  addValueItem(carPresenceSensor);
+  carPresenceSensor.setReported();
 
-  lora.addValueItem(temperatureSensor.getEntityId(),
-      temperatureSensor.getValue());
+  addValueItem(temperatureSensor);
   temperatureSensor.setReported();
 
-  lora.addValueItem(humiditySensor.getEntityId(), humiditySensor.getValue());
+  addValueItem(humiditySensor);
   humiditySensor.setReported();
 
   lora.endMsg();
 }
 
-static void sendLoraDiscoveryMsg() {
-  uint8_t buffer[LORA_DISCOVERY_ITEM_LENGTH];
+static void sendAllConfigValues(uint8_t entityId) {
+  lora.beginConfigsValueMsg(entityId);
+  // TODO: Add Config values from all configs in entityId
+  lora.endMsg();
+}
+
+static void sendAllLoraDiscoveryMsgs() {
+  uint8_t buffer[max(LORA_DISCOVERY_ITEM_LENGTH, LORA_CONFIG_ITEMS_MAX * LORA_CONFIG_ITEM_LENGTH)];
+
   lora.beginDiscoveryMsg();
-  lora.addDiscoveryItem(garageCover.getDiscoveryMsg(buffer));
-  lora.addDiscoveryItem(temperatureSensor.getDiscoveryMsg(buffer));
-  lora.addDiscoveryItem(humiditySensor.getDiscoveryMsg(buffer));
-  lora.addDiscoveryItem(distanceSensor.getDiscoveryMsg(buffer));
-  lora.addDiscoveryItem(heightSensor.getDiscoveryMsg(buffer));
-  lora.addDiscoveryItem(carPresenceSensor.getDiscoveryMsg(buffer));
+  lora.addDiscoveryItem(buffer, garageCover.getDiscoveryMsg(buffer));
+  lora.endMsg();
+
+  lora.beginDiscoveryMsg();
+  lora.addDiscoveryItem(buffer, temperatureSensor.getDiscoveryMsg(buffer));
+  lora.endMsg();
+
+  lora.beginDiscoveryMsg();
+  lora.addDiscoveryItem(buffer, humiditySensor.getDiscoveryMsg(buffer));
+  lora.endMsg();
+
+  lora.beginDiscoveryMsg();
+  lora.addDiscoveryItem(buffer, distanceSensor.getDiscoveryMsg(buffer));
+  lora.endMsg();
+
+  lora.beginDiscoveryMsg();
+  lora.addDiscoveryItem(buffer, heightSensor.getDiscoveryMsg(buffer));
+  lora.endMsg();
+
+  lora.beginDiscoveryMsg();
+  lora.addDiscoveryItem(buffer, carPresenceSensor.getDiscoveryMsg(buffer));
+  lora.endMsg();
+}
+
+void sendLoraDiscoveryMsg(uint8_t entityId) {
+  uint8_t buffer[max(LORA_DISCOVERY_ITEM_LENGTH, LORA_CONFIG_ITEMS_MAX * LORA_CONFIG_ITEM_LENGTH)];
+
+  lora.beginDiscoveryMsg();
+
+  switch (entityId) {
+    case 0:
+      lora.addDiscoveryItem(buffer, garageCover.getDiscoveryMsg(buffer));
+      break;
+
+    case 1:
+      lora.addDiscoveryItem(buffer, distanceSensor.getDiscoveryMsg(buffer));
+      break;
+
+    case 2:
+      lora.addDiscoveryItem(buffer, heightSensor.getDiscoveryMsg(buffer));
+      break;
+
+    case 3:
+      lora.addDiscoveryItem(buffer, carPresenceSensor.getDiscoveryMsg(buffer));
+      break;
+
+    case 4:
+      lora.addDiscoveryItem(buffer, temperatureSensor.getDiscoveryMsg(buffer));
+      break;
+
+    case 5:
+      lora.addDiscoveryItem(buffer, humiditySensor.getDiscoveryMsg(buffer));
+      break;
+
+    default:
+      return;
+  }
+
   lora.endMsg();
 }
 

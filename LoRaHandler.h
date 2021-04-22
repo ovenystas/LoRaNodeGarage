@@ -13,35 +13,42 @@
  *   Byte 0: RSSI in ping request message
  *
  * Discovery request:
- *   Empty payload
+ *   Byte 0:   EntityId (0-254, 255 is request discovery messages from all entities)
  *
  * Discovery message:
- *   Byte 0:    Number of entities (1-9)
- *   Byte 1:    Entity Id (0-254, 255 is reserved for broadcast)
- *   Byte 2:    Component (Component::Type)
- *   Byte 3:    Device Class (From BinarySensor, Cover or Sensor)
- *   Byte 4:    Unit (Unit::TypeE)
- *   Byte 5:    High nibble: Size (1, 2 or 4 bytes)
+ *   Byte 0:    Entity Id (0-254, 255 is reserved for broadcast)
+ *   Byte 1:    Component (Component::Type)
+ *   Byte 2:    Device Class (From BinarySensor, Cover or Sensor)
+ *   Byte 3:    Unit (Unit::TypeE)
+ *   Byte 4:    High nibble: Size (1, 2 or 4 bytes)
  *              Low nibble:  Precision (Number of decimals 0-3)
- *   Byte 6-10: Repeat Byte 1-5 for second entity
- *   Byte 11-n: Repeat Byte 1-5 for third to n entity
+ *   Byte 5:    Number of config items (0-?)
+ *   Byte 6:    Config Id (0-254, 255 is reserved for all)
+ *   Byte 7:    Unit (Unit::TypeE)
+ *   Byte 8:    High nibble: Size (1, 2 or 4 bytes)
+ *              Low nibble:  Precision (Number of decimals 0-3)
+ *   Byte 9-11: Repeat byte 6-8 for second config item
  *
  * Value request:
- *   Empty payload
+ *   Byte 0:   EntityId (0-254, 255 is request values from all entities)
  *
  * Value message:
  *   Byte 0:       Number of entities (1-k)
  *   Byte 1:       Entity Id
- *   Byte 2-n:     Value in big endian style (1,2 or 4 bytes)
+ *   Byte 2-n:     Value in big endian style (1, 2 or 4 bytes)
  *   Byte (n+1)-m: Repeat Byte 2-n for second entity
  *
  * Config request:
- *   Byte 0: ?
+ *   Byte 0:   EntityId
  *
  * Config message:
- *   Byte 0: ?
+ *   Byte 0:       EntityId
+ *   Byte 1:       Number of configs (1-?)
+ *   Byte 2:       ConfigId
+ *   Byte 3-n:     Value
+ *   Byte (n+1)-m: Repeat Byte 3-n for second config
  *
- * Service request:
+ * Service request
  *   Byte 0: EntityId
  *   Byte 1: Service
  *
@@ -90,19 +97,33 @@ struct LoRaDiscoveryItemT {
   uint8_t component;
   uint8_t deviceClass;
   uint8_t unit;
-  uint8_t size:4;
-  uint8_t precision:4;
+  uint8_t size :4;
+  uint8_t precision :4;
 } __attribute__((packed, aligned(1)));
 
 #define LORA_DISCOVERY_ITEM_LENGTH sizeof(LoRaDiscoveryItemT)
-#define LORA_DISCOVERY_ITEMS_MAX ((LORA_MAX_PAYLOAD_LENGTH - 1) / LORA_DISCOVERY_ITEM_LENGTH)
 
-struct LoRaDiscoveryPayloadT {
-  uint8_t numberOfEntities;
-  LoRaDiscoveryItemT entity[LORA_DISCOVERY_ITEMS_MAX];
+struct LoRaConfigItemT {
+  uint8_t configId;
+  uint8_t unit;
+  uint8_t size :4;
+  uint8_t precision :4;
 } __attribute__((packed, aligned(1)));
 
-template <typename T>
+#define LORA_CONFIG_ITEM_LENGTH sizeof(LoRaConfigItemT)
+#define LORA_CONFIG_ITEMS_MAX ((LORA_MAX_PAYLOAD_LENGTH - LORA_DISCOVERY_ITEM_LENGTH - 1) / LORA_CONFIG_ITEM_LENGTH)
+
+struct LoRaConfigPayloadT {
+  uint8_t numberOfConfigs;
+  LoRaConfigItemT configItems[LORA_CONFIG_ITEMS_MAX];
+} __attribute__((packed, aligned(1)));
+
+struct LoRaDiscoveryPayloadT {
+  LoRaDiscoveryItemT entity;
+  LoRaConfigPayloadT config;
+} __attribute__((packed, aligned(1)));
+
+template<typename T>
 struct LoRaValueItemT {
   uint8_t entityId;
   T value;
@@ -110,7 +131,19 @@ struct LoRaValueItemT {
 
 struct LoRaValuePayloadT {
   uint8_t numberOfEntities;
-  uint8_t subPayload[LORA_MAX_PAYLOAD_LENGTH - sizeof(numberOfEntities)];;
+  uint8_t subPayload[LORA_MAX_PAYLOAD_LENGTH - sizeof(numberOfEntities)];
+} __attribute__((packed, aligned(1)));
+
+template<typename T>
+struct LoRaConfigValueItemT {
+  uint8_t configId;
+  T value;
+} __attribute__((packed, aligned(1)));
+
+struct LoRaConfigValuePayloadT {
+  uint8_t entityId;
+  uint8_t numberOfConfigs;
+  uint8_t subPayload[LORA_MAX_PAYLOAD_LENGTH - sizeof(entityId) - sizeof(numberOfConfigs)];
 } __attribute__((packed, aligned(1)));
 
 struct LoRaServiceItemT {
@@ -120,8 +153,8 @@ struct LoRaServiceItemT {
 
 class LoRaHandler {
 public:
-  enum class MsgType : uint8_t {
-    ping_req = 0,
+  enum class MsgType {
+    ping_req,
     ping_msg,
     discovery_req,
     discovery_msg,
@@ -132,15 +165,13 @@ public:
     service_req
   };
 
-  const uint8_t msgTypeMask = 0x0f;
-
   friend inline uint8_t& operator |=(uint8_t& a, const MsgType b) {
     return (a |= static_cast<uint8_t>(b));
   }
 
-  using OnDiscoveryReqMsgFunc = void (*)(void);
-  using OnValueReqMsgFunc = void (*)(void);
-  using OnConfigReqMsgFunc = void (*)(void);
+  using OnDiscoveryReqMsgFunc = void (*)(uint8_t);
+  using OnValueReqMsgFunc = void (*)(uint8_t);
+  using OnConfigReqMsgFunc = void (*)(uint8_t);
   using OnServiceReqMsgFunc = void (*)(const LoRaServiceItemT&);
 
   int begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc = nullptr,
@@ -151,33 +182,61 @@ public:
   int loraRx();
   int loraTx();
 
-  int8_t parseMsg(LoRaRxMessageT& rxMsg);
-
   void beginDiscoveryMsg();
-  void endMsg();
-  void addDiscoveryItem(const uint8_t* buffer);
-  void addDiscoveryItem(const LoRaDiscoveryItemT* item);
+  void addDiscoveryItem(const uint8_t* buffer, uint8_t length);
 
   void beginValueMsg();
 
-  template <typename T>
-  void addValueItem(const uint8_t entityId, const T value) {
-    LoRaValuePayloadT* payload = reinterpret_cast<LoRaValuePayloadT*>(mMsgTx.payload);
-    if (mMsgTx.header.len +  sizeof(LoRaValueItemT<T>) >= LORA_MAX_PAYLOAD_LENGTH - 1) {
-      LoRaValueItemT<T>* entity = reinterpret_cast<LoRaValueItemT<T>*>(&payload->subPayload[1 + mMsgTx.header.len]);
-      entity->entityId = entityId;
-      entity->value = hton(value);
+  template<typename T>
+  void addValueItem(uint8_t entityId, T value) {
+    LoRaValuePayloadT* payload =
+        reinterpret_cast<LoRaValuePayloadT*>(mMsgTx.payload);
+
+    if (mMsgTx.header.len + sizeof(LoRaValueItemT<T>)
+        >= LORA_MAX_PAYLOAD_LENGTH - 1) {
+
+      LoRaValueItemT<T>* item = reinterpret_cast<LoRaValueItemT<T>*>(
+              &payload->subPayload[mMsgTx.header.len]);
+
+      item->entityId = entityId;
+      item->value = hton(value);
       payload->numberOfEntities++;
-      mMsgTx.header.len += sizeof(LoRaValueItemT<T>);
+      mMsgTx.header.len += sizeof(LoRaValueItemT<T> );
     }
   }
 
-  void setDefaultHeader(LoRaHeaderT* header, uint8_t length);
+  void beginConfigsValueMsg(uint8_t entityId);
+
+  template<typename T>
+  void addConfigValueItem(uint8_t configId, T value) {
+    LoRaConfigValuePayloadT* payload =
+        reinterpret_cast<LoRaConfigValuePayloadT*>(mMsgTx.payload);
+
+    if (mMsgTx.header.len + sizeof(LoRaValueItemT<T>)
+        >= LORA_MAX_PAYLOAD_LENGTH - 2) {
+
+      LoRaConfigValueItemT<T>* item = reinterpret_cast<LoRaConfigValueItemT<T>*>(
+              &payload->subPayload[mMsgTx.header.len]);
+
+      item->configId = configId;
+      item->value = hton(value);
+      payload->numberOfConfigs++;
+      mMsgTx.header.len += sizeof(LoRaConfigValueItemT<T> );
+    }
+  }
+
+  void endMsg();
+
+  void setDefaultHeader(LoRaHeaderT* header);
 
 private:
+  static constexpr uint8_t msgTypeMask = 0x0f;
+
   void printMessage(const LoRaTxMessageT* msg);
   void printHeader(const LoRaHeaderT* header);
   void printPayload(const uint8_t* payload, uint8_t len);
+
+  int8_t parseMsg(LoRaRxMessageT& rxMsg);
 
   int sendAckIfRequested(const LoRaHeaderT* rx_header);
   void sendMsg(const LoRaTxMessageT* msg);

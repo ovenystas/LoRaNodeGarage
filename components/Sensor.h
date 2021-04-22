@@ -5,11 +5,11 @@
 
 #pragma once
 
+#include <Stream.h>
+
 #include "Component.h"
 #include "Unit.h"
 #include "Util.h"
-
-#include <Stream.h>
 
 /*
  *
@@ -38,22 +38,14 @@ public:
       Component(entityId) {
   }
 
-  Sensor(uint8_t entityId, const char* name) :
-      Component(entityId, name) {
-  }
-
-  Sensor(uint8_t entityId, const char* name, Unit::Type unitType) :
-      Component(entityId, name), mUnit(unitType) {
-  }
-
-  Sensor(uint8_t entityId, const char* name, Unit::Type unitType,
-      uint8_t precision) :
-      Component(entityId, name), mUnit(unitType) {
-
-    mPrecision = precision > 3 ? 3: precision;
-
-    int16_t factors[4] = { 1, 10, 100, 1000 };
-    mScaleFactor = factors[mPrecision];
+  Sensor(uint8_t entityId,
+      const char* name,
+      Unit::Type unitType = Unit::Type::none,
+      uint8_t precision = 0) :
+        Component(entityId, name),
+        mUnit { unitType },
+        mPrecision { precision > 3 ? static_cast<uint8_t>(3) : precision },
+        mScaleFactor { factors[mPrecision] } {
   }
 
   virtual ~Sensor() = default;
@@ -77,21 +69,21 @@ public:
     return DeviceClass::none;
   }
 
-  virtual Unit::Type getUnitType() const {
+  inline Unit::Type getUnitType() const {
     return mUnit.getType();
   }
 
-  virtual const String& getUnitName() const {
+  inline const String& getUnitName() const {
     return mUnit.getName();
   }
 
-  virtual uint8_t* getDiscoveryMsg(uint8_t* buffer) {
+  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) override {
     buffer[0] = getEntityId();
     buffer[1] = static_cast<uint8_t>(getComponent());
     buffer[2] = static_cast<uint8_t>(getDeviceClass());
     buffer[3] = static_cast<uint8_t>(mUnit.getType());
     buffer[4] = mPrecision;
-    return buffer;
+    return 5;
   }
 
   void print(Stream& stream) {
@@ -123,10 +115,12 @@ protected:
   }
 
 private:
+  static constexpr int16_t factors[4] = { 1, 10, 100, 1000 };
+
   T mValue = { };
   T mLastReportedValue = { };
   uint32_t mLastReportTime = { }; // s
-  Unit mUnit = { Unit::Type::none };
-  uint8_t mPrecision = { };
-  int16_t mScaleFactor = { 1 };
+  const Unit mUnit;
+  const uint8_t mPrecision;
+  const int16_t mScaleFactor;
 };

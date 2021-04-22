@@ -5,8 +5,10 @@
 
 #pragma once
 
+#include <stdint.h>
+
 static const String UnitName[] = { "", "C", "F", "K", "%", "km", "m", "dm",
-    "cm", "mm", "um" };
+    "cm", "mm", "um", "s", "ms" };
 
 class Unit {
 public:
@@ -22,6 +24,8 @@ public:
     cm,
     mm,
     um,
+    s,
+    ms,
   };
 
   Unit(Type type) :
@@ -30,11 +34,11 @@ public:
 
   virtual ~Unit() = default;
 
-  Type getType() const {
+  inline Type getType() const {
     return mType;
   }
 
-  const String& getName() const {
+  inline const String& getName() const {
     return UnitName[static_cast<uint8_t>(mType)];
   }
 

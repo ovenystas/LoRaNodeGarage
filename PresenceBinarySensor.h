@@ -17,17 +17,24 @@ public:
       BinarySensor(entityId, name), mHeightSensor { heightSensor } {
   }
 
-  bool update() override;
+  bool update() final;
 
-  DeviceClass getDeviceClass() const override {
+  inline DeviceClass getDeviceClass() const final {
     return DeviceClass::presence;
   }
 
+  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+
 private:
   struct Config {
-    HeightT lowLimit = { 180 };
-    HeightT highLimit = { 200 };
-    uint16_t minTime = { 10000 };
+    ConfigItem<HeightT> lowLimit =
+      { ConfigItem<HeightT>(0, 180, Unit::Type::cm, 0) };
+
+    ConfigItem<HeightT> highLimit =
+      { ConfigItem<HeightT>(1, 200, Unit::Type::cm, 0) };
+
+    ConfigItem<uint16_t> minStableTime =
+      { ConfigItem<uint16_t>(2, 10000, Unit::Type::ms, 0) };
   };
 
   Config mConfig;

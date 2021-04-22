@@ -5,9 +5,10 @@
 
 #pragma once
 
-#include "Component.h"
-
 #include <Stream.h>
+
+#include "Component.h"
+#include "Util.h"
 
 /*
  *
@@ -65,7 +66,12 @@ public:
     return DeviceClass::none;
   }
 
-  virtual uint8_t* getDiscoveryMsg(uint8_t* buffer);
+  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) override;
+
+  void setReported() {
+    mLastReportTime = seconds();
+    mLastReportedState = mState;
+  }
 
   void print(Stream& stream);
 
@@ -75,5 +81,7 @@ protected:
   }
 
 private:
-  bool mState = {};
+  bool mState = { };
+  bool mLastReportedState = { };
+  uint32_t mLastReportTime = { }; // s
 };

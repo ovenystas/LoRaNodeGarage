@@ -5,9 +5,10 @@
 
 #pragma once
 
-#include "Component.h"
-
 #include <Stream.h>
+
+#include "Component.h"
+#include "Util.h"
 
 static const String CoverStateName[] = { "closed", "open", "opening", "closing" };
 static const String CoverServiceName[] = { "open", "close", "stop", "toggle" };
@@ -60,15 +61,15 @@ public:
     return mState;
   }
 
-  virtual const String& getStateName() const {
+  const String& getStateName() const {
     return CoverStateName[static_cast<uint8_t>(mState)];
   }
 
-  virtual const String& getStateName(State state) const {
+  const String& getStateName(State state) const {
     return CoverStateName[static_cast<uint8_t>(state)];
   }
 
-  virtual const String& getServiceName(Service service) const {
+  const String& getServiceName(Service service) const {
     return CoverServiceName[static_cast<uint8_t>(service)];
   }
 
@@ -80,7 +81,12 @@ public:
     return DeviceClass::none;
   }
 
-  virtual uint8_t* getDiscoveryMsg(uint8_t* buffer);
+  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) override;
+
+  void setReported() {
+    mLastReportTime = seconds();
+    mLastReportedState = mState;
+  }
 
   void print(Stream& stream);
 
@@ -93,4 +99,6 @@ protected:
 
 private:
   State mState = { };
+  State mLastReportedState = { };
+  uint32_t mLastReportTime = { }; // s
 };

@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 #include <NewPing.h>
+
 #include "components/Sensor.h"
+#include "components/ConfigItem.h"
 #include "Util.h"
 
 using DistanceT = int16_t; // cm
@@ -18,13 +20,22 @@ public:
       Sensor<DistanceT>(entityId, name, Unit::Type::cm), mSonar { sonar } {
   }
 
-  bool update() override;
+  bool update() final;
+
+  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+
+  uint8_t getConfigsDiscoveryMsg(uint8_t* buffer);
 
 private:
   struct Config {
-    DistanceT reportHysteresis = { 10 }; // cm
-    uint16_t measureInterval = { 60 }; // s
-    uint16_t reportInterval = { 60 }; // s
+    ConfigItem<DistanceT> reportHysteresis =
+      { ConfigItem<DistanceT>(0, 10, Unit::Type::cm, 0) };
+
+    ConfigItem<uint16_t> measureInterval =
+      { ConfigItem<uint16_t>(1, 60, Unit::Type::s, 0) };
+
+    ConfigItem<uint16_t> reportInterval =
+      { ConfigItem<uint16_t>(2, 60, Unit::Type::s, 0) };
   };
 
   Config mConfig;

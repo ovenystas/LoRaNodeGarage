@@ -78,19 +78,22 @@ int8_t LoRaHandler::parseMsg(LoRaRxMessageT& rxMsg) {
 
     case MsgType::discovery_req:
       if (mOnDiscoveryReqMsgFunc) {
-        mOnDiscoveryReqMsgFunc();
+        uint8_t entityId = rxMsg.payload[0];
+        mOnDiscoveryReqMsgFunc(entityId);
       }
       break;
 
     case MsgType::value_req:
       if (mOnValueReqMsgFunc) {
-        mOnValueReqMsgFunc();
+        uint8_t entityId = rxMsg.payload[0];
+        mOnValueReqMsgFunc(entityId);
       }
       break;
 
     case MsgType::config_req:
       if (mOnConfigReqMsgFunc) {
-        mOnConfigReqMsgFunc();
+        uint8_t entityId = rxMsg.payload[0];
+        mOnConfigReqMsgFunc(entityId);
       }
       break;
 
@@ -173,54 +176,50 @@ int LoRaHandler::sendAckIfRequested(const LoRaHeaderT* rxHeader) {
 
 void LoRaHandler::sendPing(const uint8_t toAddr, int8_t rssi) {
   LoRaTxMessageT msg;
-  setDefaultHeader(&msg.header, 1);
+  setDefaultHeader(&msg.header);
   msg.header.dst = toAddr;
   msg.header.flags |= MsgType::ping_msg;
   msg.payload[0] = rssi;
+  msg.header.len++;
 }
 
-void LoRaHandler::setDefaultHeader(LoRaHeaderT* header, uint8_t length) {
+void LoRaHandler::setDefaultHeader(LoRaHeaderT* header) {
   header->dst = GATEWAY_ADDRESS;
   header->src = MY_ADDRESS;
   header->id = mSeqId++;
   header->flags = FLAGS_REQ_ACK;
-  header->len = length;
+  header->len = 0;
 }
 
 void LoRaHandler::beginDiscoveryMsg() {
-  setDefaultHeader(&mMsgTx.header, 1);
+  setDefaultHeader(&mMsgTx.header);
   mMsgTx.header.flags |= MsgType::discovery_msg;
-  reinterpret_cast<LoRaDiscoveryPayloadT*>(mMsgTx.payload)->numberOfEntities = 0;
 }
 
 void LoRaHandler::endMsg() {
   sendMsg(&mMsgTx);
 }
 
-void LoRaHandler::addDiscoveryItem(const uint8_t* buffer) {
-  LoRaDiscoveryPayloadT* payload = reinterpret_cast<LoRaDiscoveryPayloadT*>(mMsgTx.payload);
-  if (payload->numberOfEntities < LORA_DISCOVERY_ITEMS_MAX)
+void LoRaHandler::addDiscoveryItem(const uint8_t* buffer, uint8_t length) {
+  if (mMsgTx.header.len == 0)
   {
-    LoRaDiscoveryItemT entity = payload->entity[payload->numberOfEntities];
-    memcpy(&entity, buffer, LORA_DISCOVERY_ITEM_LENGTH);
-    payload->numberOfEntities++;
-    mMsgTx.header.len += LORA_DISCOVERY_ITEM_LENGTH;
-  }
-}
-
-void LoRaHandler::addDiscoveryItem(const LoRaDiscoveryItemT* item) {
-  LoRaDiscoveryPayloadT* payload = reinterpret_cast<LoRaDiscoveryPayloadT*>(mMsgTx.payload);
-  if (payload->numberOfEntities < LORA_DISCOVERY_ITEMS_MAX)
-  {
-    LoRaDiscoveryItemT entity = payload->entity[payload->numberOfEntities];
-    entity = *item;
-    payload->numberOfEntities++;
-    mMsgTx.header.len += LORA_DISCOVERY_ITEM_LENGTH;
+    memcpy(mMsgTx.payload, buffer, length);
+    mMsgTx.header.len += length;
   }
 }
 
 void LoRaHandler::beginValueMsg() {
-  setDefaultHeader(&mMsgTx.header, 1);
+  setDefaultHeader(&mMsgTx.header);
   mMsgTx.header.flags |= MsgType::value_msg;
   reinterpret_cast<LoRaValuePayloadT*>(mMsgTx.payload)->numberOfEntities = 0;
+  mMsgTx.header.len++;
+}
+
+void LoRaHandler::beginConfigsValueMsg(uint8_t entityId) {
+  setDefaultHeader(&mMsgTx.header);
+  mMsgTx.header.flags |= MsgType::config_msg;
+  LoRaConfigValuePayloadT* payload = reinterpret_cast<LoRaConfigValuePayloadT*>(mMsgTx.payload);
+  payload->entityId = entityId;
+  payload->numberOfConfigs = 0;
+  mMsgTx.header.len += 2;
 }

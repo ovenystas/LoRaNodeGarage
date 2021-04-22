@@ -9,6 +9,7 @@
 #include <DHT.h>
 
 #include "components/Sensor.h"
+#include "components/ConfigItem.h"
 #include "Util.h"
 
 using TemperatureT = int16_t; // Degree C
@@ -21,18 +22,27 @@ public:
       Sensor<TemperatureT>(entityId, name, Unit::Type::C, 1), mDht { dht } {
   }
 
-  bool update() override;
+  bool update() final;
 
-  DeviceClass getDeviceClass() const override {
+  inline DeviceClass getDeviceClass() const final {
     return DeviceClass::temperature;
   }
 
+  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+
 private:
   struct Config {
-    TemperatureT compensation;
-    TemperatureT reportHysteresis = { 2 }; // d°C
-    uint16_t measureInterval = { 60 }; // s
-    uint16_t reportInterval = { 60 }; // s
+    ConfigItem<TemperatureT> reportHysteresis =
+      { ConfigItem<TemperatureT>(0, 10, Unit::Type::C, 1) };
+
+    ConfigItem<uint16_t> measureInterval =
+      { ConfigItem<uint16_t>(1, 60, Unit::Type::s, 0) };
+
+    ConfigItem<uint16_t> reportInterval =
+      { ConfigItem<uint16_t>(2, 60, Unit::Type::s, 0) };
+
+    ConfigItem<TemperatureT> compensation =
+      { ConfigItem<TemperatureT>(3, 0, Unit::Type::C, 0) };
   };
 
   Config mConfig;
