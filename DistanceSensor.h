@@ -22,9 +22,8 @@ public:
 
   bool update() final;
 
-  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 
-  uint8_t getConfigsDiscoveryMsg(uint8_t* buffer);
 
 private:
   struct Config {

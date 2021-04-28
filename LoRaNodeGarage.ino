@@ -84,7 +84,7 @@ void setup() {
   Serial.println(GATEWAY_ADDRESS);
 
   if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onConfigReqMsg,
-      &onServiceReqMsg)) {
+      &onConfigSetReqMsg, &onServiceReqMsg)) {
     Serial.println(F("Starting LoRa failed!"));
     while (1) {
       // Do nothing
@@ -185,6 +185,11 @@ void onValueReqMsg(uint8_t entityId) {
 
 void onConfigReqMsg(uint8_t entityId) {
   sendAllConfigValues(entityId);
+}
+
+void onConfigSetReqMsg(uint8_t entityId) {
+  (void)entityId;
+  // TODO: Set configuration of entityId
 }
 
 void onServiceReqMsg(const LoRaServiceItemT& item) {

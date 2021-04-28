@@ -162,6 +162,7 @@ public:
     value_msg,
     config_req,
     config_msg,
+    configSet_req,
     service_req
   };
 
@@ -172,11 +173,13 @@ public:
   using OnDiscoveryReqMsgFunc = void (*)(uint8_t);
   using OnValueReqMsgFunc = void (*)(uint8_t);
   using OnConfigReqMsgFunc = void (*)(uint8_t);
+  using OnConfigSetReqMsgFunc = void (*)(uint8_t);
   using OnServiceReqMsgFunc = void (*)(const LoRaServiceItemT&);
 
   int begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc = nullptr,
       OnValueReqMsgFunc onValueReqMsgFunc = nullptr,
       OnConfigReqMsgFunc onConfigReqMsgFunc = nullptr,
+      OnConfigSetReqMsgFunc onConfigSetReqMsgFunc = nullptr,
       OnServiceReqMsgFunc onServiceReqMsgFunc = nullptr);
 
   int loraRx();
@@ -248,5 +251,6 @@ private:
   OnDiscoveryReqMsgFunc mOnDiscoveryReqMsgFunc = { nullptr };
   OnValueReqMsgFunc mOnValueReqMsgFunc = { nullptr };
   OnConfigReqMsgFunc mOnConfigReqMsgFunc = { nullptr };
+  OnConfigSetReqMsgFunc mOnConfigSetReqMsgFunc = { nullptr };
   OnServiceReqMsgFunc mOnServiceReqMsgFunc = { nullptr };
 };

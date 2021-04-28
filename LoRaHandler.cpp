@@ -13,11 +13,13 @@
 int LoRaHandler::begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc,
     OnValueReqMsgFunc onValueReqMsgFunc,
     OnConfigReqMsgFunc onConfigReqMsgFunc,
+    OnConfigSetReqMsgFunc onConfigSetReqMsgFunc,
     OnServiceReqMsgFunc onServiceReqMsgFunc) {
 
   mOnDiscoveryReqMsgFunc = onDiscoveryReqMsgFunc;
   mOnValueReqMsgFunc = onValueReqMsgFunc;
   mOnConfigReqMsgFunc = onConfigReqMsgFunc;
+  mOnConfigSetReqMsgFunc = onConfigSetReqMsgFunc;
   mOnServiceReqMsgFunc = onServiceReqMsgFunc;
 
   return LoRa.begin(LORA_FREQUENCY);
@@ -94,6 +96,13 @@ int8_t LoRaHandler::parseMsg(LoRaRxMessageT& rxMsg) {
       if (mOnConfigReqMsgFunc) {
         uint8_t entityId = rxMsg.payload[0];
         mOnConfigReqMsgFunc(entityId);
+      }
+      break;
+
+    case MsgType::config_msg:
+      if (mOnConfigSetReqMsgFunc) {
+        uint8_t entityId = rxMsg.payload[0];
+        mOnConfigSetReqMsgFunc(entityId);
       }
       break;
 

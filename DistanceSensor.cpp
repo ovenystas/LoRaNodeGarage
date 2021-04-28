@@ -22,8 +22,8 @@ bool DistanceSensor::update() {
   return (largeChange || reportIsDue);
 }
 
-uint8_t DistanceSensor::getConfigsDiscoveryMsg(uint8_t* buffer) {
-  uint8_t length = 0;
+uint8_t DistanceSensor::getDiscoveryMsg(uint8_t* buffer) {
+  uint8_t length = Sensor::getDiscoveryMsg(buffer);
   uint8_t& numberOfConfigs = buffer[length++];
 
   length += mConfig.reportHysteresis.writeDiscoveryItem(&buffer[length]);
@@ -31,14 +31,6 @@ uint8_t DistanceSensor::getConfigsDiscoveryMsg(uint8_t* buffer) {
   length += mConfig.reportInterval.writeDiscoveryItem(&buffer[length]);
 
   numberOfConfigs = 3;
-
-  return length;
-}
-
-uint8_t DistanceSensor::getDiscoveryMsg(uint8_t* buffer) {
-  uint8_t length = Sensor::getDiscoveryMsg(buffer);
-
-  length += getConfigsDiscoveryMsg(&buffer[length]);
 
   return length;
 }

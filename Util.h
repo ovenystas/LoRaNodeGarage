@@ -40,3 +40,25 @@ inline  int32_t ntoh( int32_t v) { return ntohl(v); }
 void printMillis(Stream& stream);
 void printUptime(Stream& stream);
 void printVersion(Stream& stream, int major, int minor, int patch);
+
+template<typename T, uint8_t max_size>
+class arrayHelper{
+    public:
+        typedef T valueType;
+//        array_wrapper():
+//            mData()
+//        {}
+
+        T& operator[](uint8_t idx) {
+            return mData[idx];
+        }
+
+        T* data() {
+            return this->mData;
+        }
+
+        const uint8_t maxSize = max_size;
+
+    private:
+        T mData[max_size];
+};

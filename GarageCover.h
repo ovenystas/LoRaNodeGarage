@@ -29,7 +29,7 @@ public:
     return DeviceClass::garage;
   }
 
-  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 
 private:
   Cover::State determineState();
