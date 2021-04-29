@@ -63,6 +63,14 @@ uint8_t BinarySensor::getDiscoveryMsg(uint8_t* buffer) {
   return 5;
 }
 
+uint8_t BinarySensor::getValueMsg(uint8_t* buffer) {
+  uint8_t* p = buffer;
+  *p++ = getEntityId();
+  *p++ = getState();
+
+  return p - buffer;
+}
+
 void BinarySensor::print(Stream& stream) {
   stream.print(getName());
   stream.print(": ");

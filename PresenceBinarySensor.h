@@ -25,8 +25,12 @@ public:
 
   virtual uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 
+  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
+
 private:
   struct Config {
+    const uint8_t numberOfConfigItems = { 3 };
+
     ConfigItem<HeightT> lowLimit =
       { ConfigItem<HeightT>(0, 180, Unit::Type::cm, 0) };
 

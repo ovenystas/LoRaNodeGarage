@@ -50,13 +50,11 @@ public:
 
   virtual ~Sensor() = default;
 
-  virtual bool update() = 0;
-
   inline T getValue() const {
     return mValue;
   }
 
-  void setReported() {
+  virtual void setReported() final {
     mLastReportTime = seconds();
     mLastReportedValue = mValue;
   }
@@ -86,7 +84,18 @@ public:
     return 5;
   }
 
-  void print(Stream& stream) {
+  virtual uint8_t getValueMsg(uint8_t* buffer) final {
+    uint8_t* p = buffer;
+    *p++ = getEntityId();
+
+    T* vp = reinterpret_cast<T*>(p);
+    *vp = hton(getValue());
+    p += sizeof(T);
+
+    return p - buffer;
+  }
+
+  virtual void print(Stream& stream) final {
     stream.print(getName());
     stream.print(": ");
     if (mScaleFactor == 1) {

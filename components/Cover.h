@@ -53,8 +53,6 @@ public:
 
   virtual ~Cover() = default;
 
-  virtual bool update() = 0;
-
   virtual void callService(const Service service) = 0;
 
   inline State getState() const {
@@ -83,12 +81,14 @@ public:
 
   virtual uint8_t getDiscoveryMsg(uint8_t* buffer) override;
 
-  void setReported() {
+  virtual uint8_t getValueMsg(uint8_t* buffer) final;
+
+  virtual void setReported() final {
     mLastReportTime = seconds();
     mLastReportedState = mState;
   }
 
-  void print(Stream& stream);
+  virtual void print(Stream& stream) final;
 
   void print(Stream& stream, Cover::Service service);
 

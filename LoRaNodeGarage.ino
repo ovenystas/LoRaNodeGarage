@@ -15,6 +15,7 @@
 #include "HumiditySensor.h"
 #include "DistanceSensor.h"
 #include "HeightSensor.h"
+#include "Node.h"
 #include "Util.h"
 
 #define VERSION_MAJOR 0
@@ -68,6 +69,9 @@ HeightSensor heightSensor = HeightSensor(5, "Height", distanceSensor);
 PresenceBinarySensor carPresenceSensor = PresenceBinarySensor(6, "Car",
     heightSensor);
 
+Node node = Node(&garageCover, &temperatureSensor, &humiditySensor,
+    &distanceSensor, &heightSensor, &carPresenceSensor);
+
 LoRaHandler lora;
 
 void setup() {
@@ -91,7 +95,7 @@ void setup() {
     }
   }
 
-  sendAllLoraDiscoveryMsgs();
+  sendAllDiscoveryMsgs();
   dht.begin();
 }
 
@@ -113,65 +117,10 @@ void loop() {
 
 void onDiscoveryReqMsg(uint8_t entityId) {
   if (entityId == 255) {
-    sendAllLoraDiscoveryMsgs();
+    sendAllDiscoveryMsgs();
     return;
   }
-
-  sendLoraDiscoveryMsg(entityId);
-}
-
-static void addValueItem(BinarySensor& binarySensor) {
-  lora.addValueItem(binarySensor.getEntityId(), binarySensor.getState());
-}
-
-static void addValueItem(Cover& cover) {
-  lora.addValueItem(cover.getEntityId(), static_cast<uint8_t>(cover.getState()));
-}
-
-template <typename T>
-static void addValueItem(Sensor<T>& sensor) {
-  lora.addValueItem(sensor.getEntityId(), sensor.getValue());
-}
-
-void sendSensorValue(uint8_t entityId) {
-  lora.beginValueMsg();
-
-  switch (entityId) {
-    case 0:
-      addValueItem(garageCover);
-      garageCover.setReported();
-      break;
-
-    case 1:
-      addValueItem(distanceSensor);
-      distanceSensor.setReported();
-      break;
-
-    case 2:
-      addValueItem(heightSensor);
-      heightSensor.setReported();
-      break;
-
-    case 3:
-      addValueItem(carPresenceSensor);
-      carPresenceSensor.setReported();
-      break;
-
-    case 4:
-      addValueItem(temperatureSensor);
-      temperatureSensor.setReported();
-      break;
-
-    case 5:
-      addValueItem(humiditySensor);
-      humiditySensor.setReported();
-      break;
-
-    default:
-      return;
-  }
-
-  lora.endMsg();
+  sendDiscoveryMsg(entityId);
 }
 
 void onValueReqMsg(uint8_t entityId) {
@@ -201,56 +150,27 @@ void onServiceReqMsg(const LoRaServiceItemT& item) {
 }
 
 static void updateSensors() {
+  uint8_t buffer[1 + sizeof(uint32_t)];
   bool valueAdded = false;
 
   lora.beginValueMsg();
 
-  if (garageCover.update()) {
-    LOG_SENSOR(garageCover);
-    lora.addValueItem(garageCover.getEntityId(),
-        static_cast<uint8_t>(garageCover.getState()));
-    garageCover.setReported();
-    valueAdded = true;
-  }
+  for (uint8_t i = 0; i < node.getSize(); i++) {
+    Component* c = node.getComponent(i);
 
-  if (distanceSensor.update()) {
-    LOG_SENSOR(distanceSensor);
-    lora.addValueItem(distanceSensor.getEntityId(),
-        distanceSensor.getValue());
-    distanceSensor.setReported();
-    valueAdded = true;
-  }
+    if (c->update()) {
+      LOG_SENSOR(*c);
 
-  if (heightSensor.update()) {
-    LOG_SENSOR(heightSensor);
-    lora.addValueItem(heightSensor.getEntityId(),
-        heightSensor.getValue());
-    heightSensor.setReported();
-    valueAdded = true;
-  }
+      uint8_t length = c->getValueMsg(buffer);
 
-  if (carPresenceSensor.update()) {
-    LOG_SENSOR(carPresenceSensor);
-    lora.addValueItem(carPresenceSensor.getEntityId(),
-        carPresenceSensor.getState());
-    carPresenceSensor.setReported();
-    valueAdded = true;
-  }
+      if (length) {
+        lora.addValueItem(buffer, length);
+      }
 
-  if (temperatureSensor.update()) {
-    LOG_SENSOR(temperatureSensor);
-    lora.addValueItem(temperatureSensor.getEntityId(),
-        temperatureSensor.getValue());
-    temperatureSensor.setReported();
-    valueAdded = true;
-  }
+      c->setReported();
 
-  if (humiditySensor.update()) {
-    LOG_SENSOR(humiditySensor);
-    lora.addValueItem(humiditySensor.getEntityId(),
-        humiditySensor.getValue());
-    humiditySensor.setReported();
-    valueAdded = true;
+      valueAdded = true;
+    }
   }
 
   if (valueAdded) {
@@ -259,113 +179,80 @@ static void updateSensors() {
 }
 
 static void sendAllSensorValues() {
+  uint8_t buffer[1 + sizeof(uint32_t)];
+  bool valueAdded = false;
+
   lora.beginValueMsg();
 
-  addValueItem(garageCover);
-  garageCover.setReported();
+  for (uint8_t i = 0; i < node.getSize(); i++) {
+    uint8_t length = node.getValueMsg(buffer, i);
 
-  addValueItem(distanceSensor);
-  distanceSensor.setReported();
+    if (length) {
+      lora.addValueItem(buffer, length);
+      valueAdded = true;
+    }
+  }
 
-  addValueItem(heightSensor);
-  heightSensor.setReported();
+  if (valueAdded) {
+    lora.endMsg();
+  }
+}
 
-  addValueItem(carPresenceSensor);
-  carPresenceSensor.setReported();
+void sendSensorValue(uint8_t entityId) {
+  uint8_t buffer[1 + sizeof(uint32_t)];
 
-  addValueItem(temperatureSensor);
-  temperatureSensor.setReported();
+  Component* c = node.getComponentByEntityId(entityId);
 
-  addValueItem(humiditySensor);
-  humiditySensor.setReported();
+  uint8_t length = c->getValueMsg(buffer);
 
-  lora.endMsg();
+  if (length) {
+    lora.beginValueMsg();
+    lora.addValueItem(buffer, length);
+    c->setReported();
+    lora.endMsg();
+  }
 }
 
 static void sendAllConfigValues(uint8_t entityId) {
-  lora.beginConfigsValueMsg(entityId);
-  // TODO: Add Config values from all configs in entityId
-  lora.endMsg();
-}
+  uint8_t buffer[LORA_MAX_PAYLOAD_LENGTH];
 
-static void sendAllLoraDiscoveryMsgs() {
-  uint8_t buffer[max(LORA_DISCOVERY_ITEM_LENGTH, LORA_CONFIG_ITEMS_MAX * LORA_CONFIG_ITEM_LENGTH)];
+  uint8_t length = node.getConfigItemValuesMsg(buffer, entityId);
 
-  lora.beginDiscoveryMsg();
-  lora.addDiscoveryItem(buffer, garageCover.getDiscoveryMsg(buffer));
-  lora.endMsg();
-
-  lora.beginDiscoveryMsg();
-  lora.addDiscoveryItem(buffer, temperatureSensor.getDiscoveryMsg(buffer));
-  lora.endMsg();
-
-  lora.beginDiscoveryMsg();
-  lora.addDiscoveryItem(buffer, humiditySensor.getDiscoveryMsg(buffer));
-  lora.endMsg();
-
-  lora.beginDiscoveryMsg();
-  lora.addDiscoveryItem(buffer, distanceSensor.getDiscoveryMsg(buffer));
-  lora.endMsg();
-
-  lora.beginDiscoveryMsg();
-  lora.addDiscoveryItem(buffer, heightSensor.getDiscoveryMsg(buffer));
-  lora.endMsg();
-
-  lora.beginDiscoveryMsg();
-  lora.addDiscoveryItem(buffer, carPresenceSensor.getDiscoveryMsg(buffer));
-  lora.endMsg();
-}
-
-void sendLoraDiscoveryMsg(uint8_t entityId) {
-  uint8_t buffer[max(LORA_DISCOVERY_ITEM_LENGTH, LORA_CONFIG_ITEMS_MAX * LORA_CONFIG_ITEM_LENGTH)];
-
-  lora.beginDiscoveryMsg();
-
-  switch (entityId) {
-    case 0:
-      lora.addDiscoveryItem(buffer, garageCover.getDiscoveryMsg(buffer));
-      break;
-
-    case 1:
-      lora.addDiscoveryItem(buffer, distanceSensor.getDiscoveryMsg(buffer));
-      break;
-
-    case 2:
-      lora.addDiscoveryItem(buffer, heightSensor.getDiscoveryMsg(buffer));
-      break;
-
-    case 3:
-      lora.addDiscoveryItem(buffer, carPresenceSensor.getDiscoveryMsg(buffer));
-      break;
-
-    case 4:
-      lora.addDiscoveryItem(buffer, temperatureSensor.getDiscoveryMsg(buffer));
-      break;
-
-    case 5:
-      lora.addDiscoveryItem(buffer, humiditySensor.getDiscoveryMsg(buffer));
-      break;
-
-    default:
-      return;
+  if (length) {
+    lora.beginConfigsValueMsg();
+    lora.addConfigItemValues(buffer, length);
+    lora.endMsg();
   }
+}
 
-  lora.endMsg();
+static void sendAllDiscoveryMsgs() {
+  uint8_t buffer[LORA_MAX_PAYLOAD_LENGTH];
+
+  for (uint8_t i = 0; i < 6; i++) {
+    uint8_t length = node.getDiscoveryMsg(buffer, i);
+
+    if (length) {
+      lora.beginDiscoveryMsg();
+      lora.addDiscoveryItem(buffer, length);
+      lora.endMsg();
+    }
+  }
+}
+
+void sendDiscoveryMsg(uint8_t entityId) {
+  uint8_t buffer[LORA_MAX_PAYLOAD_LENGTH];
+
+  uint8_t length = node.getDiscoveryMsgByEntityId(buffer, entityId);
+
+  if (length) {
+    lora.beginDiscoveryMsg();
+    lora.addDiscoveryItem(buffer, length);
+    lora.endMsg();
+  }
 }
 
 #ifdef DEBUG_SENSOR_VALUES
 static void printAllSensors(Stream& stream) {
-  garageCover.print(stream);
-  stream.print(", ");
-  distanceSensor.print(stream);
-  stream.print(", ");
-  heightSensor.print(stream);
-  stream.print(", ");
-  carPresenceSensor.print(stream);
-  stream.print(", ");
-  temperatureSensor.print(stream);
-  stream.print(", ");
-  humiditySensor.print(stream);
-  stream.println();
+  node.print(stream);
 }
 #endif

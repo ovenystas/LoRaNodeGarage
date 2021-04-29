@@ -23,15 +23,27 @@ bool HumiditySensor::update() {
 }
 
 uint8_t HumiditySensor::getDiscoveryMsg(uint8_t* buffer) {
-  uint8_t length = Sensor::getDiscoveryMsg(buffer);
-  uint8_t& numberOfConfigs = buffer[length++];
+  uint8_t* p = buffer;
+  p += Sensor::getDiscoveryMsg(p);
+  *p++ = mConfig.numberOfConfigItems;
 
-  length += mConfig.reportHysteresis.writeDiscoveryItem(&buffer[length]);
-  length += mConfig.measureInterval.writeDiscoveryItem(&buffer[length]);
-  length += mConfig.reportInterval.writeDiscoveryItem(&buffer[length]);
-  length += mConfig.compensation.writeDiscoveryItem(&buffer[length]);
+  p += mConfig.reportHysteresis.writeDiscoveryItem(p);
+  p += mConfig.measureInterval.writeDiscoveryItem(p);
+  p += mConfig.reportInterval.writeDiscoveryItem(p);
+  p += mConfig.compensation.writeDiscoveryItem(p);
 
-  numberOfConfigs = 4;
+  return p - buffer;
+}
 
-  return length;
+uint8_t HumiditySensor::getConfigItemValuesMsg(uint8_t* buffer) {
+  uint8_t* p = buffer;
+  *p++ = getEntityId();
+  *p++ = mConfig.numberOfConfigItems;
+
+  p += mConfig.reportHysteresis.writeConfigItemValue(p);
+  p += mConfig.measureInterval.writeConfigItemValue(p);
+  p += mConfig.reportInterval.writeConfigItemValue(p);
+  p += mConfig.compensation.writeConfigItemValue(p);
+
+  return p - buffer;
 }

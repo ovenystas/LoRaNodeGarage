@@ -224,11 +224,28 @@ void LoRaHandler::beginValueMsg() {
   mMsgTx.header.len++;
 }
 
-void LoRaHandler::beginConfigsValueMsg(uint8_t entityId) {
+void LoRaHandler::addValueItem(const uint8_t* buffer, uint8_t length) {
+  if (mMsgTx.header.len + length
+      >= LORA_MAX_PAYLOAD_LENGTH - 1) {
+
+    memcpy(&mMsgTx.payload[mMsgTx.header.len], buffer, length);
+    mMsgTx.header.len += length;
+
+    LoRaValuePayloadT* payload =
+        reinterpret_cast<LoRaValuePayloadT*>(mMsgTx.payload);
+    payload->numberOfEntities++;
+  }
+}
+
+void LoRaHandler::beginConfigsValueMsg() {
   setDefaultHeader(&mMsgTx.header);
   mMsgTx.header.flags |= MsgType::config_msg;
-  LoRaConfigValuePayloadT* payload = reinterpret_cast<LoRaConfigValuePayloadT*>(mMsgTx.payload);
-  payload->entityId = entityId;
-  payload->numberOfConfigs = 0;
-  mMsgTx.header.len += 2;
+}
+
+void LoRaHandler::addConfigItemValues(const uint8_t* buffer, uint8_t length) {
+  if (mMsgTx.header.len == 0)
+  {
+    memcpy(mMsgTx.payload, buffer, length);
+    mMsgTx.header.len += length;
+  }
 }

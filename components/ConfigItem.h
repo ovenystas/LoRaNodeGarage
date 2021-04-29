@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "Unit.h"
+#include "Util.h"
 
 template<class T>
 class ConfigItem {
@@ -53,6 +54,13 @@ public:
     buffer[1] = static_cast<uint8_t>(mUnit.getType());
     buffer[2] = (sizeof(T) << 4) | mPrecision;
     return 3;
+  }
+
+  uint8_t writeConfigItemValue(uint8_t* buffer) {
+    buffer[0] = mConfigId;
+    T* p = reinterpret_cast<T*>(&buffer[1]);
+    *p = hton(mValue);
+    return 1 + sizeof(T);
   }
 
 private:

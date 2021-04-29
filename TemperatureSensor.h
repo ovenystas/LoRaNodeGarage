@@ -30,8 +30,12 @@ public:
 
   virtual uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 
+  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
+
 private:
   struct Config {
+    const uint8_t numberOfConfigItems = { 4 };
+
     ConfigItem<TemperatureT> reportHysteresis =
       { ConfigItem<TemperatureT>(0, 10, Unit::Type::C, 1) };
 

@@ -15,6 +15,14 @@ uint8_t Cover::getDiscoveryMsg(uint8_t* buffer) {
   return 5;
 }
 
+uint8_t Cover::getValueMsg(uint8_t* buffer) {
+  uint8_t* p = buffer;
+  *p++ = getEntityId();
+  *p++ = static_cast<uint8_t>(getState());
+
+  return p - buffer;
+}
+
 void Cover::print(Stream& stream) {
   stream.print(getName());
   stream.print(": ");

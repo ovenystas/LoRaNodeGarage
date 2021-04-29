@@ -24,9 +24,12 @@ public:
 
   virtual uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 
+  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
 
 private:
   struct Config {
+    const uint8_t numberOfConfigItems = { 3 };
+
     ConfigItem<DistanceT> reportHysteresis =
       { ConfigItem<DistanceT>(0, 10, Unit::Type::cm, 0) };
 

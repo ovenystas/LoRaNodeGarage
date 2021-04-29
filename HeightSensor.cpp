@@ -23,15 +23,27 @@ bool HeightSensor::update() {
 }
 
 uint8_t HeightSensor::getDiscoveryMsg(uint8_t* buffer) {
-  uint8_t length = Sensor::getDiscoveryMsg(buffer);
-  uint8_t& numberOfConfigs = buffer[length++];
+  uint8_t* p = buffer;
+  p += Sensor::getDiscoveryMsg(p);
+  *p++ = mConfig.numberOfConfigItems;
 
-  length += mConfig.reportHysteresis.writeDiscoveryItem(&buffer[length]);
-  length += mConfig.reportInterval.writeDiscoveryItem(&buffer[length]);
-  length += mConfig.stableTime.writeDiscoveryItem(&buffer[length]);
-  length += mConfig.zeroValue.writeDiscoveryItem(&buffer[length]);
+  p += mConfig.reportHysteresis.writeDiscoveryItem(p);
+  p += mConfig.reportInterval.writeDiscoveryItem(p);
+  p += mConfig.stableTime.writeDiscoveryItem(p);
+  p += mConfig.zeroValue.writeDiscoveryItem(p);
 
-  numberOfConfigs = 4;
+  return p - buffer;
+}
 
-  return length;
+uint8_t HeightSensor::getConfigItemValuesMsg(uint8_t* buffer) {
+  uint8_t* p = buffer;
+  *p++ = getEntityId();
+  *p++ = mConfig.numberOfConfigItems;
+
+  p += mConfig.reportHysteresis.writeConfigItemValue(p);
+  p += mConfig.reportInterval.writeConfigItemValue(p);
+  p += mConfig.stableTime.writeConfigItemValue(p);
+  p += mConfig.zeroValue.writeConfigItemValue(p);
+
+  return p - buffer;
 }

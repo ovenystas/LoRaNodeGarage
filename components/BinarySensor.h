@@ -50,8 +50,6 @@ public:
 
   virtual ~BinarySensor() = default;
 
-  virtual bool update() = 0;
-
   bool getState() const {
     return mState;
   }
@@ -68,12 +66,14 @@ public:
 
   virtual uint8_t getDiscoveryMsg(uint8_t* buffer) override;
 
-  void setReported() {
+  virtual uint8_t getValueMsg(uint8_t* buffer) final;
+
+  virtual void setReported() final {
     mLastReportTime = seconds();
     mLastReportedState = mState;
   }
 
-  void print(Stream& stream);
+  virtual void print(Stream& stream) final;
 
 protected:
   inline void setState(bool state) {

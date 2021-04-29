@@ -135,7 +135,7 @@ struct LoRaValuePayloadT {
 } __attribute__((packed, aligned(1)));
 
 template<typename T>
-struct LoRaConfigValueItemT {
+struct LoRaConfigItemValueT {
   uint8_t configId;
   T value;
 } __attribute__((packed, aligned(1)));
@@ -189,44 +189,10 @@ public:
   void addDiscoveryItem(const uint8_t* buffer, uint8_t length);
 
   void beginValueMsg();
+  void addValueItem(const uint8_t* buffer, uint8_t length);
 
-  template<typename T>
-  void addValueItem(uint8_t entityId, T value) {
-    LoRaValuePayloadT* payload =
-        reinterpret_cast<LoRaValuePayloadT*>(mMsgTx.payload);
-
-    if (mMsgTx.header.len + sizeof(LoRaValueItemT<T>)
-        >= LORA_MAX_PAYLOAD_LENGTH - 1) {
-
-      LoRaValueItemT<T>* item = reinterpret_cast<LoRaValueItemT<T>*>(
-              &payload->subPayload[mMsgTx.header.len]);
-
-      item->entityId = entityId;
-      item->value = hton(value);
-      payload->numberOfEntities++;
-      mMsgTx.header.len += sizeof(LoRaValueItemT<T> );
-    }
-  }
-
-  void beginConfigsValueMsg(uint8_t entityId);
-
-  template<typename T>
-  void addConfigValueItem(uint8_t configId, T value) {
-    LoRaConfigValuePayloadT* payload =
-        reinterpret_cast<LoRaConfigValuePayloadT*>(mMsgTx.payload);
-
-    if (mMsgTx.header.len + sizeof(LoRaValueItemT<T>)
-        >= LORA_MAX_PAYLOAD_LENGTH - 2) {
-
-      LoRaConfigValueItemT<T>* item = reinterpret_cast<LoRaConfigValueItemT<T>*>(
-              &payload->subPayload[mMsgTx.header.len]);
-
-      item->configId = configId;
-      item->value = hton(value);
-      payload->numberOfConfigs++;
-      mMsgTx.header.len += sizeof(LoRaConfigValueItemT<T> );
-    }
-  }
+  void beginConfigsValueMsg();
+  void addConfigItemValues(const uint8_t* buffer, uint8_t length);
 
   void endMsg();
 

@@ -32,14 +32,25 @@ bool PresenceBinarySensor::update() {
 }
 
 uint8_t PresenceBinarySensor::getDiscoveryMsg(uint8_t* buffer) {
-  uint8_t length = BinarySensor::getDiscoveryMsg(buffer);
-  uint8_t& numberOfConfigs = buffer[length++];
+  uint8_t* p = buffer;
+  p += getDiscoveryMsg(p);
+  *p++ = mConfig.numberOfConfigItems;
 
-  length += mConfig.lowLimit.writeDiscoveryItem(&buffer[length]);
-  length += mConfig.highLimit.writeDiscoveryItem(&buffer[length]);
-  length += mConfig.minStableTime.writeDiscoveryItem(&buffer[length]);
+  p += mConfig.lowLimit.writeDiscoveryItem(p);
+  p += mConfig.highLimit.writeDiscoveryItem(p);
+  p += mConfig.minStableTime.writeDiscoveryItem(p);
 
-  numberOfConfigs = 3;
+  return p - buffer;
+}
 
-  return length;
+uint8_t PresenceBinarySensor::getConfigItemValuesMsg(uint8_t* buffer) {
+  uint8_t* p = buffer;
+  *p++ = getEntityId();
+  *p++ = mConfig.numberOfConfigItems;
+
+  p += mConfig.lowLimit.writeConfigItemValue(p);
+  p += mConfig.highLimit.writeConfigItemValue(p);
+  p += mConfig.minStableTime.writeConfigItemValue(p);
+
+  return p - buffer;
 }

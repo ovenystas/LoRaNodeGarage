@@ -31,6 +31,11 @@ public:
 
   virtual uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 
+  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) final {
+    (void)buffer;
+    return 0;
+  }
+
 private:
   Cover::State determineState();
 
