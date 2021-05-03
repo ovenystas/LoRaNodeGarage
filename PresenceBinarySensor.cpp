@@ -56,6 +56,11 @@ uint8_t PresenceBinarySensor::getConfigItemValuesMsg(uint8_t* buffer) {
 }
 
 void PresenceBinarySensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
-  (void)numberOfConfigs;
-  (void)buffer;
+  if (numberOfConfigs != mConfig.numberOfConfigItems) {
+    return;
+  }
+  const uint8_t* p = buffer;
+  p += mConfig.lowLimit.setConfigValue(p[0], &p[1]);
+  p += mConfig.highLimit.setConfigValue(p[0], &p[1]);
+  p += mConfig.minStableTime.setConfigValue(p[0], &p[1]);
 }

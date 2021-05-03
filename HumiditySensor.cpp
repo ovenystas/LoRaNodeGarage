@@ -49,6 +49,12 @@ uint8_t HumiditySensor::getConfigItemValuesMsg(uint8_t* buffer) {
 }
 
 void HumiditySensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
-  (void)numberOfConfigs;
-  (void)buffer;
+  if (numberOfConfigs != mConfig.numberOfConfigItems) {
+    return;
+  }
+  const uint8_t* p = buffer;
+  p += mConfig.reportHysteresis.setConfigValue(p[0], &p[1]);
+  p += mConfig.measureInterval.setConfigValue(p[0], &p[1]);
+  p += mConfig.reportInterval.setConfigValue(p[0], &p[1]);
+  p += mConfig.compensation.setConfigValue(p[0], &p[1]);
 }

@@ -63,6 +63,15 @@ public:
     return 1 + sizeof(T);
   }
 
+  uint8_t setConfigValue(uint8_t configId, const uint8_t* value)
+  {
+    if (configId == mConfigId) {
+      mValue = *(reinterpret_cast<const T*>(value));
+      return 1 + static_cast<uint8_t>(sizeof(T));
+    }
+    return 0;
+  }
+
 private:
   static constexpr int16_t factors[4] = { 1, 10, 100, 1000 };
 
