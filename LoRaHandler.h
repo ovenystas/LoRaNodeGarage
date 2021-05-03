@@ -173,7 +173,7 @@ public:
   using OnDiscoveryReqMsgFunc = void (*)(uint8_t);
   using OnValueReqMsgFunc = void (*)(uint8_t);
   using OnConfigReqMsgFunc = void (*)(uint8_t);
-  using OnConfigSetReqMsgFunc = void (*)(uint8_t);
+  using OnConfigSetReqMsgFunc = void (*)(const LoRaConfigValuePayloadT&);
   using OnServiceReqMsgFunc = void (*)(const LoRaServiceItemT&);
 
   int begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc = nullptr,

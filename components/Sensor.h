@@ -50,6 +50,19 @@ public:
 
   virtual ~Sensor() = default;
 
+  virtual bool hasService() final {
+    return false;
+  }
+
+  virtual void callService(uint8_t service) final {
+    (void)service;
+  }
+
+  virtual void print(Stream& stream, uint8_t service) final {
+    (void)stream;
+    (void)service;
+  }
+
   inline T getValue() const {
     return mValue;
   }

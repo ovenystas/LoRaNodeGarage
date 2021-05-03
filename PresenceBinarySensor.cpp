@@ -54,3 +54,8 @@ uint8_t PresenceBinarySensor::getConfigItemValuesMsg(uint8_t* buffer) {
 
   return p - buffer;
 }
+
+void PresenceBinarySensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
+  (void)numberOfConfigs;
+  (void)buffer;
+}

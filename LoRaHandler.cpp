@@ -99,10 +99,10 @@ int8_t LoRaHandler::parseMsg(LoRaRxMessageT& rxMsg) {
       }
       break;
 
-    case MsgType::config_msg:
+    case MsgType::configSet_req:
       if (mOnConfigSetReqMsgFunc) {
-        uint8_t entityId = rxMsg.payload[0];
-        mOnConfigSetReqMsgFunc(entityId);
+        LoRaConfigValuePayloadT* payload = reinterpret_cast<LoRaConfigValuePayloadT*>(rxMsg.payload);
+        mOnConfigSetReqMsgFunc(*payload);
       }
       break;
 

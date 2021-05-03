@@ -36,6 +36,11 @@ public:
     return 0;
   }
 
+  virtual void setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final {
+    (void)numberOfConfigs;
+    (void)buffer;
+  }
+
 private:
   Cover::State determineState();
 

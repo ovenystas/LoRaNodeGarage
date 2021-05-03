@@ -50,6 +50,19 @@ public:
 
   virtual ~BinarySensor() = default;
 
+  virtual bool hasService() final {
+    return false;
+  }
+
+  virtual void callService(uint8_t service) final {
+    (void)service;
+  }
+
+  virtual void print(Stream& stream, uint8_t service) final {
+    (void)stream;
+    (void)service;
+  }
+
   bool getState() const {
     return mState;
   }

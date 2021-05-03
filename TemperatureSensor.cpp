@@ -50,3 +50,8 @@ uint8_t TemperatureSensor::getConfigItemValuesMsg(uint8_t* buffer) {
 
   return p - buffer;
 }
+
+void TemperatureSensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
+  (void)numberOfConfigs;
+  (void)buffer;
+}

@@ -53,7 +53,15 @@ public:
 
   virtual ~Cover() = default;
 
-  virtual void callService(const Service service) = 0;
+  virtual bool hasService() final {
+    return true;
+  }
+
+  virtual void callService(Service service) = 0;
+
+  virtual void callService(uint8_t service) override {
+    callService(static_cast<Service>(service));
+  }
 
   inline State getState() const {
     return mState;
@@ -90,7 +98,7 @@ public:
 
   virtual void print(Stream& stream) final;
 
-  void print(Stream& stream, Cover::Service service);
+  virtual void print(Stream& stream, uint8_t service) final;
 
 protected:
   inline void setState(State state) {

@@ -46,3 +46,8 @@ uint8_t DistanceSensor::getConfigItemValuesMsg(uint8_t* buffer) {
 
   return p - buffer;
 }
+
+void DistanceSensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
+  (void)numberOfConfigs;
+  (void)buffer;
+}

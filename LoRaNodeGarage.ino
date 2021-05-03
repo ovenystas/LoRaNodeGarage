@@ -24,7 +24,7 @@
 
 #define DEBUG_SENSOR_VALUES
 #define DEBUG_SENSOR_REPORT
-#define DEBUG_COVER
+#define DEBUG_SERVICE
 
 #ifdef DEBUG_SENSOR_REPORT
 # define LOG_SENSOR(sensor) printMillis(Serial); (sensor).print(Serial); Serial.println()
@@ -32,10 +32,10 @@
 # define LOG_SENSOR(sensor)
 #endif
 
-#ifdef DEBUG_COVER
-# define LOG_COVER_SERVICE(cover, service) printMillis(Serial); (cover).print(Serial, (service)); Serial.println()
+#ifdef DEBUG_SERVICE
+# define LOG_SERVICE(component, service) printMillis(Serial); (component)->print(Serial, (service)); Serial.println()
 #else
-# define LOG_COVER_SERVICE(sensor, service)
+# define LOG_SERVICE(component, service)
 #endif
 
 #define DHTPIN 4
@@ -128,7 +128,6 @@ void onValueReqMsg(uint8_t entityId) {
     sendAllSensorValues();
     return;
   }
-
   sendSensorValue(entityId);
 }
 
@@ -136,16 +135,16 @@ void onConfigReqMsg(uint8_t entityId) {
   sendAllConfigValues(entityId);
 }
 
-void onConfigSetReqMsg(uint8_t entityId) {
-  (void)entityId;
-  // TODO: Set configuration of entityId
+void onConfigSetReqMsg(const LoRaConfigValuePayloadT& payload) {
+  Component* c = node.getComponentByEntityId(payload.entityId);
+  c->setConfigs(payload.numberOfConfigs, payload.subPayload);
 }
 
 void onServiceReqMsg(const LoRaServiceItemT& item) {
-  if (item.entityId == garageCover.getEntityId()) {
-    Cover::Service service = static_cast<Cover::Service>(item.service);
-    LOG_COVER_SERVICE(garageCover, service);
-    garageCover.callService(service);
+  Component* c = node.getComponentByEntityId(item.entityId);
+  if (c->hasService()) {
+    LOG_SERVICE(c, item.service);
+    c->callService(item.service);
   }
 }
 

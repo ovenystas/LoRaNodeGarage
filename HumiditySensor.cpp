@@ -47,3 +47,8 @@ uint8_t HumiditySensor::getConfigItemValuesMsg(uint8_t* buffer) {
 
   return p - buffer;
 }
+
+void HumiditySensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
+  (void)numberOfConfigs;
+  (void)buffer;
+}
