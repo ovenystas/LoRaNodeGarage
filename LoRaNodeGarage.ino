@@ -3,6 +3,10 @@
  *      Author: oveny
  */
 
+/* TODO: Store configs in EEPROM
+ *
+ */
+
 #include <Arduino.h>
 #include <GarageCover.h>
 #include <PresenceBinarySensor.h>
@@ -20,7 +24,7 @@
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 0
-#define VERSION_PATCH 4
+#define VERSION_PATCH 5
 
 #define DEBUG_SENSOR_VALUES
 #define DEBUG_SENSOR_REPORT
@@ -63,11 +67,11 @@ TemperatureSensor temperatureSensor = TemperatureSensor(2, "Temperature", dht);
 HumiditySensor humiditySensor = HumiditySensor(3, "Humidity", dht);
 DistanceSensor distanceSensor = DistanceSensor(4, "Distance", sonar);
 HeightSensor heightSensor = HeightSensor(5, "Height", distanceSensor);
-//PresenceBinarySensor carPresenceSensor = PresenceBinarySensor(6, "Car",
-//    heightSensor);
+PresenceBinarySensor carPresenceSensor = PresenceBinarySensor(6, "Car",
+    heightSensor);
 
 Node node = Node(&garageCover, &temperatureSensor, &humiditySensor,
-    &distanceSensor, &heightSensor/*, &carPresenceSensor*/);
+    &distanceSensor, &heightSensor, &carPresenceSensor);
 
 LoRaHandler lora;
 
