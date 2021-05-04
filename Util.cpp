@@ -46,3 +46,57 @@ void printVersion(Stream& stream, int major, int minor, int patch) {
   stream.print(patch);
   stream.print('.');
 }
+
+void printHex(Stream& stream, uint8_t value, bool prefix) {
+  if (prefix) {
+    stream.print("0x");
+  }
+  if (value < 0x10) {
+    stream.print('0');
+  }
+  stream.print(value, HEX);
+}
+
+void printHex(Stream& stream, uint16_t value, bool prefix) {
+  if (prefix) {
+    stream.print("0x");
+  }
+  if (value < 0x1000) {
+    stream.print('0');
+  }
+  if (value < 0x100) {
+    stream.print('0');
+  }
+  if (value < 0x10) {
+    stream.print('0');
+  }
+  stream.print(value, HEX);
+}
+
+void printHex(Stream& stream, uint32_t value, bool prefix) {
+  if (prefix) {
+    stream.print("0x");
+  }
+  if (value < 0x10000000) {
+    stream.print('0');
+  }
+  if (value < 0x1000000) {
+    stream.print('0');
+  }
+  if (value < 0x100000) {
+    stream.print('0');
+  }
+  if (value < 0x10000) {
+    stream.print('0');
+  }
+  if (value < 0x1000) {
+    stream.print('0');
+  }
+  if (value < 0x100) {
+    stream.print('0');
+  }
+  if (value < 0x10) {
+    stream.print('0');
+  }
+  stream.print(value, HEX);
+}

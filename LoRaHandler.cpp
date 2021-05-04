@@ -131,26 +131,20 @@ void LoRaHandler::printMessage(const LoRaTxMessageT* msg) {
 }
 
 void LoRaHandler::printHeader(const LoRaHeaderT* header) {
-  Serial.print(header->dst);
-  Serial.print(',');
-  Serial.print(header->src);
-  Serial.print(',');
-  Serial.print(header->id);
-  Serial.print(",0x");
-  if (header->flags < 0x10) {
-    Serial.print('0');
-  }
-  Serial.print(header->flags, HEX);
-  Serial.print(',');
-  Serial.print(header->len);
+  printHex(Serial, header->dst);
+  Serial.print(' ');
+  printHex(Serial, header->src);
+  Serial.print(' ');
+  printHex(Serial, header->id);
+  Serial.print(' ');
+  printHex(Serial, header->flags);
+  Serial.print(' ');
+  printHex(Serial, header->len);
 }
 
 void LoRaHandler::printPayload(const uint8_t* payload, uint8_t len) {
   for (uint8_t i = 0; i < len; i++) {
-    if (payload[i] < 0x10) {
-      Serial.print('0');
-    }
-    Serial.print(payload[i], HEX);
+    printHex(Serial, payload[i]);
     if (i < len - 1) {
       Serial.print(' ');
     }
@@ -167,6 +161,8 @@ void LoRaHandler::sendMsg(const LoRaTxMessageT* msg) {
   LoRa.beginPacket();
   LoRa.write(reinterpret_cast<uint8_t*>(&msg), sizeof(msg->header) + msg->header.len);
   LoRa.endPacket();
+
+  mSeqId++;
 }
 
 int LoRaHandler::sendAckIfRequested(const LoRaHeaderT* rxHeader) {
@@ -195,7 +191,7 @@ void LoRaHandler::sendPing(const uint8_t toAddr, int8_t rssi) {
 void LoRaHandler::setDefaultHeader(LoRaHeaderT* header) {
   header->dst = GATEWAY_ADDRESS;
   header->src = MY_ADDRESS;
-  header->id = mSeqId++;
+  header->id = mSeqId;
   header->flags = FLAGS_REQ_ACK;
   header->len = 0;
 }
@@ -226,7 +222,7 @@ void LoRaHandler::beginValueMsg() {
 
 void LoRaHandler::addValueItem(const uint8_t* buffer, uint8_t length) {
   if (mMsgTx.header.len + length
-      >= LORA_MAX_PAYLOAD_LENGTH - 1) {
+      <= LORA_MAX_PAYLOAD_LENGTH - 1) {
 
     memcpy(&mMsgTx.payload[mMsgTx.header.len], buffer, length);
     mMsgTx.header.len += length;

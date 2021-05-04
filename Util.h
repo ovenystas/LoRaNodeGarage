@@ -40,6 +40,9 @@ inline  int32_t ntoh( int32_t v) { return ntohl(v); }
 void printMillis(Stream& stream);
 void printUptime(Stream& stream);
 void printVersion(Stream& stream, int major, int minor, int patch);
+void printHex(Stream& stream, uint8_t value, bool prefix=false);
+void printHex(Stream& stream, uint16_t value, bool prefix=false);
+void printHex(Stream& stream, uint32_t value, bool prefix=false);
 
 template<typename T, uint8_t max_size>
 class arrayHelper{

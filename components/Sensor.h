@@ -84,7 +84,7 @@ public:
     return mUnit.getType();
   }
 
-  inline const String& getUnitName() const {
+  inline const char* getUnitName() const {
     return mUnit.getName();
   }
 
@@ -93,7 +93,7 @@ public:
     buffer[1] = static_cast<uint8_t>(getComponent());
     buffer[2] = static_cast<uint8_t>(getDeviceClass());
     buffer[3] = static_cast<uint8_t>(mUnit.getType());
-    buffer[4] = mPrecision;
+    buffer[4] = (sizeof(T) << 4) | mPrecision;
     return 5;
   }
 

@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-static const String UnitName[] = { "", "C", "F", "K", "%", "km", "m", "dm",
+static const char UnitName[][3] = { "", "C", "F", "K", "%", "km", "m", "dm",
     "cm", "mm", "um", "s", "ms" };
 
 class Unit {
@@ -38,7 +38,7 @@ public:
     return mType;
   }
 
-  inline const String& getName() const {
+  inline const char* getName() const {
     return UnitName[static_cast<uint8_t>(mType)];
   }
 

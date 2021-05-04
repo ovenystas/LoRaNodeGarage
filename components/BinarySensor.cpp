@@ -3,6 +3,8 @@
  *      Author: oveny
  */
 
+#include <WString.h>
+
 #include "BinarySensor.h"
 #include "Component.h"
 

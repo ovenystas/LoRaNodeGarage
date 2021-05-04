@@ -61,7 +61,7 @@ bool GarageCover::update() {
 
 uint8_t GarageCover::getDiscoveryMsg(uint8_t* buffer) {
   uint8_t* p = buffer;
-  p += getDiscoveryMsg(p);
+  p += Cover::getDiscoveryMsg(p);
   *p++ = 0;
 
   return p - buffer;

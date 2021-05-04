@@ -10,8 +10,8 @@
 #include "Component.h"
 #include "Util.h"
 
-static const String CoverStateName[] = { "closed", "open", "opening", "closing" };
-static const String CoverServiceName[] = { "open", "close", "stop", "toggle" };
+static const char CoverStateName[][8] = { {"closed"}, {"open"}, {"opening"}, {"closing"} };
+static const char CoverServiceName[][7] = { "open", "close", "stop", "toggle" };
 
 /*
  *
@@ -67,15 +67,15 @@ public:
     return mState;
   }
 
-  const String& getStateName() const {
+  const char* getStateName() const {
     return CoverStateName[static_cast<uint8_t>(mState)];
   }
 
-  const String& getStateName(State state) const {
+  const char* getStateName(State state) const {
     return CoverStateName[static_cast<uint8_t>(state)];
   }
 
-  const String& getServiceName(Service service) const {
+  const char* getServiceName(Service service) const {
     return CoverServiceName[static_cast<uint8_t>(service)];
   }
 
@@ -106,7 +106,7 @@ protected:
   }
 
 private:
-  State mState = { };
-  State mLastReportedState = { };
+  State mState = { State::closed };
+  State mLastReportedState = { State::closed };
   uint32_t mLastReportTime = { }; // s
 };

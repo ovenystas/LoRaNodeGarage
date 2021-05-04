@@ -20,14 +20,14 @@
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 0
-#define VERSION_PATCH 2
+#define VERSION_PATCH 4
 
 #define DEBUG_SENSOR_VALUES
 #define DEBUG_SENSOR_REPORT
 #define DEBUG_SERVICE
 
 #ifdef DEBUG_SENSOR_REPORT
-# define LOG_SENSOR(sensor) printMillis(Serial); (sensor).print(Serial); Serial.println()
+# define LOG_SENSOR(sensor) printMillis(Serial); (sensor)->print(Serial); Serial.println()
 #else
 # define LOG_SENSOR(sensor)
 #endif
@@ -51,9 +51,6 @@
 
 #define UPDATE_SENSORS_INTERVAL 1000
 
-#ifdef DEBUG_SENSOR_VALUES
-static void printAllSensors(Stream& stream);
-#endif
 
 DHT dht(DHTPIN, DHTTYPE);
 NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
@@ -66,11 +63,11 @@ TemperatureSensor temperatureSensor = TemperatureSensor(2, "Temperature", dht);
 HumiditySensor humiditySensor = HumiditySensor(3, "Humidity", dht);
 DistanceSensor distanceSensor = DistanceSensor(4, "Distance", sonar);
 HeightSensor heightSensor = HeightSensor(5, "Height", distanceSensor);
-PresenceBinarySensor carPresenceSensor = PresenceBinarySensor(6, "Car",
-    heightSensor);
+//PresenceBinarySensor carPresenceSensor = PresenceBinarySensor(6, "Car",
+//    heightSensor);
 
 Node node = Node(&garageCover, &temperatureSensor, &humiditySensor,
-    &distanceSensor, &heightSensor, &carPresenceSensor);
+    &distanceSensor, &heightSensor/*, &carPresenceSensor*/);
 
 LoRaHandler lora;
 
@@ -80,12 +77,7 @@ void setup() {
     // Do nothing
   }
 
-  Serial.print(F("LoRa Garage Node v"));
-  printVersion(Serial, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-  Serial.print(F(", address="));
-  Serial.print(MY_ADDRESS);
-  Serial.print(F(", gateway="));
-  Serial.println(GATEWAY_ADDRESS);
+  printWelcomeMsg();
 
   if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onConfigReqMsg,
       &onConfigSetReqMsg, &onServiceReqMsg)) {
@@ -96,6 +88,7 @@ void setup() {
   }
 
   sendAllDiscoveryMsgs();
+
   dht.begin();
 }
 
@@ -132,6 +125,7 @@ void onValueReqMsg(uint8_t entityId) {
 }
 
 void onConfigReqMsg(uint8_t entityId) {
+  (void)entityId;
   sendAllConfigValues(entityId);
 }
 
@@ -158,11 +152,11 @@ static void updateSensors() {
     Component* c = node.getComponent(i);
 
     if (c->update()) {
-      LOG_SENSOR(*c);
+      LOG_SENSOR(c);
 
       uint8_t length = c->getValueMsg(buffer);
 
-      if (length) {
+      if (length > 0) {
         lora.addValueItem(buffer, length);
       }
 
@@ -227,7 +221,7 @@ static void sendAllConfigValues(uint8_t entityId) {
 static void sendAllDiscoveryMsgs() {
   uint8_t buffer[LORA_MAX_PAYLOAD_LENGTH];
 
-  for (uint8_t i = 0; i < 6; i++) {
+  for (uint8_t i = 0; i < node.getSize(); i++) {
     uint8_t length = node.getDiscoveryMsg(buffer, i);
 
     if (length) {
@@ -242,12 +236,20 @@ void sendDiscoveryMsg(uint8_t entityId) {
   uint8_t buffer[LORA_MAX_PAYLOAD_LENGTH];
 
   uint8_t length = node.getDiscoveryMsgByEntityId(buffer, entityId);
-
   if (length) {
     lora.beginDiscoveryMsg();
     lora.addDiscoveryItem(buffer, length);
     lora.endMsg();
   }
+}
+
+void printWelcomeMsg() {
+  Serial.print(F("LoRa Garage Node v"));
+  printVersion(Serial, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+  Serial.print(F(", address="));
+  Serial.print(MY_ADDRESS);
+  Serial.print(F(", gateway="));
+  Serial.println(GATEWAY_ADDRESS);
 }
 
 #ifdef DEBUG_SENSOR_VALUES

@@ -33,7 +33,7 @@ bool PresenceBinarySensor::update() {
 
 uint8_t PresenceBinarySensor::getDiscoveryMsg(uint8_t* buffer) {
   uint8_t* p = buffer;
-  p += getDiscoveryMsg(p);
+  p += BinarySensor::getDiscoveryMsg(p);
   *p++ = mConfig.numberOfConfigItems;
 
   p += mConfig.lowLimit.writeDiscoveryItem(p);
