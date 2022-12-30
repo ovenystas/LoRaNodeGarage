@@ -13,7 +13,8 @@
  *   Byte 0: RSSI in ping request message
  *
  * Discovery request:
- *   Byte 0:   EntityId (0-254, 255 is request discovery messages from all entities)
+ *   Byte 0:   EntityId (0-254, 255 is request discovery messages from all
+ * entities)
  *
  * Discovery message:
  *   Byte 0:    Entity Id (0-254, 255 is reserved for broadcast)
@@ -97,8 +98,8 @@ struct LoRaDiscoveryItemT {
   uint8_t component;
   uint8_t deviceClass;
   uint8_t unit;
-  uint8_t size :4;
-  uint8_t precision :4;
+  uint8_t size : 4;
+  uint8_t precision : 4;
 } __attribute__((packed, aligned(1)));
 
 #define LORA_DISCOVERY_ITEM_LENGTH sizeof(LoRaDiscoveryItemT)
@@ -106,12 +107,14 @@ struct LoRaDiscoveryItemT {
 struct LoRaConfigItemT {
   uint8_t configId;
   uint8_t unit;
-  uint8_t size :4;
-  uint8_t precision :4;
+  uint8_t size : 4;
+  uint8_t precision : 4;
 } __attribute__((packed, aligned(1)));
 
 #define LORA_CONFIG_ITEM_LENGTH sizeof(LoRaConfigItemT)
-#define LORA_CONFIG_ITEMS_MAX ((LORA_MAX_PAYLOAD_LENGTH - LORA_DISCOVERY_ITEM_LENGTH - 1) / LORA_CONFIG_ITEM_LENGTH)
+#define LORA_CONFIG_ITEMS_MAX                                   \
+  ((LORA_MAX_PAYLOAD_LENGTH - LORA_DISCOVERY_ITEM_LENGTH - 1) / \
+   LORA_CONFIG_ITEM_LENGTH)
 
 struct LoRaConfigPayloadT {
   uint8_t numberOfConfigs;
@@ -123,7 +126,7 @@ struct LoRaDiscoveryPayloadT {
   LoRaConfigPayloadT config;
 } __attribute__((packed, aligned(1)));
 
-template<typename T>
+template <typename T>
 struct LoRaValueItemT {
   uint8_t entityId;
   T value;
@@ -134,7 +137,7 @@ struct LoRaValuePayloadT {
   uint8_t subPayload[LORA_MAX_PAYLOAD_LENGTH - sizeof(numberOfEntities)];
 } __attribute__((packed, aligned(1)));
 
-template<typename T>
+template <typename T>
 struct LoRaConfigItemValueT {
   uint8_t configId;
   T value;
@@ -143,7 +146,8 @@ struct LoRaConfigItemValueT {
 struct LoRaConfigValuePayloadT {
   uint8_t entityId;
   uint8_t numberOfConfigs;
-  uint8_t subPayload[LORA_MAX_PAYLOAD_LENGTH - sizeof(entityId) - sizeof(numberOfConfigs)];
+  uint8_t subPayload[LORA_MAX_PAYLOAD_LENGTH - sizeof(entityId) -
+                     sizeof(numberOfConfigs)];
 } __attribute__((packed, aligned(1)));
 
 struct LoRaServiceItemT {
@@ -152,7 +156,7 @@ struct LoRaServiceItemT {
 } __attribute__((packed, aligned(1)));
 
 class LoRaHandler {
-public:
+ public:
   enum class MsgType {
     ping_req,
     ping_msg,
@@ -166,7 +170,7 @@ public:
     service_req
   };
 
-  friend inline uint8_t& operator |=(uint8_t& a, const MsgType b) {
+  friend inline uint8_t& operator|=(uint8_t& a, const MsgType b) {
     return (a |= static_cast<uint8_t>(b));
   }
 
@@ -177,10 +181,10 @@ public:
   using OnServiceReqMsgFunc = void (*)(const LoRaServiceItemT&);
 
   int begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc = nullptr,
-      OnValueReqMsgFunc onValueReqMsgFunc = nullptr,
-      OnConfigReqMsgFunc onConfigReqMsgFunc = nullptr,
-      OnConfigSetReqMsgFunc onConfigSetReqMsgFunc = nullptr,
-      OnServiceReqMsgFunc onServiceReqMsgFunc = nullptr);
+            OnValueReqMsgFunc onValueReqMsgFunc = nullptr,
+            OnConfigReqMsgFunc onConfigReqMsgFunc = nullptr,
+            OnConfigSetReqMsgFunc onConfigSetReqMsgFunc = nullptr,
+            OnServiceReqMsgFunc onServiceReqMsgFunc = nullptr);
 
   int loraRx();
   int loraTx();
@@ -198,7 +202,7 @@ public:
 
   void setDefaultHeader(LoRaHeaderT* header);
 
-private:
+ private:
   static constexpr uint8_t msgTypeMask = 0x0f;
 
   void printMessage(const LoRaTxMessageT* msg);
@@ -211,12 +215,12 @@ private:
   void sendMsg(const LoRaTxMessageT* msg);
   void sendPing(const uint8_t toAddr, int8_t rssi);
 
-  uint8_t mSeqId = { 0 };
+  uint8_t mSeqId = {0};
   LoRaTxMessageT mMsgTx;
 
-  OnDiscoveryReqMsgFunc mOnDiscoveryReqMsgFunc = { nullptr };
-  OnValueReqMsgFunc mOnValueReqMsgFunc = { nullptr };
-  OnConfigReqMsgFunc mOnConfigReqMsgFunc = { nullptr };
-  OnConfigSetReqMsgFunc mOnConfigSetReqMsgFunc = { nullptr };
-  OnServiceReqMsgFunc mOnServiceReqMsgFunc = { nullptr };
+  OnDiscoveryReqMsgFunc mOnDiscoveryReqMsgFunc = {nullptr};
+  OnValueReqMsgFunc mOnValueReqMsgFunc = {nullptr};
+  OnConfigReqMsgFunc mOnConfigReqMsgFunc = {nullptr};
+  OnConfigSetReqMsgFunc mOnConfigSetReqMsgFunc = {nullptr};
+  OnServiceReqMsgFunc mOnServiceReqMsgFunc = {nullptr};
 };

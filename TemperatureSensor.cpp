@@ -3,19 +3,20 @@
  *      Author: oveny
  */
 
+#include "TemperatureSensor.h"
+
 #include <Arduino.h>
 
-#include "TemperatureSensor.h"
-#include "Util.h"
-#include "Sensor.h"
 #include "ConfigItem.h"
+#include "Sensor.h"
+#include "Util.h"
 
 bool TemperatureSensor::update() {
-  TemperatureT newValue = round(mDht.readTemperature() * 10)
-      + mConfig.compensation.getValue();
+  TemperatureT newValue =
+      round(mDht.readTemperature() * 10) + mConfig.compensation.getValue();
 
-  bool largeChange = absDiffSinceReportedValue(newValue)
-      > mConfig.reportHysteresis.getValue();
+  bool largeChange =
+      absDiffSinceReportedValue(newValue) > mConfig.reportHysteresis.getValue();
 
   setValue(newValue);
 
@@ -51,7 +52,8 @@ uint8_t TemperatureSensor::getConfigItemValuesMsg(uint8_t* buffer) {
   return p - buffer;
 }
 
-void TemperatureSensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
+void TemperatureSensor::setConfigs(uint8_t numberOfConfigs,
+                                   const uint8_t* buffer) {
   if (numberOfConfigs != mConfig.numberOfConfigItems) {
     return;
   }

@@ -5,20 +5,19 @@
 
 #pragma once
 
-#include <stdint.h>
 #include <DHT.h>
+#include <stdint.h>
 
-#include "Sensor.h"
 #include "ConfigItem.h"
+#include "Sensor.h"
 #include "Util.h"
 
-using HumidityT = int8_t; // %
+using HumidityT = int8_t;  // %
 
-class HumiditySensor: public Sensor<HumidityT> {
-public:
-  HumiditySensor(uint8_t entityId, const char* name, DHT& dht) :
-      Sensor<HumidityT>(entityId, name, Unit::Type::percent), mDht { dht } {
-  }
+class HumiditySensor : public Sensor<HumidityT> {
+ public:
+  HumiditySensor(uint8_t entityId, const char* name, DHT& dht)
+      : Sensor<HumidityT>(entityId, name, Unit::Type::percent), mDht{dht} {}
 
   bool update() final;
 
@@ -32,21 +31,21 @@ public:
 
   virtual void setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
 
-private:
+ private:
   struct Config {
-    const uint8_t numberOfConfigItems = { 4 };
+    const uint8_t numberOfConfigItems = {4};
 
-    ConfigItem<HumidityT> reportHysteresis =
-      { ConfigItem<HumidityT>(0, 2, Unit::Type::percent, 0) };
+    ConfigItem<HumidityT> reportHysteresis = {
+        ConfigItem<HumidityT>(0, 2, Unit::Type::percent, 0)};
 
-    ConfigItem<uint16_t> measureInterval =
-      { ConfigItem<uint16_t>(1, 60, Unit::Type::s, 0) };
+    ConfigItem<uint16_t> measureInterval = {
+        ConfigItem<uint16_t>(1, 60, Unit::Type::s, 0)};
 
-    ConfigItem<uint16_t> reportInterval =
-      { ConfigItem<uint16_t>(2, 60, Unit::Type::s, 0) };
+    ConfigItem<uint16_t> reportInterval = {
+        ConfigItem<uint16_t>(2, 60, Unit::Type::s, 0)};
 
-    ConfigItem<HumidityT> compensation =
-      { ConfigItem<HumidityT>(3, 0, Unit::Type::percent, 0) };
+    ConfigItem<HumidityT> compensation = {
+        ConfigItem<HumidityT>(3, 0, Unit::Type::percent, 0)};
   };
 
   Config mConfig;

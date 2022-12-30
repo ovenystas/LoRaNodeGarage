@@ -3,16 +3,17 @@
  *      Author: oveny
  */
 
+#include "PresenceBinarySensor.h"
+
 #include <Arduino.h>
 
-#include "PresenceBinarySensor.h"
 #include "Util.h"
 
 bool PresenceBinarySensor::update() {
   HeightT height = mHeightSensor.getValue();
 
   bool newState = (height >= mConfig.lowLimit.getValue()) &&
-      (height <= mConfig.highLimit.getValue());
+                  (height <= mConfig.highLimit.getValue());
 
   if (newState != getState()) {
     mLastChangedTime = millis();
@@ -21,8 +22,9 @@ bool PresenceBinarySensor::update() {
 
   setState(newState);
 
-  bool enteredStableState = !mStableState
-      && millis() >= mLastChangedTime + mConfig.minStableTime.getValue();
+  bool enteredStableState =
+      !mStableState &&
+      millis() >= mLastChangedTime + mConfig.minStableTime.getValue();
 
   if (enteredStableState) {
     mStableState = true;
@@ -55,7 +57,8 @@ uint8_t PresenceBinarySensor::getConfigItemValuesMsg(uint8_t* buffer) {
   return p - buffer;
 }
 
-void PresenceBinarySensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
+void PresenceBinarySensor::setConfigs(uint8_t numberOfConfigs,
+                                      const uint8_t* buffer) {
   if (numberOfConfigs != mConfig.numberOfConfigItems) {
     return;
   }

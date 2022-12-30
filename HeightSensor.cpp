@@ -3,17 +3,18 @@
  *      Author: oveny
  */
 
+#include "HeightSensor.h"
+
 #include <Arduino.h>
 
-#include "HeightSensor.h"
-#include "Util.h"
 #include "Sensor.h"
+#include "Util.h"
 
 bool HeightSensor::update() {
   HeightT newValue = mConfig.zeroValue.getValue() - mDistanseSensor.getValue();
 
-  bool largeChange = absDiffSinceReportedValue(newValue)
-      > mConfig.reportHysteresis.getValue();
+  bool largeChange =
+      absDiffSinceReportedValue(newValue) > mConfig.reportHysteresis.getValue();
 
   setValue(newValue);
 

@@ -4,6 +4,7 @@
  */
 
 #include "Cover.h"
+
 #include "Component.h"
 
 uint8_t Cover::getDiscoveryMsg(uint8_t* buffer) {

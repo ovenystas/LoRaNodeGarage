@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: "v3.2.0"
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -17,6 +17,12 @@ repos:
     rev: "v3.0.0-alpha.4"
     hooks:
       - id: prettier
+
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: "v1.3.5"
+    hooks:
+      - id: clang-format
+        args: [--style=Google, -i]
 
   - repo: meta
     hooks:

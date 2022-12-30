@@ -10,14 +10,15 @@
 #include "Component.h"
 #include "Util.h"
 
-static const char CoverStateName[][8] = { {"closed"}, {"open"}, {"opening"}, {"closing"} };
-static const char CoverServiceName[][7] = { "open", "close", "stop", "toggle" };
+static const char CoverStateName[][8] = {
+    {"closed"}, {"open"}, {"opening"}, {"closing"}};
+static const char CoverServiceName[][7] = {"open", "close", "stop", "toggle"};
 
 /*
  *
  */
-class Cover: public Component {
-public:
+class Cover : public Component {
+ public:
   // From https://www.home-assistant.io/integrations/cover/ at 2021-03-21
   enum class DeviceClass {
     none,
@@ -33,29 +34,15 @@ public:
     window
   };
 
-  enum class State {
-    closed,
-    open,
-    opening,
-    closing
-  };
+  enum class State { closed, open, opening, closing };
 
-  enum class Service {
-    open,
-    close,
-    stop,
-    toggle
-  };
+  enum class Service { open, close, stop, toggle };
 
-  Cover(uint8_t entityId, const char* name) :
-      Component(entityId, name) {
-  }
+  Cover(uint8_t entityId, const char* name) : Component(entityId, name) {}
 
   virtual ~Cover() = default;
 
-  virtual bool hasService() final {
-    return true;
-  }
+  virtual bool hasService() final { return true; }
 
   virtual void callService(Service service) = 0;
 
@@ -63,9 +50,7 @@ public:
     callService(static_cast<Service>(service));
   }
 
-  inline State getState() const {
-    return mState;
-  }
+  inline State getState() const { return mState; }
 
   const char* getStateName() const {
     return CoverStateName[static_cast<uint8_t>(mState)];
@@ -79,13 +64,9 @@ public:
     return CoverServiceName[static_cast<uint8_t>(service)];
   }
 
-  Component::Type getComponent() const {
-    return Component::Type::cover;
-  }
+  Component::Type getComponent() const { return Component::Type::cover; }
 
-  virtual DeviceClass getDeviceClass() const {
-    return DeviceClass::none;
-  }
+  virtual DeviceClass getDeviceClass() const { return DeviceClass::none; }
 
   virtual uint8_t getDiscoveryMsg(uint8_t* buffer) override;
 
@@ -100,13 +81,11 @@ public:
 
   virtual void print(Stream& stream, uint8_t service) final;
 
-protected:
-  inline void setState(State state) {
-    mState = state;
-  }
+ protected:
+  inline void setState(State state) { mState = state; }
 
-private:
-  State mState = { State::closed };
-  State mLastReportedState = { State::closed };
-  uint32_t mLastReportTime = { }; // s
+ private:
+  State mState = {State::closed};
+  State mLastReportedState = {State::closed};
+  uint32_t mLastReportTime = {};  // s
 };

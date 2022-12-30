@@ -8,18 +8,18 @@
  */
 
 #include <Arduino.h>
-#include <SPI.h>
-#include <DHT.h>  // DHT sensor library by Adafruit
+#include <DHT.h>      // DHT sensor library by Adafruit
 #include <NewPing.h>  // NewPing by Tim Eckel
+#include <SPI.h>
 
-#include "LoRaHandler.h"
+#include "DistanceSensor.h"
 #include "GarageCover.h"
+#include "HeightSensor.h"
+#include "HumiditySensor.h"
+#include "LoRaHandler.h"
+#include "Node.h"
 #include "PresenceBinarySensor.h"
 #include "TemperatureSensor.h"
-#include "HumiditySensor.h"
-#include "DistanceSensor.h"
-#include "HeightSensor.h"
-#include "Node.h"
 #include "Util.h"
 
 #define VERSION_MAJOR 0
@@ -31,15 +31,21 @@
 #define DEBUG_SERVICE
 
 #ifdef DEBUG_SENSOR_REPORT
-# define LOG_SENSOR(sensor) printMillis(Serial); (sensor)->print(Serial); Serial.println()
+#define LOG_SENSOR(sensor) \
+  printMillis(Serial);     \
+  (sensor)->print(Serial); \
+  Serial.println()
 #else
-# define LOG_SENSOR(sensor)
+#define LOG_SENSOR(sensor)
 #endif
 
 #ifdef DEBUG_SERVICE
-# define LOG_SERVICE(component, service) printMillis(Serial); (component)->print(Serial, (service)); Serial.println()
+#define LOG_SERVICE(component, service)  \
+  printMillis(Serial);                   \
+  (component)->print(Serial, (service)); \
+  Serial.println()
 #else
-# define LOG_SERVICE(component, service)
+#define LOG_SERVICE(component, service)
 #endif
 
 #define DHTPIN 4
@@ -55,23 +61,22 @@
 
 #define UPDATE_SENSORS_INTERVAL 1000
 
-
 DHT dht(DHTPIN, DHTTYPE);
 NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 
 uint32_t nextRunTime = UPDATE_SENSORS_INTERVAL;
 
-GarageCover garageCover = GarageCover(1, "Port",
-    COVER_CLOSED_PIN, COVER_OPEN_PIN, COVER_RELAY_PIN);
+GarageCover garageCover =
+    GarageCover(1, "Port", COVER_CLOSED_PIN, COVER_OPEN_PIN, COVER_RELAY_PIN);
 TemperatureSensor temperatureSensor = TemperatureSensor(2, "Temperature", dht);
 HumiditySensor humiditySensor = HumiditySensor(3, "Humidity", dht);
 DistanceSensor distanceSensor = DistanceSensor(4, "Distance", sonar);
 HeightSensor heightSensor = HeightSensor(5, "Height", distanceSensor);
-PresenceBinarySensor carPresenceSensor = PresenceBinarySensor(6, "Car",
-    heightSensor);
+PresenceBinarySensor carPresenceSensor =
+    PresenceBinarySensor(6, "Car", heightSensor);
 
 Node node = Node(&garageCover, &temperatureSensor, &humiditySensor,
-    &distanceSensor, &heightSensor, &carPresenceSensor);
+                 &distanceSensor, &heightSensor, &carPresenceSensor);
 
 LoRaHandler lora;
 
@@ -84,7 +89,7 @@ void setup() {
   printWelcomeMsg();
 
   if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onConfigReqMsg,
-      &onConfigSetReqMsg, &onServiceReqMsg)) {
+                  &onConfigSetReqMsg, &onServiceReqMsg)) {
     Serial.println(F("Starting LoRa failed!"));
     while (1) {
       // Do nothing
@@ -257,7 +262,5 @@ void printWelcomeMsg() {
 }
 
 #ifdef DEBUG_SENSOR_VALUES
-static void printAllSensors(Stream& stream) {
-  node.print(stream);
-}
+static void printAllSensors(Stream& stream) { node.print(stream); }
 #endif

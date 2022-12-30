@@ -3,8 +3,9 @@
  *      Author: oveny
  */
 
-#include <Arduino.h>
 #include "Util.h"
+
+#include <Arduino.h>
 
 void printUptime(Stream& stream) {
   auto t = millis();

@@ -3,17 +3,18 @@
  *      Author: oveny
  */
 
+#include "DistanceSensor.h"
+
 #include <Arduino.h>
 
-#include "DistanceSensor.h"
-#include "Util.h"
 #include "Sensor.h"
+#include "Util.h"
 
 bool DistanceSensor::update() {
   DistanceT newValue = static_cast<DistanceT>(mSonar.ping_cm());
 
-  bool largeChange = absDiffSinceReportedValue(newValue)
-      > mConfig.reportHysteresis.getValue();
+  bool largeChange =
+      absDiffSinceReportedValue(newValue) > mConfig.reportHysteresis.getValue();
 
   setValue(newValue);
 
@@ -47,7 +48,8 @@ uint8_t DistanceSensor::getConfigItemValuesMsg(uint8_t* buffer) {
   return p - buffer;
 }
 
-void DistanceSensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
+void DistanceSensor::setConfigs(uint8_t numberOfConfigs,
+                                const uint8_t* buffer) {
   if (numberOfConfigs != mConfig.numberOfConfigItems) {
     return;
   }

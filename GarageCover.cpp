@@ -3,11 +3,12 @@
  *      Author: oveny
  */
 
+#include "GarageCover.h"
+
 #include <Arduino.h>
 
-#include "GarageCover.h"
-#include "Util.h"
 #include "Cover.h"
+#include "Util.h"
 
 bool GarageCover::isClosed(bool closedSensor, bool openSensor) {
   return closedSensor == LOW && openSensor == HIGH;
@@ -18,13 +19,15 @@ bool GarageCover::isOpen(bool closedSensor, bool openSensor) {
 }
 
 bool GarageCover::isClosing(bool closedSensor, bool openSensor) {
-  return closedSensor == HIGH && openSensor == HIGH
-      && (getState() == Cover::State::closing || getState() == Cover::State::open);
+  return closedSensor == HIGH && openSensor == HIGH &&
+         (getState() == Cover::State::closing ||
+          getState() == Cover::State::open);
 }
 
 bool GarageCover::isOpening(bool closedSensor, bool openSensor) {
-  return closedSensor == HIGH && openSensor == HIGH
-      && (getState() == Cover::State::opening || getState() == Cover::State::closed);
+  return closedSensor == HIGH && openSensor == HIGH &&
+         (getState() == Cover::State::opening ||
+          getState() == Cover::State::closed);
 }
 
 Cover::State GarageCover::determineState() {
@@ -47,7 +50,7 @@ Cover::State GarageCover::determineState() {
     return Cover::State::opening;
   }
 
-  return getState(); // Error condition, both sensors can't be LOW.
+  return getState();  // Error condition, both sensors can't be LOW.
 }
 
 bool GarageCover::update() {
@@ -96,7 +99,8 @@ void GarageCover::callService(const Cover::Service service) {
     case Cover::Service::toggle:
       if (state == Cover::State::open || state == Cover::State::closed) {
         activateRelay(1);
-      } else if (state == Cover::State::opening || state == Cover::State::closing) {
+      } else if (state == Cover::State::opening ||
+                 state == Cover::State::closing) {
         activateRelay(2);
       }
       break;

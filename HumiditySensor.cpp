@@ -3,17 +3,19 @@
  *      Author: oveny
  */
 
+#include "HumiditySensor.h"
+
 #include <Arduino.h>
 
-#include "HumiditySensor.h"
-#include "Util.h"
 #include "Sensor.h"
+#include "Util.h"
 
 bool HumiditySensor::update() {
-  HumidityT newValue = round(mDht.readHumidity()) + mConfig.compensation.getValue();
+  HumidityT newValue =
+      round(mDht.readHumidity()) + mConfig.compensation.getValue();
 
-  bool largeChange = absDiffSinceReportedValue(newValue)
-      > mConfig.reportHysteresis.getValue();
+  bool largeChange =
+      absDiffSinceReportedValue(newValue) > mConfig.reportHysteresis.getValue();
 
   setValue(newValue);
 
@@ -48,7 +50,8 @@ uint8_t HumiditySensor::getConfigItemValuesMsg(uint8_t* buffer) {
   return p - buffer;
 }
 
-void HumiditySensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
+void HumiditySensor::setConfigs(uint8_t numberOfConfigs,
+                                const uint8_t* buffer) {
   if (numberOfConfigs != mConfig.numberOfConfigItems) {
     return;
   }

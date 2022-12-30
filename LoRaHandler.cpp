@@ -5,17 +5,17 @@
  *      Author: oveny
  */
 
+#include "LoRaHandler.h"
+
 #include <LoRa.h>  // LoRa by Sandeep Mistry
 
-#include "LoRaHandler.h"
 #include "Util.h"
 
 int LoRaHandler::begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc,
-    OnValueReqMsgFunc onValueReqMsgFunc,
-    OnConfigReqMsgFunc onConfigReqMsgFunc,
-    OnConfigSetReqMsgFunc onConfigSetReqMsgFunc,
-    OnServiceReqMsgFunc onServiceReqMsgFunc) {
-
+                       OnValueReqMsgFunc onValueReqMsgFunc,
+                       OnConfigReqMsgFunc onConfigReqMsgFunc,
+                       OnConfigSetReqMsgFunc onConfigSetReqMsgFunc,
+                       OnServiceReqMsgFunc onServiceReqMsgFunc) {
   mOnDiscoveryReqMsgFunc = onDiscoveryReqMsgFunc;
   mOnValueReqMsgFunc = onValueReqMsgFunc;
   mOnConfigReqMsgFunc = onConfigReqMsgFunc;
@@ -101,7 +101,8 @@ int8_t LoRaHandler::parseMsg(LoRaRxMessageT& rxMsg) {
 
     case MsgType::configSet_req:
       if (mOnConfigSetReqMsgFunc) {
-        LoRaConfigValuePayloadT* payload = reinterpret_cast<LoRaConfigValuePayloadT*>(rxMsg.payload);
+        LoRaConfigValuePayloadT* payload =
+            reinterpret_cast<LoRaConfigValuePayloadT*>(rxMsg.payload);
         mOnConfigSetReqMsgFunc(*payload);
       }
       break;
@@ -109,7 +110,8 @@ int8_t LoRaHandler::parseMsg(LoRaRxMessageT& rxMsg) {
     case MsgType::service_req:
       if (mOnServiceReqMsgFunc) {
         if (rxMsg.header.len == sizeof(LoRaServiceItemT)) {
-          LoRaServiceItemT* item = reinterpret_cast<LoRaServiceItemT*>(rxMsg.payload);
+          LoRaServiceItemT* item =
+              reinterpret_cast<LoRaServiceItemT*>(rxMsg.payload);
           mOnServiceReqMsgFunc(*item);
         }
       }
@@ -120,7 +122,6 @@ int8_t LoRaHandler::parseMsg(LoRaRxMessageT& rxMsg) {
   }
   return 0;
 }
-
 
 void LoRaHandler::printMessage(const LoRaTxMessageT* msg) {
   Serial.print("H:");
@@ -159,7 +160,8 @@ void LoRaHandler::sendMsg(const LoRaTxMessageT* msg) {
 #endif
 
   LoRa.beginPacket();
-  LoRa.write(reinterpret_cast<uint8_t*>(&msg), sizeof(msg->header) + msg->header.len);
+  LoRa.write(reinterpret_cast<uint8_t*>(&msg),
+             sizeof(msg->header) + msg->header.len);
   LoRa.endPacket();
 
   mSeqId++;
@@ -201,13 +203,10 @@ void LoRaHandler::beginDiscoveryMsg() {
   mMsgTx.header.flags |= MsgType::discovery_msg;
 }
 
-void LoRaHandler::endMsg() {
-  sendMsg(&mMsgTx);
-}
+void LoRaHandler::endMsg() { sendMsg(&mMsgTx); }
 
 void LoRaHandler::addDiscoveryItem(const uint8_t* buffer, uint8_t length) {
-  if (mMsgTx.header.len == 0)
-  {
+  if (mMsgTx.header.len == 0) {
     memcpy(mMsgTx.payload, buffer, length);
     mMsgTx.header.len += length;
   }
@@ -221,9 +220,7 @@ void LoRaHandler::beginValueMsg() {
 }
 
 void LoRaHandler::addValueItem(const uint8_t* buffer, uint8_t length) {
-  if (mMsgTx.header.len + length
-      <= LORA_MAX_PAYLOAD_LENGTH - 1) {
-
+  if (mMsgTx.header.len + length <= LORA_MAX_PAYLOAD_LENGTH - 1) {
     memcpy(&mMsgTx.payload[mMsgTx.header.len], buffer, length);
     mMsgTx.header.len += length;
 
@@ -239,8 +236,7 @@ void LoRaHandler::beginConfigsValueMsg() {
 }
 
 void LoRaHandler::addConfigItemValues(const uint8_t* buffer, uint8_t length) {
-  if (mMsgTx.header.len == 0)
-  {
+  if (mMsgTx.header.len == 0) {
     memcpy(mMsgTx.payload, buffer, length);
     mMsgTx.header.len += length;
   }

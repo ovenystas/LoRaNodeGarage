@@ -9,13 +9,14 @@
 
 #include "Cover.h"
 
-class GarageCover: public Cover {
-public:
-  GarageCover(uint8_t entityId, const char* name,
-      uint8_t pinClosed, uint8_t pinOpen, uint8_t pinRelay) :
-      Cover(entityId, name),
-      mPinClosed { pinClosed }, mPinOpen { pinOpen }, mPinRelay { pinRelay } {
-
+class GarageCover : public Cover {
+ public:
+  GarageCover(uint8_t entityId, const char* name, uint8_t pinClosed,
+              uint8_t pinOpen, uint8_t pinRelay)
+      : Cover(entityId, name),
+        mPinClosed{pinClosed},
+        mPinOpen{pinOpen},
+        mPinRelay{pinRelay} {
     pinMode(pinClosed, INPUT_PULLUP);
     pinMode(pinOpen, INPUT_PULLUP);
     pinMode(pinRelay, OUTPUT);
@@ -36,12 +37,13 @@ public:
     return 0;
   }
 
-  virtual void setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final {
+  virtual void setConfigs(uint8_t numberOfConfigs,
+                          const uint8_t* buffer) final {
     (void)numberOfConfigs;
     (void)buffer;
   }
 
-private:
+ private:
   Cover::State determineState();
 
   bool isClosed(bool closedSensor, bool openSensor);

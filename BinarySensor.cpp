@@ -3,9 +3,10 @@
  *      Author: oveny
  */
 
+#include "BinarySensor.h"
+
 #include <WString.h>
 
-#include "BinarySensor.h"
 #include "Component.h"
 
 const __FlashStringHelper* BinarySensor::getStateName() {
