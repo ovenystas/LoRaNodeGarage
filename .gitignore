@@ -1,5 +1,5 @@
 .settings/
+.venv/
 Release/
 sloeber.ino.cpp
 spec.d
-.venv/
