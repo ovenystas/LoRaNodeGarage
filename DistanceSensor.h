@@ -8,8 +8,8 @@
 #include <stdint.h>
 #include <NewPing.h>
 
-#include "components/Sensor.h"
-#include "components/ConfigItem.h"
+#include "Sensor.h"
+#include "ConfigItem.h"
 #include "Util.h"
 
 using DistanceT = int16_t; // cm

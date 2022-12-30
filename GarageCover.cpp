@@ -7,7 +7,7 @@
 
 #include "GarageCover.h"
 #include "Util.h"
-#include "components/Cover.h"
+#include "Cover.h"
 
 bool GarageCover::isClosed(bool closedSensor, bool openSensor) {
   return closedSensor == LOW && openSensor == HIGH;

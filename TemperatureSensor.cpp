@@ -7,8 +7,8 @@
 
 #include "TemperatureSensor.h"
 #include "Util.h"
-#include "components/Sensor.h"
-#include "components/ConfigItem.h"
+#include "Sensor.h"
+#include "ConfigItem.h"
 
 bool TemperatureSensor::update() {
   TemperatureT newValue = round(mDht.readTemperature() * 10)

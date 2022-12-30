@@ -5,7 +5,7 @@
  *      Author: oveny
  */
 
-#include <LoRa.h>
+#include <LoRa.h>  // LoRa by Sandeep Mistry
 
 #include "LoRaHandler.h"
 #include "Util.h"

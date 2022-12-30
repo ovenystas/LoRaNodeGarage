@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
-#include "components/Sensor.h"
-#include "components/ConfigItem.h"
-#include "components/Unit.h"
+#include "Sensor.h"
+#include "ConfigItem.h"
+#include "Unit.h"
 #include "DistanceSensor.h"
 #include "Util.h"
 

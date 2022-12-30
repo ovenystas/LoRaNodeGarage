@@ -6,7 +6,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "components/BinarySensor.h"
+#include "BinarySensor.h"
 #include "HeightSensor.h"
 
 class PresenceBinarySensor: public BinarySensor {

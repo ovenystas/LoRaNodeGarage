@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "components/Component.h"
+#include "Component.h"
 #include "Util.h"
 
 class Node {
@@ -35,4 +35,3 @@ public:
 private:
   arrayHelper<Component*, 6> mEntities;
 };
-

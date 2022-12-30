@@ -8,8 +8,8 @@
 #include <stdint.h>
 #include <DHT.h>
 
-#include "components/Sensor.h"
-#include "components/ConfigItem.h"
+#include "Sensor.h"
+#include "ConfigItem.h"
 #include "Util.h"
 
 using TemperatureT = int16_t; // Degree C

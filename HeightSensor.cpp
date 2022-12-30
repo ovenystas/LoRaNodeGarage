@@ -7,7 +7,7 @@
 
 #include "HeightSensor.h"
 #include "Util.h"
-#include "components/Sensor.h"
+#include "Sensor.h"
 
 bool HeightSensor::update() {
   HeightT newValue = mConfig.zeroValue.getValue() - mDistanseSensor.getValue();

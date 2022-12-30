@@ -57,7 +57,7 @@
 
 #include <Arduino.h>
 
-#include "util.h"
+#include "Util.h"
 
 #define DEBUG_LORA_MESSAGE
 

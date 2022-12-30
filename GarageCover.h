@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "components/Cover.h"
+#include "Cover.h"
 
 class GarageCover: public Cover {
 public:

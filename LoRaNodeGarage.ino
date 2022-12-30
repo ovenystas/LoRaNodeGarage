@@ -8,13 +8,13 @@
  */
 
 #include <Arduino.h>
-#include <GarageCover.h>
-#include <PresenceBinarySensor.h>
 #include <SPI.h>
-#include <DHT.h>
-#include <NewPing.h>
+#include <DHT.h>  // DHT sensor library by Adafruit
+#include <NewPing.h>  // NewPing by Tim Eckel
 
 #include "LoRaHandler.h"
+#include "GarageCover.h"
+#include "PresenceBinarySensor.h"
 #include "TemperatureSensor.h"
 #include "HumiditySensor.h"
 #include "DistanceSensor.h"
