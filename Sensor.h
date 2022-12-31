@@ -34,7 +34,7 @@ class Sensor : public Component {
     voltage
   };
 
-  Sensor(uint8_t entityId) : Component(entityId) {}
+  explicit Sensor(uint8_t entityId) : Component(entityId) {}
 
   Sensor(uint8_t entityId, const char* name,
          Unit::Type unitType = Unit::Type::none, uint8_t precision = 0)
@@ -119,6 +119,6 @@ class Sensor : public Component {
   T mLastReportedValue = {};
   uint32_t mLastReportTime = {};  // s
   const Unit mUnit;
-  const uint8_t mPrecision;
-  const int16_t mScaleFactor;
+  const uint8_t mPrecision = {};
+  const int16_t mScaleFactor = {factors[mPrecision]};
 };

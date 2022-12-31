@@ -32,6 +32,7 @@ class HeightSensor : public Sensor<HeightT> {
 
  private:
   struct Config {
+    // cppcheck-suppress unusedStructMember
     const uint8_t numberOfConfigItems = {4};
 
     ConfigItem<DistanceT> reportHysteresis = {

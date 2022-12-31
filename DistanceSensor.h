@@ -29,6 +29,7 @@ class DistanceSensor : public Sensor<DistanceT> {
 
  private:
   struct Config {
+    // cppcheck-suppress unusedStructMember
     const uint8_t numberOfConfigItems = {3};
 
     ConfigItem<DistanceT> reportHysteresis = {

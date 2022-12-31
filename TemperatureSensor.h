@@ -35,6 +35,7 @@ class TemperatureSensor : public Sensor<TemperatureT> {
 
  private:
   struct Config {
+    // cppcheck-suppress unusedStructMember
     const uint8_t numberOfConfigItems = {4};
 
     ConfigItem<TemperatureT> reportHysteresis = {

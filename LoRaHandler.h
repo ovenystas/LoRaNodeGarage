@@ -216,7 +216,7 @@ class LoRaHandler {
   void sendPing(const uint8_t toAddr, int8_t rssi);
 
   uint8_t mSeqId = {0};
-  LoRaTxMessageT mMsgTx;
+  LoRaTxMessageT mMsgTx = {};
 
   OnDiscoveryReqMsgFunc mOnDiscoveryReqMsgFunc = {nullptr};
   OnValueReqMsgFunc mOnValueReqMsgFunc = {nullptr};

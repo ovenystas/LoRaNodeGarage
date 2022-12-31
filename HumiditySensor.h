@@ -33,6 +33,7 @@ class HumiditySensor : public Sensor<HumidityT> {
 
  private:
   struct Config {
+    // cppcheck-suppress unusedStructMember
     const uint8_t numberOfConfigItems = {4};
 
     ConfigItem<HumidityT> reportHysteresis = {

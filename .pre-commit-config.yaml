@@ -23,6 +23,8 @@ repos:
     hooks:
       - id: clang-format
         args: [--style=Google, -i]
+      - id: cppcheck
+        args: [--language=c++, --std=c++11, --inline-suppr]
 
   - repo: meta
     hooks:

@@ -57,5 +57,5 @@ void HeightSensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
   p += mConfig.reportHysteresis.setConfigValue(p[0], &p[1]);
   p += mConfig.reportInterval.setConfigValue(p[0], &p[1]);
   p += mConfig.stableTime.setConfigValue(p[0], &p[1]);
-  p += mConfig.zeroValue.setConfigValue(p[0], &p[1]);
+  mConfig.zeroValue.setConfigValue(p[0], &p[1]);
 }

@@ -61,5 +61,5 @@ void TemperatureSensor::setConfigs(uint8_t numberOfConfigs,
   p += mConfig.reportHysteresis.setConfigValue(p[0], &p[1]);
   p += mConfig.measureInterval.setConfigValue(p[0], &p[1]);
   p += mConfig.reportInterval.setConfigValue(p[0], &p[1]);
-  p += mConfig.compensation.setConfigValue(p[0], &p[1]);
+  mConfig.compensation.setConfigValue(p[0], &p[1]);
 }

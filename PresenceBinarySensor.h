@@ -32,6 +32,7 @@ class PresenceBinarySensor : public BinarySensor {
 
  private:
   struct Config {
+    // cppcheck-suppress unusedStructMember
     const uint8_t numberOfConfigItems = {3};
 
     ConfigItem<HeightT> lowLimit = {

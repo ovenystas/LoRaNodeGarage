@@ -14,8 +14,9 @@
 template <class T>
 class ConfigItem {
  public:
-  ConfigItem(uint8_t configId, T value = 0,
-             Unit::Type unitType = Unit::Type::none, uint8_t precision = 0)
+  explicit ConfigItem(uint8_t configId, T value = 0,
+                      Unit::Type unitType = Unit::Type::none,
+                      uint8_t precision = 0)
       : mConfigId{configId},
         mValue{value},
         mUnit{unitType},

@@ -65,5 +65,5 @@ void PresenceBinarySensor::setConfigs(uint8_t numberOfConfigs,
   const uint8_t* p = buffer;
   p += mConfig.lowLimit.setConfigValue(p[0], &p[1]);
   p += mConfig.highLimit.setConfigValue(p[0], &p[1]);
-  p += mConfig.minStableTime.setConfigValue(p[0], &p[1]);
+  mConfig.minStableTime.setConfigValue(p[0], &p[1]);
 }

@@ -28,7 +28,7 @@ class Unit {
     ms,
   };
 
-  Unit(Type type) : mType{type} {}
+  explicit Unit(Type type) : mType{type} {}
 
   virtual ~Unit() = default;
 
