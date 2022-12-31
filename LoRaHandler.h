@@ -6,52 +6,60 @@
  */
 
 /*
- * Ping request:
- *   Empty payload
+ * Header:
+ *   Byte 0:  dst - Destination address
+ *   Byte 1:  src - Source address
+ *   Byte 2:  id
+ *   Byte 3:  flags
+ *   Byte 4:  len - Length of payload in bytes
  *
- * Ping message:
- *   Byte 0: RSSI in ping request message
+ * Messages:
+ *   Ping request:
+ *     Empty payload
  *
- * Discovery request:
- *   Byte 0:   EntityId (0-254, 255 is request discovery messages from all
- * entities)
+ *   Ping message:
+ *     Byte 0: RSSI in ping request message
  *
- * Discovery message:
- *   Byte 0:    Entity Id (0-254, 255 is reserved for broadcast)
- *   Byte 1:    Component (Component::Type)
- *   Byte 2:    Device Class (From BinarySensor, Cover or Sensor)
- *   Byte 3:    Unit (Unit::TypeE)
- *   Byte 4:    High nibble: Size (1, 2 or 4 bytes)
- *              Low nibble:  Precision (Number of decimals 0-3)
- *   Byte 5:    Number of config items (0-?)
- *   Byte 6:    Config Id (0-254, 255 is reserved for all)
- *   Byte 7:    Unit (Unit::TypeE)
- *   Byte 8:    High nibble: Size (1, 2 or 4 bytes)
- *              Low nibble:  Precision (Number of decimals 0-3)
- *   Byte 9-11: Repeat byte 6-8 for second config item
+ *   Discovery request:
+ *     Byte 0:   EntityId (0-254, 255 is request discovery messages from all
+ *               entities)
  *
- * Value request:
- *   Byte 0:   EntityId (0-254, 255 is request values from all entities)
+ *   Discovery message:
+ *     Byte 0:    Entity Id (0-254, 255 is reserved for broadcast)
+ *     Byte 1:    Component (Component::Type)
+ *     Byte 2:    Device Class (From BinarySensor, Cover or Sensor)
+ *     Byte 3:    Unit (Unit::TypeE)
+ *     Byte 4:    High nibble: Size (1, 2 or 4 bytes)
+ *                Low nibble:  Precision (Number of decimals 0-3)
+ *     Byte 5:    Number of config items (0-?)
+ *     Byte 6:    Config Id (0-254, 255 is reserved for all)
+ *     Byte 7:    Unit (Unit::TypeE)
+ *     Byte 8:    High nibble: Size (1, 2 or 4 bytes)
+ *                Low nibble:  Precision (Number of decimals 0-3)
+ *     Byte 9-11: Repeat byte 6-8 for second config item
  *
- * Value message:
- *   Byte 0:       Number of entities (1-k)
- *   Byte 1:       Entity Id
- *   Byte 2-n:     Value in big endian style (1, 2 or 4 bytes)
- *   Byte (n+1)-m: Repeat Byte 2-n for second entity
+ *   Value request:
+ *     Byte 0:   EntityId (0-254, 255 is request values from all entities)
  *
- * Config request:
- *   Byte 0:   EntityId
+ *   Value message:
+ *     Byte 0:       Number of entities (1-k)
+ *     Byte 1:       Entity Id
+ *     Byte 2-n:     Value in big endian style (1, 2 or 4 bytes)
+ *     Byte (n+1)-m: Repeat Byte 2-n for second entity
  *
- * Config message:
- *   Byte 0:       EntityId
- *   Byte 1:       Number of configs (1-?)
- *   Byte 2:       ConfigId
- *   Byte 3-n:     Value
- *   Byte (n+1)-m: Repeat Byte 3-n for second config
+ *   Config request:
+ *     Byte 0:   EntityId
  *
- * Service request
- *   Byte 0: EntityId
- *   Byte 1: Service
+ *   Config message:
+ *     Byte 0:       EntityId
+ *     Byte 1:       Number of configs (1-?)
+ *     Byte 2:       ConfigId
+ *     Byte 3-n:     Value
+ *     Byte (n+1)-m: Repeat Byte 3-n for second config
+ *
+ *   Service request
+ *     Byte 0: EntityId
+ *     Byte 1: Service
  *
  */
 #pragma once

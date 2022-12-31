@@ -1,5 +1,6 @@
 .settings/
 .venv/
+.vscode/
 Release/
 sloeber.ino.cpp
 spec.d
