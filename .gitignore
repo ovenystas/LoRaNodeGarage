@@ -2,5 +2,6 @@
 .venv/
 .vscode/
 Release/
+build/
 sloeber.ino.cpp
 spec.d
