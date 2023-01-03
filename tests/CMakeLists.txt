@@ -29,6 +29,8 @@ target_link_libraries(
 add_executable(
   Util_test
   Util_test.cpp
+  ../Util.cpp
+  mocks/Arduino.cpp
 )
 target_link_libraries(
   Util_test

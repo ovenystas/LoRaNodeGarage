@@ -6,7 +6,6 @@
 #pragma once
 
 #include <Arduino.h>
-#include <Stream.h>
 
 // TODO: Handle wrap-around after 49 days.
 #define seconds() (millis() / 1000)
@@ -46,17 +45,14 @@ void printHex(Stream& stream, uint32_t value, bool prefix = false);
 template <typename T, uint8_t max_size>
 class arrayHelper {
  public:
-  typedef T valueType;
-  //        array_wrapper():
-  //            mData()
-  //        {}
+  arrayHelper(T val = T()) : maxSize{max_size} {};
 
   T& operator[](uint8_t idx) { return mData[idx]; }
 
   T* data() { return this->mData; }
 
-  const uint8_t maxSize = max_size;
+  const uint8_t maxSize;
 
  private:
-  T mData[max_size];
+  T mData[max_size] = {};
 };

@@ -35,11 +35,11 @@ class Print {
   //
   //   size_t print(const __FlashStringHelper *);
   //   size_t print(const String &);
-  //   size_t print(const char[]);
-  //   size_t print(char);
+  virtual size_t print(const char[]) = 0;
+  //  virtual size_t print(char) = 0;
   //   size_t print(unsigned char, int = DEC);
   //   size_t print(int, int = DEC);
-  //   size_t print(unsigned int, int = DEC);
+  virtual size_t print(unsigned int, int = DEC) = 0;
   //   size_t print(long, int = DEC);
   //   size_t print(unsigned long, int = DEC);
   //   size_t print(double, int = 2);
@@ -57,6 +57,13 @@ class Print {
   //   size_t println(double, int = 2);
   //   size_t println(const Printable&);
   //   size_t println(void);
+};
+
+class PrintMock {
+ public:
+  MOCK_METHOD1(print, size_t(const char[]));
+  // MOCK_METHOD1(print, size_t (char));
+  MOCK_METHOD2(print, size_t(unsigned int, int));
 };
 
 #endif
