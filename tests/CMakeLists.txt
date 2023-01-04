@@ -38,10 +38,25 @@ target_link_libraries(
   GTest::gmock_main
 )
 
+add_executable(
+  ConfigItem_test
+  ConfigItem_test.cpp
+  ../Util.cpp
+  mocks/Arduino.cpp
+)
+target_link_libraries(
+  ConfigItem_test
+  GTest::gtest_main
+  GTest::gmock_main
+)
+
 include(GoogleTest)
 gtest_discover_tests(
   Unit_test
 )
 gtest_discover_tests(
   Util_test
+)
+gtest_discover_tests(
+  ConfigItem_test
 )
