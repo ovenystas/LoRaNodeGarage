@@ -6,7 +6,6 @@
 #pragma once
 
 #include <Stream.h>
-#include <WString.h>
 #include <stdint.h>
 
 #include "ConfigItem.h"
@@ -49,7 +48,7 @@ class Component {
   virtual void print(Stream& stream) = 0;
 
  private:
-  static const uint8_t maxNameLength = 20;
+  static const uint8_t maxNameLength = 20 + 1;  // 20 chars + null terminator
 
   const uint8_t mEntityId = {};
   char mName[maxNameLength] = {};
