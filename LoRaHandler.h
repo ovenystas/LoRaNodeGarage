@@ -26,8 +26,8 @@
  *
  *   Discovery message:
  *     Byte 0:    Entity Id (0-254, 255 is reserved for broadcast)
- *     Byte 1:    Component (Component::Type)
- *     Byte 2:    Device Class (From BinarySensor, Cover or Sensor)
+ *     Byte 1:    Component Type (Component::Type)
+ *     Byte 2:    Device Class (One of BinarySensor, Cover or Sensor)
  *     Byte 3:    Unit (Unit::TypeE)
  *     Byte 4:    High nibble: Size (1, 2 or 4 bytes)
  *                Low nibble:  Precision (Number of decimals 0-3)

@@ -61,7 +61,7 @@ class Sensor : public Component {
     mLastReportedValue = mValue;
   }
 
-  Component::Type getComponent() const { return Component::Type::sensor; }
+  Component::Type getComponentType() const { return Component::Type::sensor; }
 
   virtual DeviceClass getDeviceClass() const { return DeviceClass::none; }
 
@@ -71,7 +71,7 @@ class Sensor : public Component {
 
   virtual uint8_t getDiscoveryMsg(uint8_t* buffer) override {
     buffer[0] = getEntityId();
-    buffer[1] = static_cast<uint8_t>(getComponent());
+    buffer[1] = static_cast<uint8_t>(getComponentType());
     buffer[2] = static_cast<uint8_t>(getDeviceClass());
     buffer[3] = static_cast<uint8_t>(mUnit.getType());
     buffer[4] = (sizeof(T) << 4) | mPrecision;
@@ -89,6 +89,11 @@ class Sensor : public Component {
     return p - buffer;
   }
 
+  virtual void setReported() override final {
+    mLastReportTime = seconds();
+    mLastReportedValue = mValue;
+  }
+
   virtual void print(Stream& stream) final {
     stream.print(getName());
     stream.print(": ");
@@ -103,8 +108,6 @@ class Sensor : public Component {
     stream.print(mUnit.getName());
   }
 
-  uint32_t timeSinceLastReport() const { return seconds() - mLastReportTime; }
-
   T absDiffSinceReportedValue(T newValue) const {
     return abs(newValue - mLastReportedValue);
   }
@@ -117,7 +120,6 @@ class Sensor : public Component {
 
   T mValue = {};
   T mLastReportedValue = {};
-  uint32_t mLastReportTime = {};  // s
   const Unit mUnit;
   const uint8_t mPrecision = {};
   const int16_t mScaleFactor = {factors[mPrecision]};

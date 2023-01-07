@@ -64,7 +64,7 @@ class Cover : public Component {
     return CoverServiceName[static_cast<uint8_t>(service)];
   }
 
-  Component::Type getComponent() const { return Component::Type::cover; }
+  Component::Type getComponentType() const { return Component::Type::cover; }
 
   virtual DeviceClass getDeviceClass() const { return DeviceClass::none; }
 
@@ -72,7 +72,7 @@ class Cover : public Component {
 
   virtual uint8_t getValueMsg(uint8_t* buffer) final;
 
-  virtual void setReported() final {
+  virtual void setReported() override final {
     mLastReportTime = seconds();
     mLastReportedState = mState;
   }
@@ -87,5 +87,4 @@ class Cover : public Component {
  private:
   State mState = {State::closed};
   State mLastReportedState = {State::closed};
-  uint32_t mLastReportTime = {};  // s
 };

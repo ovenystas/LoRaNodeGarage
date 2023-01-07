@@ -6,6 +6,7 @@
 #pragma once
 
 #include <Stream.h>
+#include <WString.h>
 
 #include "Component.h"
 #include "Util.h"
@@ -63,7 +64,9 @@ class BinarySensor : public Component {
 
   const __FlashStringHelper* getStateName();
 
-  Component::Type getComponent() const { return Component::Type::binarySensor; }
+  Component::Type getComponentType() const {
+    return Component::Type::binarySensor;
+  }
 
   virtual DeviceClass getDeviceClass() const { return DeviceClass::none; }
 
@@ -71,18 +74,18 @@ class BinarySensor : public Component {
 
   virtual uint8_t getValueMsg(uint8_t* buffer) final;
 
-  virtual void setReported() final {
+  virtual void setReported() override final {
     mLastReportTime = seconds();
     mLastReportedState = mState;
   }
 
+  bool diffLastReportedState() const { return mState != mLastReportedState; }
+
   virtual void print(Stream& stream) final;
 
- protected:
   inline void setState(bool state) { mState = state; }
 
  private:
   bool mState = {};
   bool mLastReportedState = {};
-  uint32_t mLastReportTime = {};  // s
 };
