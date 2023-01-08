@@ -77,11 +77,12 @@ class Cover : public Component {
     mLastReportedState = mState;
   }
 
+  bool isDiffLastReportedState() const { return mState != mLastReportedState; }
+
   virtual void print(Stream& stream) final;
 
   virtual void print(Stream& stream, uint8_t service) final;
 
- protected:
   inline void setState(State state) { mState = state; }
 
  private:

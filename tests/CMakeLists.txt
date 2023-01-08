@@ -75,6 +75,19 @@ target_link_libraries(
   GTest::gmock_main
 )
 
+add_executable(
+  Cover_test
+  Cover_test.cpp
+  ../Cover.cpp
+  ../Util.cpp
+  mocks/Arduino.cpp
+)
+target_link_libraries(
+  Cover_test
+  GTest::gtest_main
+  GTest::gmock_main
+)
+
 include(GoogleTest)
 gtest_discover_tests(
   Unit_test
@@ -90,4 +103,7 @@ gtest_discover_tests(
 )
 gtest_discover_tests(
   BinarySensor_test
+)
+gtest_discover_tests(
+  Cover_test
 )
