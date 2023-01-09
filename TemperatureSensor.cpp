@@ -15,10 +15,10 @@ bool TemperatureSensor::update() {
   TemperatureT newValue =
       round(mDht.readTemperature() * 10) + mConfig.compensation.getValue();
 
-  bool largeChange =
-      absDiffSinceReportedValue(newValue) > mConfig.reportHysteresis.getValue();
-
   setValue(newValue);
+
+  bool largeChange =
+      absDiffLastReportedValue() > mConfig.reportHysteresis.getValue();
 
   bool reportIsDue = timeSinceLastReport() > mConfig.reportInterval.getValue();
 

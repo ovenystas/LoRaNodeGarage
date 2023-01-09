@@ -79,7 +79,7 @@ class BinarySensor : public Component {
     mLastReportedState = mState;
   }
 
-  bool diffLastReportedState() const { return mState != mLastReportedState; }
+  bool isDiffLastReportedState() const { return mState != mLastReportedState; }
 
   virtual void print(Stream& stream) final;
 

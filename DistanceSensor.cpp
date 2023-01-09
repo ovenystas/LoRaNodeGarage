@@ -13,10 +13,10 @@
 bool DistanceSensor::update() {
   DistanceT newValue = static_cast<DistanceT>(mSonar.ping_cm());
 
-  bool largeChange =
-      absDiffSinceReportedValue(newValue) > mConfig.reportHysteresis.getValue();
-
   setValue(newValue);
+
+  bool largeChange =
+      absDiffLastReportedValue() > mConfig.reportHysteresis.getValue();
 
   bool reportIsDue = timeSinceLastReport() > mConfig.reportInterval.getValue();
 

@@ -20,6 +20,7 @@ class GarageCover : public Cover {
     pinMode(pinClosed, INPUT_PULLUP);
     pinMode(pinOpen, INPUT_PULLUP);
     pinMode(pinRelay, OUTPUT);
+    digitalWrite(pinRelay, LOW);
   }
 
   bool update() final;

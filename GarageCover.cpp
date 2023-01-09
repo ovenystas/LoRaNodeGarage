@@ -65,13 +65,13 @@ bool GarageCover::update() {
 uint8_t GarageCover::getDiscoveryMsg(uint8_t* buffer) {
   uint8_t* p = buffer;
   p += Cover::getDiscoveryMsg(p);
-  *p++ = 0;
+  *p++ = 0;  // No config items
 
   return p - buffer;
 }
 
 void GarageCover::callService(const Cover::Service service) {
-  State state = determineState();
+  State state = getState();
 
   switch (service) {
     case Cover::Service::open:

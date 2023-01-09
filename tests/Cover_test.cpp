@@ -30,61 +30,61 @@ class CoverChild : public Cover {
 
 class Cover_test : public ::testing::Test {
  protected:
-  CoverChild cs = CoverChild(34, "Cover");
+  CoverChild cc = CoverChild(34, "Cover");
 };
 
-TEST_F(Cover_test, hasService_yes) { EXPECT_EQ(cs.hasService(), true); }
+TEST_F(Cover_test, hasService_yes) { EXPECT_EQ(cc.hasService(), true); }
 
 // TEST_F(Cover_test, callService) {
-//   cs.callService(static_cast<uint8_t>(0u));
+//   cc.callService(static_cast<uint8_t>(0u));
 //   SUCCEED();
 // }
 
 TEST_F(Cover_test, getState) {
-  EXPECT_EQ(cs.getState(), Cover::State::closed);
-  cs.setState(Cover::State::opening);
-  EXPECT_EQ(cs.getState(), Cover::State::opening);
-  cs.setState(Cover::State::open);
-  EXPECT_EQ(cs.getState(), Cover::State::open);
-  cs.setState(Cover::State::closing);
-  EXPECT_EQ(cs.getState(), Cover::State::closing);
+  EXPECT_EQ(cc.getState(), Cover::State::closed);
+  cc.setState(Cover::State::opening);
+  EXPECT_EQ(cc.getState(), Cover::State::opening);
+  cc.setState(Cover::State::open);
+  EXPECT_EQ(cc.getState(), Cover::State::open);
+  cc.setState(Cover::State::closing);
+  EXPECT_EQ(cc.getState(), Cover::State::closing);
 }
 
 TEST_F(Cover_test, getStateName_of_current_state) {
-  EXPECT_STREQ(cs.getStateName(), "closed");
-  cs.setState(Cover::State::opening);
-  EXPECT_STREQ(cs.getStateName(), "opening");
-  cs.setState(Cover::State::open);
-  EXPECT_STREQ(cs.getStateName(), "open");
-  cs.setState(Cover::State::closing);
-  EXPECT_STREQ(cs.getStateName(), "closing");
+  EXPECT_STREQ(cc.getStateName(), "closed");
+  cc.setState(Cover::State::opening);
+  EXPECT_STREQ(cc.getStateName(), "opening");
+  cc.setState(Cover::State::open);
+  EXPECT_STREQ(cc.getStateName(), "open");
+  cc.setState(Cover::State::closing);
+  EXPECT_STREQ(cc.getStateName(), "closing");
 }
 
 TEST_F(Cover_test, getStateName_of_state_as_arg) {
-  EXPECT_STREQ(cs.getStateName(Cover::State::closed), "closed");
-  EXPECT_STREQ(cs.getStateName(Cover::State::opening), "opening");
-  EXPECT_STREQ(cs.getStateName(Cover::State::open), "open");
-  EXPECT_STREQ(cs.getStateName(Cover::State::closing), "closing");
+  EXPECT_STREQ(cc.getStateName(Cover::State::closed), "closed");
+  EXPECT_STREQ(cc.getStateName(Cover::State::opening), "opening");
+  EXPECT_STREQ(cc.getStateName(Cover::State::open), "open");
+  EXPECT_STREQ(cc.getStateName(Cover::State::closing), "closing");
 }
 
 TEST_F(Cover_test, getServiceName_of_service_as_arg) {
-  EXPECT_STREQ(cs.getServiceName(Cover::Service::close), "close");
-  EXPECT_STREQ(cs.getServiceName(Cover::Service::open), "open");
-  EXPECT_STREQ(cs.getServiceName(Cover::Service::stop), "stop");
-  EXPECT_STREQ(cs.getServiceName(Cover::Service::toggle), "toggle");
+  EXPECT_STREQ(cc.getServiceName(Cover::Service::close), "close");
+  EXPECT_STREQ(cc.getServiceName(Cover::Service::open), "open");
+  EXPECT_STREQ(cc.getServiceName(Cover::Service::stop), "stop");
+  EXPECT_STREQ(cc.getServiceName(Cover::Service::toggle), "toggle");
 }
 
 TEST_F(Cover_test, getComponentType) {
-  EXPECT_EQ(cs.getComponentType(), Component::Type::cover);
+  EXPECT_EQ(cc.getComponentType(), Component::Type::cover);
 }
 
 TEST_F(Cover_test, getDeviceClass) {
-  EXPECT_EQ(cs.getDeviceClass(), Cover::DeviceClass::none);
+  EXPECT_EQ(cc.getDeviceClass(), Cover::DeviceClass::none);
 }
 
 TEST_F(Cover_test, getDiscoveryMsg) {
   uint8_t buf[5] = {};
-  EXPECT_EQ(cs.getDiscoveryMsg(buf), 5);
+  EXPECT_EQ(cc.getDiscoveryMsg(buf), 5);
   EXPECT_THAT(
       buf, ElementsAre(34, static_cast<uint8_t>(Component::Type::cover),
                        static_cast<uint8_t>(Cover::DeviceClass::none),
@@ -93,17 +93,17 @@ TEST_F(Cover_test, getDiscoveryMsg) {
 
 TEST_F(Cover_test, getValueMsg) {
   uint8_t buf[2] = {};
-  EXPECT_EQ(cs.getValueMsg(buf), 2);
+  EXPECT_EQ(cc.getValueMsg(buf), 2);
   EXPECT_THAT(buf, ElementsAre(34, static_cast<uint8_t>(Cover::State::closed)));
-  cs.setState(Cover::State::opening);
-  EXPECT_EQ(cs.getValueMsg(buf), 2);
+  cc.setState(Cover::State::opening);
+  EXPECT_EQ(cc.getValueMsg(buf), 2);
   EXPECT_THAT(buf,
               ElementsAre(34, static_cast<uint8_t>(Cover::State::opening)));
-  cs.setState(Cover::State::open);
-  EXPECT_EQ(cs.getValueMsg(buf), 2);
+  cc.setState(Cover::State::open);
+  EXPECT_EQ(cc.getValueMsg(buf), 2);
   EXPECT_THAT(buf, ElementsAre(34, static_cast<uint8_t>(Cover::State::open)));
-  cs.setState(Cover::State::closing);
-  EXPECT_EQ(cs.getValueMsg(buf), 2);
+  cc.setState(Cover::State::closing);
+  EXPECT_EQ(cc.getValueMsg(buf), 2);
   EXPECT_THAT(buf,
               ElementsAre(34, static_cast<uint8_t>(Cover::State::closing)));
 }
@@ -115,22 +115,22 @@ TEST_F(Cover_test, setReported) {
       .WillOnce(Return(10000))
       .WillOnce(Return(20500))
       .WillOnce(Return(35999));
-  cs.setReported();
-  EXPECT_EQ(cs.isDiffLastReportedState(), false);
-  EXPECT_EQ(cs.timeSinceLastReport(), 10);
-  cs.setState(Cover::State::opening);
-  EXPECT_EQ(cs.isDiffLastReportedState(), true);
-  cs.setReported();
-  EXPECT_EQ(cs.timeSinceLastReport(), 15);
+  cc.setReported();
+  EXPECT_EQ(cc.isDiffLastReportedState(), false);
+  EXPECT_EQ(cc.timeSinceLastReport(), 10);
+  cc.setState(Cover::State::opening);
+  EXPECT_EQ(cc.isDiffLastReportedState(), true);
+  cc.setReported();
+  EXPECT_EQ(cc.timeSinceLastReport(), 15);
   releaseArduinoMock();
 }
 
 // TEST_F(Cover_test, print) {
-//   cs.print(Serial);
+//   cc.print(Serial);
 //   SUCCEED();
 // }
 
 // TEST_F(Cover_test, print) {
-//   cs.print(Serial, 0);
+//   cc.print(Serial, 0);
 //   SUCCEED();
 // }

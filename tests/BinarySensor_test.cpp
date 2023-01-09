@@ -29,50 +29,50 @@ class BinarySensorChild : public BinarySensor {
 
 class BinarySensor_test : public ::testing::Test {
  protected:
-  BinarySensorChild bs = BinarySensorChild(34, "BinarySensor");
+  BinarySensorChild bsc = BinarySensorChild(34, "BinarySensor");
 };
 
-TEST_F(BinarySensor_test, hasService_no) { EXPECT_EQ(bs.hasService(), false); }
+TEST_F(BinarySensor_test, hasService_no) { EXPECT_EQ(bsc.hasService(), false); }
 
 TEST_F(BinarySensor_test, callService) {
-  bs.callService(0);
+  bsc.callService(0);
   SUCCEED();
 }
 
 // TEST_F(BinarySensor_test, print) {
-//   bs.print(Serial, 0);
+//   bsc.print(Serial, 0);
 //   SUCCEED();
 // }
 
 TEST_F(BinarySensor_test, getState_when_false) {
-  EXPECT_EQ(bs.getState(), false);
+  EXPECT_EQ(bsc.getState(), false);
 }
 
 TEST_F(BinarySensor_test, getState_when_true) {
-  bs.setState(true);
-  EXPECT_EQ(bs.getState(), true);
+  bsc.setState(true);
+  EXPECT_EQ(bsc.getState(), true);
 }
 
 TEST_F(BinarySensor_test, getStateName_when_false) {
-  EXPECT_STREQ(bs.getStateName(), "off");
+  EXPECT_STREQ(bsc.getStateName(), "off");
 }
 
 TEST_F(BinarySensor_test, getStateName_when_true) {
-  bs.setState(true);
-  EXPECT_STREQ(bs.getStateName(), "on");
+  bsc.setState(true);
+  EXPECT_STREQ(bsc.getStateName(), "on");
 }
 
 TEST_F(BinarySensor_test, getComponentType) {
-  EXPECT_EQ(bs.getComponentType(), Component::Type::binarySensor);
+  EXPECT_EQ(bsc.getComponentType(), Component::Type::binarySensor);
 }
 
 TEST_F(BinarySensor_test, getDeviceClass) {
-  EXPECT_EQ(bs.getDeviceClass(), BinarySensor::DeviceClass::none);
+  EXPECT_EQ(bsc.getDeviceClass(), BinarySensor::DeviceClass::none);
 }
 
 TEST_F(BinarySensor_test, getDiscoveryMsg) {
   uint8_t buf[5] = {};
-  EXPECT_EQ(bs.getDiscoveryMsg(buf), 5);
+  EXPECT_EQ(bsc.getDiscoveryMsg(buf), 5);
   EXPECT_THAT(
       buf, ElementsAre(34, static_cast<uint8_t>(Component::Type::binarySensor),
                        static_cast<uint8_t>(BinarySensor::DeviceClass::none),
@@ -81,14 +81,14 @@ TEST_F(BinarySensor_test, getDiscoveryMsg) {
 
 TEST_F(BinarySensor_test, getValueMsg_when_false) {
   uint8_t buf[2] = {};
-  EXPECT_EQ(bs.getValueMsg(buf), 2);
+  EXPECT_EQ(bsc.getValueMsg(buf), 2);
   EXPECT_THAT(buf, ElementsAre(34, false));
 }
 
 TEST_F(BinarySensor_test, getValueMsg_when_true) {
   uint8_t buf[2] = {};
-  bs.setState(true);
-  EXPECT_EQ(bs.getValueMsg(buf), 2);
+  bsc.setState(true);
+  EXPECT_EQ(bsc.getValueMsg(buf), 2);
   EXPECT_THAT(buf, ElementsAre(34, true));
 }
 
@@ -99,12 +99,12 @@ TEST_F(BinarySensor_test, setReported) {
       .WillOnce(Return(10000))
       .WillOnce(Return(20500))
       .WillOnce(Return(35999));
-  bs.setReported();
-  EXPECT_EQ(bs.diffLastReportedState(), false);
-  EXPECT_EQ(bs.timeSinceLastReport(), 10);
-  bs.setState(true);
-  EXPECT_EQ(bs.diffLastReportedState(), true);
-  bs.setReported();
-  EXPECT_EQ(bs.timeSinceLastReport(), 15);
+  bsc.setReported();
+  EXPECT_EQ(bsc.isDiffLastReportedState(), false);
+  EXPECT_EQ(bsc.timeSinceLastReport(), 10);
+  bsc.setState(true);
+  EXPECT_EQ(bsc.isDiffLastReportedState(), true);
+  bsc.setReported();
+  EXPECT_EQ(bsc.timeSinceLastReport(), 15);
   releaseArduinoMock();
 }

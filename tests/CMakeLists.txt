@@ -88,6 +88,32 @@ target_link_libraries(
   GTest::gmock_main
 )
 
+add_executable(
+  Sensor_test
+  Sensor_test.cpp
+  ../Util.cpp
+  mocks/Arduino.cpp
+)
+target_link_libraries(
+  Sensor_test
+  GTest::gtest_main
+  GTest::gmock_main
+)
+
+add_executable(
+  GarageCover_test
+  GarageCover_test.cpp
+  ../GarageCover.cpp
+  ../Cover.cpp
+  ../Util.cpp
+  mocks/Arduino.cpp
+)
+target_link_libraries(
+  GarageCover_test
+  GTest::gtest_main
+  GTest::gmock_main
+)
+
 include(GoogleTest)
 gtest_discover_tests(
   Unit_test
@@ -106,4 +132,10 @@ gtest_discover_tests(
 )
 gtest_discover_tests(
   Cover_test
+)
+gtest_discover_tests(
+  Sensor_test
+)
+gtest_discover_tests(
+  GarageCover_test
 )

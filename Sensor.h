@@ -49,17 +49,7 @@ class Sensor : public Component {
 
   virtual void callService(uint8_t service) final { (void)service; }
 
-  virtual void print(Stream& stream, uint8_t service) final {
-    (void)stream;
-    (void)service;
-  }
-
   inline T getValue() const { return mValue; }
-
-  virtual void setReported() final {
-    mLastReportTime = seconds();
-    mLastReportedValue = mValue;
-  }
 
   Component::Type getComponentType() const { return Component::Type::sensor; }
 
@@ -94,6 +84,10 @@ class Sensor : public Component {
     mLastReportedValue = mValue;
   }
 
+  virtual T absDiffLastReportedValue() const final {
+    return abs(mValue - mLastReportedValue);
+  }
+
   virtual void print(Stream& stream) final {
     stream.print(getName());
     stream.print(": ");
@@ -108,15 +102,15 @@ class Sensor : public Component {
     stream.print(mUnit.getName());
   }
 
-  T absDiffSinceReportedValue(T newValue) const {
-    return abs(newValue - mLastReportedValue);
+  virtual void print(Stream& stream, uint8_t service) final {
+    (void)stream;
+    (void)service;
   }
 
- protected:
   inline void setValue(T value) { mValue = value; }
 
  private:
-  static constexpr int16_t factors[4] = {1, 10, 100, 1000};
+  int16_t factors[4] = {1, 10, 100, 1000};
 
   T mValue = {};
   T mLastReportedValue = {};
