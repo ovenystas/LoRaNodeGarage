@@ -7,7 +7,8 @@ class SensorChild : public Sensor<T> {
 
   SensorChild(uint8_t entityId, const char* name,
               Unit::Type unitType = Unit::Type::none, uint8_t precision = 0)
-      : Sensor<T>(entityId, name, unitType, precision) {}
+      : Sensor<T>(entityId, name, Sensor<T>::DeviceClass::none, unitType,
+                  precision) {}
 
   virtual ~SensorChild() = default;
 
@@ -18,8 +19,8 @@ class SensorChild : public Sensor<T> {
     return 0;
   }
 
-  void setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) override {
-    return;
+  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) override {
+    return false;
   }
 };
 

@@ -114,6 +114,19 @@ target_link_libraries(
   GTest::gmock_main
 )
 
+add_executable(
+  DistanceSensor_test
+  DistanceSensor_test.cpp
+  ../DistanceSensor.cpp
+  ../Util.cpp
+  mocks/Arduino.cpp
+)
+target_link_libraries(
+  DistanceSensor_test
+  GTest::gtest_main
+  GTest::gmock_main
+)
+
 include(GoogleTest)
 gtest_discover_tests(
   Unit_test
@@ -138,4 +151,7 @@ gtest_discover_tests(
 )
 gtest_discover_tests(
   GarageCover_test
+)
+gtest_discover_tests(
+  DistanceSensor_test
 )

@@ -36,8 +36,8 @@ class ComponentChild : public Component {
 
   void callService(uint8_t service) override { return; }
 
-  void setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) override {
-    return;
+  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) override {
+    return false;
   }
 
   void print(Stream& stream, uint8_t service) override { return; }

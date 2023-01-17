@@ -16,9 +16,14 @@ bool DistanceSensor::update() {
   setValue(newValue);
 
   bool largeChange =
-      absDiffLastReportedValue() > mConfig.reportHysteresis.getValue();
+      mConfig.reportHysteresis.getValue() > 0
+          ? absDiffLastReportedValue() >= mConfig.reportHysteresis.getValue()
+          : false;
 
-  bool reportIsDue = timeSinceLastReport() > mConfig.reportInterval.getValue();
+  bool reportIsDue =
+      mConfig.reportInterval.getValue() > 0
+          ? timeSinceLastReport() >= mConfig.reportInterval.getValue()
+          : false;
 
   return (largeChange || reportIsDue);
 }
@@ -48,13 +53,14 @@ uint8_t DistanceSensor::getConfigItemValuesMsg(uint8_t* buffer) {
   return p - buffer;
 }
 
-void DistanceSensor::setConfigs(uint8_t numberOfConfigs,
+bool DistanceSensor::setConfigs(uint8_t numberOfConfigs,
                                 const uint8_t* buffer) {
   if (numberOfConfigs != mConfig.numberOfConfigItems) {
-    return;
+    return false;
   }
   const uint8_t* p = buffer;
   p += mConfig.reportHysteresis.setConfigValue(p[0], &p[1]);
   p += mConfig.measureInterval.setConfigValue(p[0], &p[1]);
   mConfig.reportInterval.setConfigValue(p[0], &p[1]);
+  return true;
 }

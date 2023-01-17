@@ -35,7 +35,7 @@ class Component {
 
   virtual void callService(uint8_t service) = 0;
 
-  virtual void setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) = 0;
+  virtual bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) = 0;
 
   virtual void print(Stream& stream, uint8_t service) = 0;
 

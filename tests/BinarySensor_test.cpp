@@ -22,8 +22,8 @@ class BinarySensorChild : public BinarySensor {
     return 0;
   }
 
-  void setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) override {
-    return;
+  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) override {
+    return false;
   }
 };
 

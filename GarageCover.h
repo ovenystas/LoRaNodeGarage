@@ -38,10 +38,11 @@ class GarageCover : public Cover {
     return 0;
   }
 
-  virtual void setConfigs(uint8_t numberOfConfigs,
+  virtual bool setConfigs(uint8_t numberOfConfigs,
                           const uint8_t* buffer) final {
     (void)numberOfConfigs;
     (void)buffer;
+    return false;
   }
 
  private:

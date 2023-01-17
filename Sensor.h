@@ -17,28 +17,64 @@
 template <class T>
 class Sensor : public Component {
  public:
-  // From https://www.home-assistant.io/integrations/sensor/ at 2021-03-21
+  // From https://www.home-assistant.io/integrations/sensor/ at 2023-01-17
   enum class DeviceClass {
     none,
+    apparent_power,
+    aqi,
+    atmospheric_pressure,
     battery,
+    carbon_dioxide,
+    carbon_monoxide,
     current,
+    data_rate,
+    data_size,
+    date,
+    distance,
+    duration,
     energy,
+    enum_class,
+    frequency,
+    gas,
     humidity,
     illuminance,
-    signalStrength,
-    temperature,
+    irradiance,
+    moisture,
+    monetary,
+    nitrogen_dioxide,
+    nitrogen_monoxide,
+    nitrous_oxide,
+    ozone,
+    pm1,
+    pm10,
+    pm25,
+    power_factor,
     power,
-    powerFactor,
+    precipitation,
+    precipitation_intensity,
     pressure,
+    reactive_power,
+    signal_strength,
+    sound_pressure,
+    speed,
+    sulphur_dioxide,
+    temperature,
     timestamp,
-    voltage
+    volatile_organic_compounds,
+    voltage,
+    volume,
+    water,
+    weight,
+    wind_speed
   };
 
   explicit Sensor(uint8_t entityId) : Component(entityId) {}
 
   Sensor(uint8_t entityId, const char* name,
+         DeviceClass deviceClass = DeviceClass::none,
          Unit::Type unitType = Unit::Type::none, uint8_t precision = 0)
       : Component(entityId, name),
+        mDeviceClass{deviceClass},
         mUnit{unitType},
         mPrecision{precision > 3 ? static_cast<uint8_t>(3) : precision},
         mScaleFactor{factors[mPrecision]} {}
@@ -53,7 +89,7 @@ class Sensor : public Component {
 
   Component::Type getComponentType() const { return Component::Type::sensor; }
 
-  virtual DeviceClass getDeviceClass() const { return DeviceClass::none; }
+  inline DeviceClass getDeviceClass() const { return mDeviceClass; }
 
   inline Unit::Type getUnitType() const { return mUnit.getType(); }
 
@@ -114,7 +150,8 @@ class Sensor : public Component {
 
   T mValue = {};
   T mLastReportedValue = {};
-  const Unit mUnit;
+  const DeviceClass mDeviceClass = {DeviceClass::none};
+  const Unit mUnit = {Unit::Type::none};
   const uint8_t mPrecision = {};
   const int16_t mScaleFactor = {factors[mPrecision]};
 };
