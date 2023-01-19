@@ -1,5 +1,4 @@
-#ifndef NewPing_h
-#define NewPing_h
+#pragma once
 
 #include <gmock/gmock.h>
 
@@ -149,5 +148,3 @@ class NewPingMock : public NewPing {
  public:
   MOCK_METHOD(unsigned long, ping_cm, (unsigned int));
 };
-
-#endif

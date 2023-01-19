@@ -28,7 +28,7 @@ class HeightSensor : public Sensor<HeightT> {
 
   virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
 
-  virtual void setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
+  virtual bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
 
  private:
   struct Config {
