@@ -1,8 +1,3 @@
-/*
- *  Created on: 1 mars 2021
- *      Author: oveny
- */
-
 #include "GarageCover.h"
 
 #include <Arduino.h>
@@ -20,41 +15,40 @@ bool GarageCover::isOpen(bool closedSensor, bool openSensor) {
 
 bool GarageCover::isClosing(bool closedSensor, bool openSensor) {
   return closedSensor == HIGH && openSensor == HIGH &&
-         (getState() == Cover::State::closing ||
-          getState() == Cover::State::open);
+         (getState() == CoverState::closing || getState() == CoverState::open);
 }
 
 bool GarageCover::isOpening(bool closedSensor, bool openSensor) {
   return closedSensor == HIGH && openSensor == HIGH &&
-         (getState() == Cover::State::opening ||
-          getState() == Cover::State::closed);
+         (getState() == CoverState::opening ||
+          getState() == CoverState::closed);
 }
 
-Cover::State GarageCover::determineState() {
+CoverState GarageCover::determineState() {
   bool closedSensor = digitalRead(mPinClosed);
   bool openSensor = digitalRead(mPinOpen);
 
   if (isClosed(closedSensor, openSensor)) {
-    return Cover::State::closed;
+    return CoverState::closed;
   }
 
   if (isOpen(closedSensor, openSensor)) {
-    return Cover::State::open;
+    return CoverState::open;
   }
 
   if (isClosing(closedSensor, openSensor)) {
-    return Cover::State::closing;
+    return CoverState::closing;
   }
 
   if (isOpening(closedSensor, openSensor)) {
-    return Cover::State::opening;
+    return CoverState::opening;
   }
 
   return getState();  // Error condition, both sensors can't be LOW.
 }
 
 bool GarageCover::update() {
-  State newState = determineState();
+  CoverState newState = determineState();
   bool hasChanged = newState != getState();
 
   setState(newState);
@@ -70,37 +64,36 @@ uint8_t GarageCover::getDiscoveryMsg(uint8_t* buffer) {
   return p - buffer;
 }
 
-void GarageCover::callService(const Cover::Service service) {
-  State state = getState();
+void GarageCover::callService(const CoverService service) {
+  CoverState state = getState();
 
   switch (service) {
-    case Cover::Service::open:
-      if (state == Cover::State::closed) {
+    case CoverService::open:
+      if (state == CoverState::closed) {
         activateRelay(1);
-      } else if (state == Cover::State::closing) {
+      } else if (state == CoverState::closing) {
         activateRelay(2);
       }
       break;
 
-    case Cover::Service::close:
-      if (state == Cover::State::open) {
+    case CoverService::close:
+      if (state == CoverState::open) {
         activateRelay(1);
-      } else if (state == Cover::State::opening) {
+      } else if (state == CoverState::opening) {
         activateRelay(2);
       }
       break;
 
-    case Cover::Service::stop:
-      if (state == Cover::State::opening || state == Cover::State::closing) {
+    case CoverService::stop:
+      if (state == CoverState::opening || state == CoverState::closing) {
         activateRelay(1);
       }
       break;
 
-    case Cover::Service::toggle:
-      if (state == Cover::State::open || state == Cover::State::closed) {
+    case CoverService::toggle:
+      if (state == CoverState::open || state == CoverState::closed) {
         activateRelay(1);
-      } else if (state == Cover::State::opening ||
-                 state == Cover::State::closing) {
+      } else if (state == CoverState::opening || state == CoverState::closing) {
         activateRelay(2);
       }
       break;

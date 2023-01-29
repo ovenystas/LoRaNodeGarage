@@ -1,8 +1,8 @@
-#include "../DistanceSensor.h"
+#include "DistanceSensor.h"
 
 #include <gtest/gtest.h>
 
-#include "../Unit.h"
+#include "Unit.h"
 #include "mocks/Arduino.h"
 #include "mocks/NewPing.h"
 
@@ -70,7 +70,7 @@ TEST_F(DistanceSensor_test, getDiscoveryMsg) {
       buf,
       ElementsAre(
           7, static_cast<uint8_t>(Component::Type::sensor),
-          static_cast<uint8_t>(Sensor<DistanceT>::DeviceClass::distance),
+          static_cast<uint8_t>(SensorDeviceClass::distance),
           static_cast<uint8_t>(Unit::Type::cm), (sizeof(DistanceT) << 4) | 0, 3,
           0, static_cast<uint8_t>(Unit::Type::cm), (sizeof(DistanceT) << 4) | 0,
           1, static_cast<uint8_t>(Unit::Type::s), (sizeof(uint16_t) << 4) | 0,

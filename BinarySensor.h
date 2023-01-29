@@ -1,8 +1,3 @@
-/*
- *  Created on: 28 feb. 2021
- *      Author: oveny
- */
-
 #pragma once
 
 #include <Stream.h>
@@ -11,81 +6,102 @@
 #include "Component.h"
 #include "Util.h"
 
-/*
- *
- */
-class BinarySensor : public Component {
+// From https://www.home-assistant.io/integrations/binary_sensor/ at
+// 2021-03-21
+enum class BinarySensorDeviceClass {
+  none,
+  battery,
+  batteryCharging,
+  cold,
+  connectivity,
+  door,
+  garageDoor,
+  gas,
+  heat,
+  light,
+  lock,
+  moisture,
+  motion,
+  moving,
+  occupancy,
+  opening,
+  plug,
+  power,
+  presence,
+  problem,
+  safety,
+  smoke,
+  sound,
+  vibration,
+  window
+};
+
+class IBinarySensor : public virtual IComponent {
+ protected:
+  virtual ~IBinarySensor() = default;
+
+  virtual bool getState() const = 0;
+
+  virtual const __FlashStringHelper* getStateName() = 0;
+
+  virtual IComponent::Type getComponentType() const = 0;
+
+  virtual BinarySensorDeviceClass getDeviceClass() const = 0;
+
+  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) = 0;
+
+  virtual uint8_t getValueMsg(uint8_t* buffer) = 0;
+
+  virtual bool isDiffLastReportedState() const = 0;
+
+  virtual void setState(bool state) = 0;
+};
+
+class BinarySensor : public virtual IBinarySensor, public Component {
  public:
-  // From https://www.home-assistant.io/integrations/binary_sensor/ at
-  // 2021-03-21
-  enum class DeviceClass {
-    none,
-    battery,
-    batteryCharging,
-    cold,
-    connectivity,
-    door,
-    garageDoor,
-    gas,
-    heat,
-    light,
-    lock,
-    moisture,
-    motion,
-    moving,
-    occupancy,
-    opening,
-    plug,
-    power,
-    presence,
-    problem,
-    safety,
-    smoke,
-    sound,
-    vibration,
-    window
-  };
+  BinarySensor(
+      uint8_t entityId, const char* name,
+      BinarySensorDeviceClass deviceClass = BinarySensorDeviceClass::none)
+      : Component(entityId, name), mDeviceClass{deviceClass} {}
 
-  BinarySensor(uint8_t entityId, const char* name)
-      : Component(entityId, name) {}
+  bool hasService() final { return false; }
 
-  virtual ~BinarySensor() = default;
+  void callService(uint8_t service) final { (void)service; }
 
-  virtual bool hasService() final { return false; }
-
-  virtual void callService(uint8_t service) final { (void)service; }
-
-  virtual void print(Stream& stream, uint8_t service) final {
+  void print(Stream& stream, uint8_t service) final {
     (void)stream;
     (void)service;
   }
 
-  bool getState() const { return mState; }
+  bool getState() const final { return mState; }
 
-  const __FlashStringHelper* getStateName();
+  const __FlashStringHelper* getStateName() final;
 
-  Component::Type getComponentType() const {
+  Component::Type getComponentType() const final {
     return Component::Type::binarySensor;
   }
 
-  virtual DeviceClass getDeviceClass() const { return DeviceClass::none; }
+  BinarySensorDeviceClass getDeviceClass() const final { return mDeviceClass; }
 
-  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) override;
+  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 
-  virtual uint8_t getValueMsg(uint8_t* buffer) final;
+  uint8_t getValueMsg(uint8_t* buffer) final;
 
-  virtual void setReported() override final {
-    mLastReportTime = seconds();
+  void setReported() final {
+    Component::setReported();
     mLastReportedState = mState;
   }
 
-  bool isDiffLastReportedState() const { return mState != mLastReportedState; }
+  bool isDiffLastReportedState() const final {
+    return mState != mLastReportedState;
+  }
 
-  virtual void print(Stream& stream) final;
+  void print(Stream& stream) final;
 
-  inline void setState(bool state) { mState = state; }
+  void setState(bool state) final { mState = state; }
 
  private:
+  const BinarySensorDeviceClass mDeviceClass = {BinarySensorDeviceClass::none};
   bool mState = {};
   bool mLastReportedState = {};
 };

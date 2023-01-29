@@ -43,7 +43,7 @@ TEST_F(SensorInt8_test, getComponentType) {
 }
 
 TEST_F(SensorInt8_test, getDeviceClass) {
-  EXPECT_EQ(sc.getDeviceClass(), Sensor<int8_t>::DeviceClass::none);
+  EXPECT_EQ(sc.getDeviceClass(), SensorDeviceClass::none);
 }
 
 TEST_F(SensorInt8_test, getUnitType_default) {
@@ -67,31 +67,31 @@ TEST(Sensor_test, getUnitName_cm) {
 TEST_F(SensorInt8_test, getDiscoveryMsg) {
   uint8_t buf[5] = {};
   EXPECT_EQ(sc.getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(108, static_cast<uint8_t>(Component::Type::sensor),
-                       static_cast<uint8_t>(Sensor<int8_t>::DeviceClass::none),
-                       static_cast<uint8_t>(Unit::Type::none),
-                       (sizeof(int8_t) << 4) | 0));
+  EXPECT_THAT(buf,
+              ElementsAre(108, static_cast<uint8_t>(Component::Type::sensor),
+                          static_cast<uint8_t>(SensorDeviceClass::none),
+                          static_cast<uint8_t>(Unit::Type::none),
+                          (sizeof(int8_t) << 4) | 0));
 }
 
 TEST_F(SensorInt16_test, getDiscoveryMsg) {
   uint8_t buf[5] = {};
   EXPECT_EQ(sc.getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(116, static_cast<uint8_t>(Component::Type::sensor),
-                       static_cast<uint8_t>(Sensor<int8_t>::DeviceClass::none),
-                       static_cast<uint8_t>(Unit::Type::none),
-                       (sizeof(int16_t) << 4) | 0));
+  EXPECT_THAT(buf,
+              ElementsAre(116, static_cast<uint8_t>(Component::Type::sensor),
+                          static_cast<uint8_t>(SensorDeviceClass::none),
+                          static_cast<uint8_t>(Unit::Type::none),
+                          (sizeof(int16_t) << 4) | 0));
 }
 
 TEST_F(SensorInt32_test, getDiscoveryMsg) {
   uint8_t buf[5] = {};
   EXPECT_EQ(sc.getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(132, static_cast<uint8_t>(Component::Type::sensor),
-                       static_cast<uint8_t>(Sensor<int8_t>::DeviceClass::none),
-                       static_cast<uint8_t>(Unit::Type::none),
-                       (sizeof(int32_t) << 4) | 0));
+  EXPECT_THAT(buf,
+              ElementsAre(132, static_cast<uint8_t>(Component::Type::sensor),
+                          static_cast<uint8_t>(SensorDeviceClass::none),
+                          static_cast<uint8_t>(Unit::Type::none),
+                          (sizeof(int32_t) << 4) | 0));
 }
 
 TEST(Sensor_test, getDiscoveryMsg_precision0) {
@@ -99,11 +99,11 @@ TEST(Sensor_test, getDiscoveryMsg_precision0) {
       SensorChild<int32_t>(132, "Sensor32", Unit::Type::none, 0);
   uint8_t buf[5] = {};
   EXPECT_EQ(sc.getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(132, static_cast<uint8_t>(Component::Type::sensor),
-                       static_cast<uint8_t>(Sensor<int8_t>::DeviceClass::none),
-                       static_cast<uint8_t>(Unit::Type::none),
-                       (sizeof(int32_t) << 4) | 0));
+  EXPECT_THAT(buf,
+              ElementsAre(132, static_cast<uint8_t>(Component::Type::sensor),
+                          static_cast<uint8_t>(SensorDeviceClass::none),
+                          static_cast<uint8_t>(Unit::Type::none),
+                          (sizeof(int32_t) << 4) | 0));
 }
 
 TEST(Sensor_test, getDiscoveryMsg_precision1) {
@@ -111,11 +111,11 @@ TEST(Sensor_test, getDiscoveryMsg_precision1) {
       SensorChild<int32_t>(132, "Sensor32", Unit::Type::none, 1);
   uint8_t buf[5] = {};
   EXPECT_EQ(sc.getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(132, static_cast<uint8_t>(Component::Type::sensor),
-                       static_cast<uint8_t>(Sensor<int8_t>::DeviceClass::none),
-                       static_cast<uint8_t>(Unit::Type::none),
-                       (sizeof(int32_t) << 4) | 1));
+  EXPECT_THAT(buf,
+              ElementsAre(132, static_cast<uint8_t>(Component::Type::sensor),
+                          static_cast<uint8_t>(SensorDeviceClass::none),
+                          static_cast<uint8_t>(Unit::Type::none),
+                          (sizeof(int32_t) << 4) | 1));
 }
 
 TEST(Sensor_test, getDiscoveryMsg_precision2) {
@@ -123,11 +123,11 @@ TEST(Sensor_test, getDiscoveryMsg_precision2) {
       SensorChild<int32_t>(132, "Sensor32", Unit::Type::none, 2);
   uint8_t buf[5] = {};
   EXPECT_EQ(sc.getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(132, static_cast<uint8_t>(Component::Type::sensor),
-                       static_cast<uint8_t>(Sensor<int8_t>::DeviceClass::none),
-                       static_cast<uint8_t>(Unit::Type::none),
-                       (sizeof(int32_t) << 4) | 2));
+  EXPECT_THAT(buf,
+              ElementsAre(132, static_cast<uint8_t>(Component::Type::sensor),
+                          static_cast<uint8_t>(SensorDeviceClass::none),
+                          static_cast<uint8_t>(Unit::Type::none),
+                          (sizeof(int32_t) << 4) | 2));
 }
 
 TEST(Sensor_test, getDiscoveryMsg_precision3) {
@@ -135,11 +135,11 @@ TEST(Sensor_test, getDiscoveryMsg_precision3) {
       SensorChild<int32_t>(132, "Sensor32", Unit::Type::none, 3);
   uint8_t buf[5] = {};
   EXPECT_EQ(sc.getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(132, static_cast<uint8_t>(Component::Type::sensor),
-                       static_cast<uint8_t>(Sensor<int8_t>::DeviceClass::none),
-                       static_cast<uint8_t>(Unit::Type::none),
-                       (sizeof(int32_t) << 4) | 3));
+  EXPECT_THAT(buf,
+              ElementsAre(132, static_cast<uint8_t>(Component::Type::sensor),
+                          static_cast<uint8_t>(SensorDeviceClass::none),
+                          static_cast<uint8_t>(Unit::Type::none),
+                          (sizeof(int32_t) << 4) | 3));
 }
 
 TEST_F(SensorInt8_test, getValueMsg) {

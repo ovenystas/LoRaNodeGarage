@@ -1,8 +1,3 @@
-/*
- *  Created on: 28 feb. 2021
- *      Author: oveny
- */
-
 #pragma once
 
 #include <NewPing.h>
@@ -17,18 +12,17 @@ using DistanceT = int16_t;  // cm
 class DistanceSensor : public Sensor<DistanceT> {
  public:
   DistanceSensor(uint8_t entityId, const char* name, NewPing& sonar)
-      : Sensor<DistanceT>(entityId, name,
-                          Sensor<DistanceT>::DeviceClass::distance,
+      : Sensor<DistanceT>(entityId, name, SensorDeviceClass::distance,
                           Unit::Type::cm),
         mSonar{sonar} {}
 
   bool update() final;
 
-  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 
-  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
+  uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
 
-  virtual bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
+  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
 
  private:
   struct Config {

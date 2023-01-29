@@ -1,11 +1,7 @@
-/*
- *  Created on: 13 apr. 2021
- *      Author: oveny
- */
-
 #include "Cover.h"
 
 #include "Component.h"
+#include "Unit.h"
 
 uint8_t Cover::getDiscoveryMsg(uint8_t* buffer) {
   buffer[0] = getEntityId();
@@ -33,7 +29,7 @@ void Cover::print(Stream& stream) {
 void Cover::print(Stream& stream, uint8_t service) {
   stream.print(getName());
   stream.print(": Service ");
-  stream.print(getServiceName(static_cast<Service>(service)));
+  stream.print(getServiceName(static_cast<CoverService>(service)));
   stream.print(" called when in state ");
   stream.print(CoverStateName[static_cast<uint8_t>(mState)]);
 }

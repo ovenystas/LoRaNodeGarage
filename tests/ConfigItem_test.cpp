@@ -1,4 +1,4 @@
-#include "../ConfigItem.h"
+#include "ConfigItem.h"
 
 #include <gtest/gtest.h>
 

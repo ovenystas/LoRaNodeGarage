@@ -1,8 +1,8 @@
-#include "../GarageCover.h"
+#include "GarageCover.h"
 
 #include <gtest/gtest.h>
 
-#include "../Unit.h"
+#include "Unit.h"
 #include "mocks/Arduino.h"
 
 using ::testing::ElementsAre;
@@ -29,7 +29,7 @@ class GarageCover_test : public ::testing::Test {
 };
 
 TEST_F(GarageCover_test, update_closing_closed_closed) {
-  pGc->setState(Cover::State::closing);
+  pGc->setState(CoverState::closing);
   EXPECT_CALL(*arduinoMock, digitalRead(11))
       .WillOnce(Return(LOW))
       .WillOnce(Return(LOW));
@@ -37,13 +37,13 @@ TEST_F(GarageCover_test, update_closing_closed_closed) {
       .WillOnce(Return(HIGH))
       .WillOnce(Return(HIGH));
   EXPECT_EQ(pGc->update(), true);
-  EXPECT_EQ(pGc->getState(), Cover::State::closed);
+  EXPECT_EQ(pGc->getState(), CoverState::closed);
   EXPECT_EQ(pGc->update(), false);
-  EXPECT_EQ(pGc->getState(), Cover::State::closed);
+  EXPECT_EQ(pGc->getState(), CoverState::closed);
 }
 
 TEST_F(GarageCover_test, update_opening_open_open) {
-  pGc->setState(Cover::State::opening);
+  pGc->setState(CoverState::opening);
   EXPECT_CALL(*arduinoMock, digitalRead(11))
       .WillOnce(Return(HIGH))
       .WillOnce(Return(HIGH));
@@ -51,13 +51,13 @@ TEST_F(GarageCover_test, update_opening_open_open) {
       .WillOnce(Return(LOW))
       .WillOnce(Return(LOW));
   EXPECT_EQ(pGc->update(), true);
-  EXPECT_EQ(pGc->getState(), Cover::State::open);
+  EXPECT_EQ(pGc->getState(), CoverState::open);
   EXPECT_EQ(pGc->update(), false);
-  EXPECT_EQ(pGc->getState(), Cover::State::open);
+  EXPECT_EQ(pGc->getState(), CoverState::open);
 }
 
 TEST_F(GarageCover_test, update_closed_opening_opening) {
-  pGc->setState(Cover::State::closed);
+  pGc->setState(CoverState::closed);
   EXPECT_CALL(*arduinoMock, digitalRead(11))
       .WillOnce(Return(HIGH))
       .WillOnce(Return(HIGH));
@@ -65,13 +65,13 @@ TEST_F(GarageCover_test, update_closed_opening_opening) {
       .WillOnce(Return(HIGH))
       .WillOnce(Return(HIGH));
   EXPECT_EQ(pGc->update(), true);
-  EXPECT_EQ(pGc->getState(), Cover::State::opening);
+  EXPECT_EQ(pGc->getState(), CoverState::opening);
   EXPECT_EQ(pGc->update(), false);
-  EXPECT_EQ(pGc->getState(), Cover::State::opening);
+  EXPECT_EQ(pGc->getState(), CoverState::opening);
 }
 
 TEST_F(GarageCover_test, update_open_closing_closing) {
-  pGc->setState(Cover::State::open);
+  pGc->setState(CoverState::open);
   EXPECT_CALL(*arduinoMock, digitalRead(11))
       .WillOnce(Return(HIGH))
       .WillOnce(Return(HIGH));
@@ -79,9 +79,9 @@ TEST_F(GarageCover_test, update_open_closing_closing) {
       .WillOnce(Return(HIGH))
       .WillOnce(Return(HIGH));
   EXPECT_EQ(pGc->update(), true);
-  EXPECT_EQ(pGc->getState(), Cover::State::closing);
+  EXPECT_EQ(pGc->getState(), CoverState::closing);
   EXPECT_EQ(pGc->update(), false);
-  EXPECT_EQ(pGc->getState(), Cover::State::closing);
+  EXPECT_EQ(pGc->getState(), CoverState::closing);
 }
 
 TEST_F(GarageCover_test, getDiscoveryMsg) {
@@ -89,13 +89,13 @@ TEST_F(GarageCover_test, getDiscoveryMsg) {
   EXPECT_EQ(pGc->getDiscoveryMsg(buf), 6);
   EXPECT_THAT(buf,
               ElementsAre(91, static_cast<uint8_t>(Component::Type::cover),
-                          static_cast<uint8_t>(Cover::DeviceClass::garage),
+                          static_cast<uint8_t>(CoverDeviceClass::garage),
                           static_cast<uint8_t>(Unit::Type::none), (1 << 4) | 0,
                           0));  // No config items
 }
 
 TEST_F(GarageCover_test, getDeviceClass) {
-  EXPECT_EQ(pGc->getDeviceClass(), Cover::DeviceClass::garage);
+  EXPECT_EQ(pGc->getDeviceClass(), CoverDeviceClass::garage);
 }
 
 // No config items
@@ -128,97 +128,97 @@ void expectCalls_relayActivatedTwoTimes(ArduinoMock* arduinoMock) {
 }
 
 TEST_F(GarageCover_test, callService_open_when_closed_then_relayOneTime) {
-  pGc->setState(Cover::State::closed);
+  pGc->setState(CoverState::closed);
   expectCalls_relayActivatedOneTime(arduinoMock);
-  pGc->callService(Cover::Service::open);
+  pGc->callService(CoverService::open);
 }
 
 TEST_F(GarageCover_test, callService_open_when_closing_then_relayTwoTimes) {
-  pGc->setState(Cover::State::closing);
+  pGc->setState(CoverState::closing);
   expectCalls_relayActivatedTwoTimes(arduinoMock);
-  pGc->callService(Cover::Service::open);
+  pGc->callService(CoverService::open);
 }
 
 TEST_F(GarageCover_test, callService_open_when_open_then_relayNoTime) {
-  pGc->setState(Cover::State::open);
+  pGc->setState(CoverState::open);
   expectCalls_relayActivatedNoTimes(arduinoMock);
-  pGc->callService(Cover::Service::open);
+  pGc->callService(CoverService::open);
 }
 
 TEST_F(GarageCover_test, callService_open_when_opening_then_relayNoTime) {
-  pGc->setState(Cover::State::opening);
+  pGc->setState(CoverState::opening);
   expectCalls_relayActivatedNoTimes(arduinoMock);
-  pGc->callService(Cover::Service::open);
+  pGc->callService(CoverService::open);
 }
 
 TEST_F(GarageCover_test, callService_close_when_open_then_relayOneTime) {
-  pGc->setState(Cover::State::open);
+  pGc->setState(CoverState::open);
   expectCalls_relayActivatedOneTime(arduinoMock);
-  pGc->callService(Cover::Service::close);
+  pGc->callService(CoverService::close);
 }
 
 TEST_F(GarageCover_test, callService_close_when_opening_then_relayTwoTimes) {
-  pGc->setState(Cover::State::opening);
+  pGc->setState(CoverState::opening);
   expectCalls_relayActivatedTwoTimes(arduinoMock);
-  pGc->callService(Cover::Service::close);
+  pGc->callService(CoverService::close);
 }
 
 TEST_F(GarageCover_test, callService_close_when_closed_then_relayNoTime) {
-  pGc->setState(Cover::State::open);
+  pGc->setState(CoverState::open);
   expectCalls_relayActivatedNoTimes(arduinoMock);
-  pGc->callService(Cover::Service::open);
+  pGc->callService(CoverService::open);
 }
 
 TEST_F(GarageCover_test, callService_close_when_closing_then_relayNoTime) {
-  pGc->setState(Cover::State::closing);
+  pGc->setState(CoverState::closing);
   expectCalls_relayActivatedNoTimes(arduinoMock);
-  pGc->callService(Cover::Service::close);
+  pGc->callService(CoverService::close);
 }
 
 TEST_F(GarageCover_test, callService_stop_when_opening_then_relayOneTime) {
-  pGc->setState(Cover::State::opening);
+  pGc->setState(CoverState::opening);
   expectCalls_relayActivatedOneTime(arduinoMock);
-  pGc->callService(Cover::Service::stop);
+  pGc->callService(CoverService::stop);
 }
 
 TEST_F(GarageCover_test, callService_stop_when_closing_then_relayOneTime) {
-  pGc->setState(Cover::State::closing);
+  pGc->setState(CoverState::closing);
   expectCalls_relayActivatedOneTime(arduinoMock);
-  pGc->callService(Cover::Service::stop);
+  pGc->callService(CoverService::stop);
 }
 
 TEST_F(GarageCover_test, callService_stop_when_closed_then_relayNoTime) {
-  pGc->setState(Cover::State::closed);
+  pGc->setState(CoverState::closed);
   expectCalls_relayActivatedNoTimes(arduinoMock);
-  pGc->callService(Cover::Service::stop);
+  pGc->callService(CoverService::stop);
 }
 
 TEST_F(GarageCover_test, callService_stop_when_open_then_relayNoTime) {
-  pGc->setState(Cover::State::open);
+  pGc->setState(CoverState::open);
   expectCalls_relayActivatedNoTimes(arduinoMock);
-  pGc->callService(Cover::Service::stop);
+  pGc->callService(CoverService::stop);
 }
 
 TEST_F(GarageCover_test, callService_toggle_when_open_then_relayOneTime) {
-  pGc->setState(Cover::State::open);
+  pGc->setState(CoverState::open);
   expectCalls_relayActivatedOneTime(arduinoMock);
-  pGc->callService(Cover::Service::toggle);
+  pGc->callService(CoverService::toggle);
 }
 
 TEST_F(GarageCover_test, callService_toggle_when_closed_then_relayOneTime) {
-  pGc->setState(Cover::State::closed);
+  pGc->setState(CoverState::closed);
   expectCalls_relayActivatedOneTime(arduinoMock);
-  pGc->callService(Cover::Service::toggle);
+  pGc->callService(CoverService::toggle);
 }
 
 TEST_F(GarageCover_test, callService_toggle_when_opening_then_relayOwoTimes) {
-  pGc->setState(Cover::State::opening);
+  pGc->setState(CoverState::opening);
   expectCalls_relayActivatedTwoTimes(arduinoMock);
-  pGc->callService(Cover::Service::toggle);
+  pGc->callService(CoverService::toggle);
 }
 
 TEST_F(GarageCover_test, callService_toggle_when_closing_then_relayOwoTimes) {
-  pGc->setState(Cover::State::closing);
+  pGc->setState(CoverState::closing);
   expectCalls_relayActivatedTwoTimes(arduinoMock);
-  pGc->callService(Cover::Service::toggle);
+  pGc->callService(CoverService::toggle);
 }

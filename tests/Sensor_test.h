@@ -1,4 +1,4 @@
-#include "../Sensor.h"
+#include "Sensor.h"
 
 template <class T>
 class SensorChild : public Sensor<T> {
@@ -7,19 +7,19 @@ class SensorChild : public Sensor<T> {
 
   SensorChild(uint8_t entityId, const char* name,
               Unit::Type unitType = Unit::Type::none, uint8_t precision = 0)
-      : Sensor<T>(entityId, name, Sensor<T>::DeviceClass::none, unitType,
+      : Sensor<T>(entityId, name, SensorDeviceClass::none, unitType,
                   precision) {}
 
   virtual ~SensorChild() = default;
 
   bool update() override { return false; }
 
-  uint8_t getConfigItemValuesMsg(uint8_t* buffer) override {
+  uint8_t getConfigItemValuesMsg(uint8_t* buffer) final {
     buffer[0] = 0;
     return 0;
   }
 
-  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) override {
+  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final {
     return false;
   }
 };

@@ -1,8 +1,3 @@
-/*
- *  Created on: 28 feb. 2021
- *      Author: oveny
- */
-
 #pragma once
 
 #include <Stream.h>
@@ -10,82 +5,114 @@
 #include "Component.h"
 #include "Util.h"
 
-static const char CoverStateName[][8] = {
-    {"closed"}, {"open"}, {"opening"}, {"closing"}};
+static const char CoverStateName[][8] = {"closed", "open", "opening",
+                                         "closing"};
+
 static const char CoverServiceName[][7] = {"open", "close", "stop", "toggle"};
 
-/*
- *
- */
-class Cover : public Component {
+// From https://www.home-assistant.io/integrations/cover/ at 2021-03-21
+enum class CoverDeviceClass {
+  none,
+  awning,
+  blind,
+  curtain,
+  damper,
+  door,
+  garage,
+  gate,
+  shade,
+  shutter,
+  window
+};
+
+enum class CoverState { closed, open, opening, closing };
+
+enum class CoverService { open, close, stop, toggle };
+
+class ICover : public virtual IComponent {
  public:
-  // From https://www.home-assistant.io/integrations/cover/ at 2021-03-21
-  enum class DeviceClass {
-    none,
-    awning,
-    blind,
-    curtain,
-    damper,
-    door,
-    garage,
-    gate,
-    shade,
-    shutter,
-    window
-  };
+  virtual ~ICover() = default;
 
-  enum class State { closed, open, opening, closing };
+  virtual CoverState getState() const = 0;
 
-  enum class Service { open, close, stop, toggle };
+  virtual const char* getStateName() const = 0;
 
-  Cover(uint8_t entityId, const char* name) : Component(entityId, name) {}
+  virtual const char* getStateName(CoverState state) const = 0;
 
-  virtual ~Cover() = default;
+  virtual const char* getServiceName(CoverService service) const = 0;
 
-  virtual bool hasService() final { return true; }
+  virtual IComponent::Type getComponentType() const = 0;
 
-  virtual void callService(Service service) = 0;
+  virtual CoverDeviceClass getDeviceClass() const = 0;
 
-  virtual void callService(uint8_t service) override {
-    callService(static_cast<Service>(service));
+  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) = 0;
+
+  virtual uint8_t getValueMsg(uint8_t* buffer) = 0;
+
+  virtual bool isDiffLastReportedState() const = 0;
+
+  virtual void setState(CoverState state) = 0;
+
+ private:
+  CoverState mState = {CoverState::closed};
+  CoverState mLastReportedState = {CoverState::closed};
+};
+
+class Cover : public virtual ICover, public Component {
+ public:
+  Cover(uint8_t entityId, const char* name,
+        CoverDeviceClass deviceClass = CoverDeviceClass::none)
+      : Component(entityId, name), mDeviceClass{deviceClass} {}
+
+  bool hasService() final { return true; }
+
+  virtual void callService(CoverService service) = 0;
+
+  void callService(uint8_t service) final {
+    callService(static_cast<CoverService>(service));
   }
 
-  inline State getState() const { return mState; }
+  CoverState getState() const final { return mState; }
 
-  const char* getStateName() const {
+  const char* getStateName() const final {
     return CoverStateName[static_cast<uint8_t>(mState)];
   }
 
-  const char* getStateName(State state) const {
+  const char* getStateName(CoverState state) const final {
     return CoverStateName[static_cast<uint8_t>(state)];
   }
 
-  const char* getServiceName(Service service) const {
+  const char* getServiceName(CoverService service) const final {
     return CoverServiceName[static_cast<uint8_t>(service)];
   }
 
-  Component::Type getComponentType() const { return Component::Type::cover; }
+  IComponent::Type getComponentType() const final {
+    return IComponent::Type::cover;
+  }
 
-  virtual DeviceClass getDeviceClass() const { return DeviceClass::none; }
+  CoverDeviceClass getDeviceClass() const final { return mDeviceClass; }
 
-  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) override;
+  uint8_t getDiscoveryMsg(uint8_t* buffer) override;
 
-  virtual uint8_t getValueMsg(uint8_t* buffer) final;
+  uint8_t getValueMsg(uint8_t* buffer) final;
 
-  virtual void setReported() override final {
-    mLastReportTime = seconds();
+  void setReported() final {
+    Component::setReported();
     mLastReportedState = mState;
   }
 
-  bool isDiffLastReportedState() const { return mState != mLastReportedState; }
+  bool isDiffLastReportedState() const final {
+    return mState != mLastReportedState;
+  }
 
-  virtual void print(Stream& stream) final;
+  void print(Stream& stream) final;
 
-  virtual void print(Stream& stream, uint8_t service) final;
+  void print(Stream& stream, uint8_t service) final;
 
-  inline void setState(State state) { mState = state; }
+  void setState(CoverState state) final { mState = state; }
 
  private:
-  State mState = {State::closed};
-  State mLastReportedState = {State::closed};
+  const CoverDeviceClass mDeviceClass = {CoverDeviceClass::none};
+  CoverState mState = {CoverState::closed};
+  CoverState mLastReportedState = {CoverState::closed};
 };

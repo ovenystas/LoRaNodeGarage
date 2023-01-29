@@ -1,8 +1,3 @@
-/*
- *  Created on: 28 feb. 2021
- *      Author: oveny
- */
-
 #pragma once
 
 #include <stdint.h>
@@ -10,7 +5,7 @@
 #include "BinarySensor.h"
 #include "HeightSensor.h"
 
-class PresenceBinarySensor : public BinarySensor {
+class PresenceBinarySensor : public IBinarySensor, public virtual BinarySensor {
  public:
   PresenceBinarySensor() = delete;
 
@@ -20,15 +15,13 @@ class PresenceBinarySensor : public BinarySensor {
 
   bool update() final;
 
-  inline DeviceClass getDeviceClass() const final {
-    return DeviceClass::presence;
-  }
+  DeviceClass getDeviceClass() const final { return DeviceClass::presence; }
 
-  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 
-  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
+  uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
 
-  virtual void setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
+  void setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
 
  private:
   struct Config {

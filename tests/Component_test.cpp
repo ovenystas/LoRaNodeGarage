@@ -1,4 +1,4 @@
-#include "../Component.h"
+#include "Component.h"
 
 #include <gtest/gtest.h>
 
@@ -6,43 +6,31 @@
 
 using ::testing::Return;
 
-class ComponentChild : public Component {
+class ComponentChild : public Component, public virtual IComponent {
  public:
   explicit ComponentChild(uint8_t entityId) : Component(entityId) {}
 
   ComponentChild(uint8_t entityId, const char* name)
       : Component(entityId, name) {}
 
-  virtual ~ComponentChild() = default;
+  bool update() final { return false; }
 
-  bool update() override { return false; }
-
-  uint8_t getDiscoveryMsg(uint8_t* buffer) override {
+  uint8_t getConfigItemValuesMsg(uint8_t* buffer) final {
     buffer[0] = 0;
     return 0;
   }
 
-  uint8_t getConfigItemValuesMsg(uint8_t* buffer) override {
-    buffer[0] = 0;
-    return 0;
-  }
+  bool hasService() final { return false; }
 
-  virtual uint8_t getValueMsg(uint8_t* buffer) override {
-    buffer[0] = 0;
-    return 0;
-  }
+  void callService(uint8_t service) final { return; }
 
-  bool hasService() override { return false; }
-
-  void callService(uint8_t service) override { return; }
-
-  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) override {
+  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final {
     return false;
   }
 
-  void print(Stream& stream, uint8_t service) override { return; }
+  void print(Stream& stream, uint8_t service) final { return; }
 
-  void print(Stream& stream) override { return; }
+  void print(Stream& stream) final { return; }
 };
 
 TEST(Component_test, getEntityId_constructor_1_param) {

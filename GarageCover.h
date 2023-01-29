@@ -1,8 +1,3 @@
-/*
- *  Created on: 28 feb. 2021
- *      Author: oveny
- */
-
 #pragma once
 
 #include <stdint.h>
@@ -13,7 +8,7 @@ class GarageCover : public Cover {
  public:
   GarageCover(uint8_t entityId, const char* name, uint8_t pinClosed,
               uint8_t pinOpen, uint8_t pinRelay)
-      : Cover(entityId, name),
+      : Cover(entityId, name, CoverDeviceClass::garage),
         mPinClosed{pinClosed},
         mPinOpen{pinOpen},
         mPinRelay{pinRelay} {
@@ -25,28 +20,23 @@ class GarageCover : public Cover {
 
   bool update() final;
 
-  void callService(const Cover::Service service) override;
+  void callService(const CoverService service) override;
 
-  inline DeviceClass getDeviceClass() const final {
-    return DeviceClass::garage;
-  }
+  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 
-  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) final;
-
-  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) final {
+  uint8_t getConfigItemValuesMsg(uint8_t* buffer) final {
     (void)buffer;
     return 0;
   }
 
-  virtual bool setConfigs(uint8_t numberOfConfigs,
-                          const uint8_t* buffer) final {
+  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final {
     (void)numberOfConfigs;
     (void)buffer;
     return false;
   }
 
  private:
-  Cover::State determineState();
+  CoverState determineState();
 
   bool isClosed(bool closedSensor, bool openSensor);
   bool isOpen(bool closedSensor, bool openSensor);

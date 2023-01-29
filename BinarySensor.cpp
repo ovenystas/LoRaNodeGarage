@@ -1,8 +1,3 @@
-/*
- *  Created on: 13 apr. 2021
- *      Author: oveny
- */
-
 #include "BinarySensor.h"
 
 #include <WString.h>
@@ -12,45 +7,45 @@
 
 const __FlashStringHelper* BinarySensor::getStateName() {
   switch (getDeviceClass()) {
-    case DeviceClass::battery:
+    case BinarySensorDeviceClass::battery:
       return mState ? F("low") : F("normal");
 
-    case DeviceClass::cold:
+    case BinarySensorDeviceClass::cold:
       return mState ? F("cold") : F("normal");
 
-    case DeviceClass::heat:
+    case BinarySensorDeviceClass::heat:
       return mState ? F("hot") : F("normal");
 
-    case DeviceClass::connectivity:
+    case BinarySensorDeviceClass::connectivity:
       return mState ? F("connected") : F("disconnected");
 
-    case DeviceClass::door:
-    case DeviceClass::garageDoor:
-    case DeviceClass::opening:
-    case DeviceClass::window:
+    case BinarySensorDeviceClass::door:
+    case BinarySensorDeviceClass::garageDoor:
+    case BinarySensorDeviceClass::opening:
+    case BinarySensorDeviceClass::window:
       return mState ? F("open") : F("closed");
 
-    case DeviceClass::lock:
+    case BinarySensorDeviceClass::lock:
       return mState ? F("unlocked") : F("locked");
 
-    case DeviceClass::moisture:
+    case BinarySensorDeviceClass::moisture:
       return mState ? F("wet") : F("dry");
 
-    case DeviceClass::gas:
-    case DeviceClass::motion:
-    case DeviceClass::occupancy:
-    case DeviceClass::smoke:
-    case DeviceClass::sound:
-    case DeviceClass::vibration:
+    case BinarySensorDeviceClass::gas:
+    case BinarySensorDeviceClass::motion:
+    case BinarySensorDeviceClass::occupancy:
+    case BinarySensorDeviceClass::smoke:
+    case BinarySensorDeviceClass::sound:
+    case BinarySensorDeviceClass::vibration:
       return mState ? F("detected") : F("clear");
 
-    case DeviceClass::presence:
+    case BinarySensorDeviceClass::presence:
       return mState ? F("home") : F("away");
 
-    case DeviceClass::problem:
+    case BinarySensorDeviceClass::problem:
       return mState ? F("problem") : F("OK");
 
-    case DeviceClass::safety:
+    case BinarySensorDeviceClass::safety:
       return mState ? F("unsafe") : F("safe");
 
     default:

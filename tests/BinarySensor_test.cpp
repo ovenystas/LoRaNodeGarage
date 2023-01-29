@@ -1,8 +1,8 @@
-#include "../BinarySensor.h"
+#include "BinarySensor.h"
 
 #include <gtest/gtest.h>
 
-#include "../Unit.h"
+#include "Unit.h"
 #include "mocks/Arduino.h"
 
 using ::testing::ElementsAre;
@@ -67,7 +67,7 @@ TEST_F(BinarySensor_test, getComponentType) {
 }
 
 TEST_F(BinarySensor_test, getDeviceClass) {
-  EXPECT_EQ(bsc.getDeviceClass(), BinarySensor::DeviceClass::none);
+  EXPECT_EQ(bsc.getDeviceClass(), BinarySensorDeviceClass::none);
 }
 
 TEST_F(BinarySensor_test, getDiscoveryMsg) {
@@ -75,7 +75,7 @@ TEST_F(BinarySensor_test, getDiscoveryMsg) {
   EXPECT_EQ(bsc.getDiscoveryMsg(buf), 5);
   EXPECT_THAT(
       buf, ElementsAre(34, static_cast<uint8_t>(Component::Type::binarySensor),
-                       static_cast<uint8_t>(BinarySensor::DeviceClass::none),
+                       static_cast<uint8_t>(BinarySensorDeviceClass::none),
                        static_cast<uint8_t>(Unit::Type::none), (1 << 4) | 0));
 }
 
