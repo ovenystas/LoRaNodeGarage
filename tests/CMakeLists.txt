@@ -1,6 +1,9 @@
 # GoogleTest requires at least C++11
 set(CMAKE_CXX_STANDARD 11)
 
+add_compile_options(-g -O0 --coverage -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Werror -Wno-unused)
+add_link_options(--coverage)
+
 include(FetchContent)
 FetchContent_Declare(
   googletest
@@ -10,8 +13,8 @@ FetchContent_MakeAvailable(googletest)
 
 # ---
 
-enable_testing()
 include(GoogleTest)
+include(CodeCoverage)
 
 include_directories(.. mocks)
 

@@ -99,8 +99,6 @@ class Sensor : public virtual ISensor<T>, public Component {
 
   bool hasService() final { return false; }
 
-  void callService(uint8_t service) final { (void)service; }
-
   T getValue() const final { return mValue; }
 
   Component::Type getComponentType() const final {

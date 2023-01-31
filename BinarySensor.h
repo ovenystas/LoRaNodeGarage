@@ -66,8 +66,6 @@ class BinarySensor : public virtual IBinarySensor, public Component {
 
   bool hasService() final { return false; }
 
-  void callService(uint8_t service) final { (void)service; }
-
   void print(Stream& stream, uint8_t service) final {
     (void)stream;
     (void)service;

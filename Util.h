@@ -10,8 +10,8 @@
 // TODO: Handle wrap-around after 49 days.
 #define seconds() (millis() / 1000)
 
-#define lowWord(ul) ((uint16_t)((ul)&0xffff))
-#define highWord(ul) ((uint16_t)((ul) >> 16))
+#define lowWord(ul) (static_cast<uint16_t>((ul)&0xffff))
+#define highWord(ul) (static_cast<uint16_t>((ul) >> 16))
 
 #define htons(x) ((((x) << 8) & 0xFF00) | (((x) >> 8) & 0xFF))
 #define ntohs(x) htons(x)

@@ -32,21 +32,21 @@ TEST(Util_test, htonl) { EXPECT_EQ(htonl(0x12345678ul), 0x78563412ul); }
 TEST(Util_test, ntohl) { EXPECT_EQ(ntohl(0x12345678ul), 0x78563412ul); }
 
 TEST(Util_test, hton) {
-  EXPECT_EQ(hton((uint8_t)0x12u), 0x12u);
-  EXPECT_EQ(hton((int8_t)0x12), 0x12);
-  EXPECT_EQ(hton((uint16_t)0x1234u), 0x3412);
-  EXPECT_EQ(hton((int16_t)0x1234), 0x3412);
-  EXPECT_EQ(hton((uint32_t)0x12345678ul), 0x78563412ul);
-  EXPECT_EQ(hton((int32_t)0x12345678l), 0x78563412ul);
+  EXPECT_EQ(hton(static_cast<uint8_t>(0x12u)), 0x12u);
+  EXPECT_EQ(hton(static_cast<int8_t>(0x12)), 0x12);
+  EXPECT_EQ(hton(static_cast<uint16_t>(0x1234u)), 0x3412);
+  EXPECT_EQ(hton(static_cast<int16_t>(0x1234)), 0x3412);
+  EXPECT_EQ(hton(static_cast<uint32_t>(0x12345678ul)), 0x78563412ul);
+  EXPECT_EQ(hton(static_cast<int32_t>(0x12345678l)), 0x78563412ul);
 }
 
 TEST(Util_test, ntoh) {
-  EXPECT_EQ(ntoh((uint8_t)0x12u), 0x12u);
-  EXPECT_EQ(ntoh((int8_t)0x12), 0x12);
-  EXPECT_EQ(ntoh((uint16_t)0x1234u), 0x3412);
-  EXPECT_EQ(ntoh((int16_t)0x1234), 0x3412);
-  EXPECT_EQ(ntoh((uint32_t)0x12345678ul), 0x78563412ul);
-  EXPECT_EQ(ntoh((int32_t)0x12345678l), 0x78563412ul);
+  EXPECT_EQ(ntoh(static_cast<uint8_t>(0x12u)), 0x12u);
+  EXPECT_EQ(ntoh(static_cast<int8_t>(0x12)), 0x12);
+  EXPECT_EQ(ntoh(static_cast<uint16_t>(0x1234u)), 0x3412);
+  EXPECT_EQ(ntoh(static_cast<int16_t>(0x1234)), 0x3412);
+  EXPECT_EQ(ntoh(static_cast<uint32_t>(0x12345678ul)), 0x78563412ul);
+  EXPECT_EQ(ntoh(static_cast<int32_t>(0x12345678l)), 0x78563412ul);
 }
 
 // TEST(Util_test, printMillis) {

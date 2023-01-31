@@ -22,15 +22,22 @@ class ComponentChild : public Component, public virtual IComponent {
 
   bool hasService() final { return false; }
 
-  void callService(uint8_t service) final { return; }
-
   bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final {
+    (void)numberOfConfigs;
+    (void)buffer;
     return false;
   }
 
-  void print(Stream& stream, uint8_t service) final { return; }
+  void print(Stream& stream, uint8_t service) final {
+    (void)stream;
+    (void)service;
+    return;
+  }
 
-  void print(Stream& stream) final { return; }
+  void print(Stream& stream) final {
+    (void)stream;
+    return;
+  }
 };
 
 TEST(Component_test, getEntityId_constructor_1_param) {

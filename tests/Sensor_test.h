@@ -20,6 +20,8 @@ class SensorChild : public Sensor<T> {
   }
 
   bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final {
+    (void)numberOfConfigs;
+    (void)buffer;
     return false;
   }
 };

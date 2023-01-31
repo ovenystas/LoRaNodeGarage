@@ -12,14 +12,14 @@ class CoverChild : public Cover {
  public:
   CoverChild(uint8_t entityId, const char* name) : Cover(entityId, name) {}
 
-  void callService(CoverService service) final { return; }
-
   bool update() final { return false; }
 
   uint8_t getConfigItemValuesMsg(uint8_t* buffer) final {
     buffer[0] = 0;
     return 0;
   }
+
+  void callService(CoverService service) final { (void)service; }
 
   bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final {
     return false;

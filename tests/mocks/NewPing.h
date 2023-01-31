@@ -146,5 +146,6 @@ class NewPing {
 
 class NewPingMock : public NewPing {
  public:
+  virtual ~NewPingMock() = default;
   MOCK_METHOD(unsigned long, ping_cm, (unsigned int));
 };

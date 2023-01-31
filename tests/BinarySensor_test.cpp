@@ -34,11 +34,6 @@ class BinarySensor_test : public ::testing::Test {
 
 TEST_F(BinarySensor_test, hasService_no) { EXPECT_EQ(bsc.hasService(), false); }
 
-TEST_F(BinarySensor_test, callService) {
-  bsc.callService(0);
-  SUCCEED();
-}
-
 // TEST_F(BinarySensor_test, print) {
 //   bsc.print(Serial, 0);
 //   SUCCEED();

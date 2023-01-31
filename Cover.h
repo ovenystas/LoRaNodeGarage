@@ -33,6 +33,8 @@ class ICover : public virtual IComponent {
  public:
   virtual ~ICover() = default;
 
+  virtual void callService(CoverService service) = 0;
+
   virtual CoverState getState() const = 0;
 
   virtual const char* getStateName() const = 0;
@@ -66,11 +68,9 @@ class Cover : public virtual ICover, public Component {
 
   bool hasService() final { return true; }
 
-  virtual void callService(CoverService service) = 0;
-
-  void callService(uint8_t service) final {
-    callService(static_cast<CoverService>(service));
-  }
+  // void callService(uint8_t service) final {
+  //   callService(static_cast<CoverService>(service));
+  // }
 
   CoverState getState() const final { return mState; }
 

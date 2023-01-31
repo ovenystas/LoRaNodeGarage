@@ -85,12 +85,17 @@ TEST_F(DistanceSensor_test, getConfigItemValuesMsg) {
 
 TEST_F(DistanceSensor_test, setConfigs) {
   uint8_t buf[] = {0, 0x03, 0xE8, 1, 0x03, 0xE9, 2, 0x03, 0xEA};
-  EXPECT_EQ(pDs->setConfigs(3, buf), true);
+  EXPECT_TRUE(pDs->setConfigs(3, buf));
   uint8_t expect_buf[11] = {};
   EXPECT_EQ(pDs->getConfigItemValuesMsg(expect_buf), 11);
   EXPECT_THAT(expect_buf, ElementsAre(7, 3, 0, 0x03, 0xE8,  // 1000
                                       1, 0x03, 0xE9,        // 1001
                                       2, 0x03, 0xEA));      // 1002
+}
+
+TEST_F(DistanceSensor_test, setConfigs_wrong_number) {
+  uint8_t buf[] = {0, 0x03, 0xE8, 1, 0x03, 0xE9, 2, 0x03, 0xEA};
+  EXPECT_FALSE(pDs->setConfigs(2, buf));
 }
 
 TEST_F(DistanceSensor_test,
