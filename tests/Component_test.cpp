@@ -13,20 +13,7 @@ class ComponentChild : public Component, public virtual IComponent {
   ComponentChild(uint8_t entityId, const char* name)
       : Component(entityId, name) {}
 
-  bool update() final { return false; }
-
-  uint8_t getConfigItemValuesMsg(uint8_t* buffer) final {
-    buffer[0] = 0;
-    return 0;
-  }
-
   bool hasService() final { return false; }
-
-  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final {
-    (void)numberOfConfigs;
-    (void)buffer;
-    return false;
-  }
 
   void print(Stream& stream, uint8_t service) final {
     (void)stream;

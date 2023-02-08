@@ -16,9 +16,14 @@ bool HeightSensor::update() {
   setValue(newValue);
 
   bool largeChange =
-      absDiffLastReportedValue() >= mConfig.reportHysteresis.getValue();
+      mConfig.reportHysteresis.getValue() > 0
+          ? absDiffLastReportedValue() >= mConfig.reportHysteresis.getValue()
+          : false;
 
-  bool reportIsDue = timeSinceLastReport() >= mConfig.reportInterval.getValue();
+  bool reportIsDue =
+      mConfig.reportInterval.getValue() > 0
+          ? timeSinceLastReport() >= mConfig.reportInterval.getValue()
+          : false;
 
   return (largeChange || reportIsDue);
 }
@@ -50,13 +55,27 @@ uint8_t HeightSensor::getConfigItemValuesMsg(uint8_t* buffer) {
 }
 
 bool HeightSensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
-  if (numberOfConfigs != mConfig.numberOfConfigItems) {
+  if (numberOfConfigs > mConfig.numberOfConfigItems) {
     return false;
   }
   const uint8_t* p = buffer;
-  p += mConfig.reportHysteresis.setConfigValue(p[0], &p[1]);
-  p += mConfig.reportInterval.setConfigValue(p[0], &p[1]);
-  p += mConfig.stableTime.setConfigValue(p[0], &p[1]);
-  mConfig.zeroValue.setConfigValue(p[0], &p[1]);
+  while (numberOfConfigs-- > 0) {
+    switch (*p) {
+      case 0:
+        p += mConfig.reportHysteresis.setConfigValue(p[0], &p[1]);
+        break;
+      case 1:
+        p += mConfig.reportInterval.setConfigValue(p[0], &p[1]);
+        break;
+      case 2:
+        p += mConfig.stableTime.setConfigValue(p[0], &p[1]);
+        break;
+      case 3:
+        p += mConfig.zeroValue.setConfigValue(p[0], &p[1]);
+        break;
+      default:
+        return false;
+    }
+  }
   return true;
 }

@@ -55,12 +55,24 @@ uint8_t DistanceSensor::getConfigItemValuesMsg(uint8_t* buffer) {
 
 bool DistanceSensor::setConfigs(uint8_t numberOfConfigs,
                                 const uint8_t* buffer) {
-  if (numberOfConfigs != mConfig.numberOfConfigItems) {
+  if (numberOfConfigs > mConfig.numberOfConfigItems) {
     return false;
   }
   const uint8_t* p = buffer;
-  p += mConfig.reportHysteresis.setConfigValue(p[0], &p[1]);
-  p += mConfig.measureInterval.setConfigValue(p[0], &p[1]);
-  mConfig.reportInterval.setConfigValue(p[0], &p[1]);
+  while (numberOfConfigs-- > 0) {
+    switch (*p) {
+      case 0:
+        p += mConfig.reportHysteresis.setConfigValue(p[0], &p[1]);
+        break;
+      case 1:
+        p += mConfig.measureInterval.setConfigValue(p[0], &p[1]);
+        break;
+      case 2:
+        p += mConfig.reportInterval.setConfigValue(p[0], &p[1]);
+        break;
+      default:
+        return false;
+    }
+  }
   return true;
 }

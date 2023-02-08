@@ -8,35 +8,12 @@
 using ::testing::ElementsAre;
 using ::testing::Return;
 
-class CoverChild : public Cover {
- public:
-  CoverChild(uint8_t entityId, const char* name) : Cover(entityId, name) {}
-
-  bool update() final { return false; }
-
-  uint8_t getConfigItemValuesMsg(uint8_t* buffer) final {
-    buffer[0] = 0;
-    return 0;
-  }
-
-  void callService(CoverService service) final { (void)service; }
-
-  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final {
-    return false;
-  }
-};
-
 class Cover_test : public ::testing::Test {
  protected:
-  CoverChild cc = CoverChild(34, "Cover");
+  Cover cc = Cover(34, "Cover");
 };
 
 TEST_F(Cover_test, hasService_yes) { EXPECT_EQ(cc.hasService(), true); }
-
-// TEST_F(Cover_test, callService) {
-//   cc.callService(static_cast<uint8_t>(0u));
-//   SUCCEED();
-// }
 
 TEST_F(Cover_test, getState) {
   EXPECT_EQ(cc.getState(), CoverState::closed);

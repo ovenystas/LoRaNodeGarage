@@ -1,8 +1,3 @@
-/*
- *  Created on: 28 feb. 2021
- *      Author: oveny
- */
-
 #pragma once
 
 #include <stdint.h>
@@ -15,28 +10,40 @@
 
 using HeightT = int16_t;  // cm
 
-class HeightSensor : public Sensor<HeightT> {
+class IHeightSensor : public virtual ISensor<HeightT> {
+ public:
+  virtual ~IHeightSensor() = default;
+
+  virtual bool update() = 0;
+
+  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) = 0;
+
+  virtual bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) = 0;
+};
+
+class HeightSensor : public virtual IDistanceSensor, public Sensor<HeightT> {
  public:
   HeightSensor(uint8_t entityId, const char* name,
-               DistanceSensor& distanceSensor)
-      : Sensor<HeightT>(entityId, name, Unit::Type::cm),
+               IDistanceSensor& distanceSensor)
+      : Sensor<HeightT>(entityId, name, SensorDeviceClass::distance,
+                        Unit::Type::cm),
         mDistanseSensor{distanceSensor} {}
 
   bool update() final;
 
-  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 
-  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
+  uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
 
-  virtual bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
+  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
 
  private:
   struct Config {
     // cppcheck-suppress unusedStructMember
     const uint8_t numberOfConfigItems = {4};
 
-    ConfigItem<DistanceT> reportHysteresis = {
-        ConfigItem<DistanceT>(0, 10, Unit::Type::cm, 0)};
+    ConfigItem<HeightT> reportHysteresis = {
+        ConfigItem<HeightT>(0, 10, Unit::Type::cm, 0)};
 
     ConfigItem<uint16_t> reportInterval = {
         ConfigItem<uint16_t>(1, 60, Unit::Type::s, 0)};
@@ -49,5 +56,5 @@ class HeightSensor : public Sensor<HeightT> {
   };
 
   Config mConfig;
-  DistanceSensor& mDistanseSensor;
+  IDistanceSensor& mDistanseSensor;
 };

@@ -53,3 +53,7 @@ gtest_discover_tests(GarageCover_test)
 add_executable(DistanceSensor_test EXCLUDE_FROM_ALL DistanceSensor_test.cpp ../DistanceSensor.cpp ../Util.cpp mocks/Arduino.cpp)
 target_link_libraries(DistanceSensor_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(DistanceSensor_test)
+
+add_executable(HeightSensor_test EXCLUDE_FROM_ALL HeightSensor_test.cpp ../HeightSensor.cpp ../Util.cpp mocks/Arduino.cpp)
+target_link_libraries(HeightSensor_test GTest::gtest_main GTest::gmock_main)
+gtest_discover_tests(HeightSensor_test)

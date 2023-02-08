@@ -37,28 +37,28 @@ TEST_F(DistanceSensor_test,
        update_smallValueDiff_smallTimeDiff_shall_return_false) {
   EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(9));
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
-  EXPECT_EQ(pDs->update(), false);
+  EXPECT_FALSE(pDs->update());
 }
 
 TEST_F(DistanceSensor_test,
        update_smallValueDiff_largeTimeDiff_shall_return_true) {
   EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(9));
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
-  EXPECT_EQ(pDs->update(), true);
+  EXPECT_TRUE(pDs->update());
 }
 
 TEST_F(DistanceSensor_test,
        update_largeValueDiff_smallTimeDiff_shall_return_true) {
   EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(10));
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
-  EXPECT_EQ(pDs->update(), true);
+  EXPECT_TRUE(pDs->update());
 }
 
 TEST_F(DistanceSensor_test,
        update_largeValueDiff_largeTimeDiff_shall_return_true) {
   EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(10));
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
-  EXPECT_EQ(pDs->update(), true);
+  EXPECT_TRUE(pDs->update());
 }
 
 // TODO: Add test of update where configs are 0
@@ -66,43 +66,128 @@ TEST_F(DistanceSensor_test,
 TEST_F(DistanceSensor_test, getDiscoveryMsg) {
   uint8_t buf[15] = {};
   EXPECT_EQ(pDs->getDiscoveryMsg(buf), 15);
+  // clang-format off
   EXPECT_THAT(
       buf,
       ElementsAre(
-          7, static_cast<uint8_t>(Component::Type::sensor),
+          7,
+          static_cast<uint8_t>(Component::Type::sensor),
           static_cast<uint8_t>(SensorDeviceClass::distance),
-          static_cast<uint8_t>(Unit::Type::cm), (sizeof(DistanceT) << 4) | 0, 3,
+          static_cast<uint8_t>(Unit::Type::cm),
+          (sizeof(DistanceT) << 4) | 0,
+          3,
           0, static_cast<uint8_t>(Unit::Type::cm), (sizeof(DistanceT) << 4) | 0,
           1, static_cast<uint8_t>(Unit::Type::s), (sizeof(uint16_t) << 4) | 0,
-          2, static_cast<uint8_t>(Unit::Type::s), (sizeof(uint16_t) << 4) | 0));
+          2, static_cast<uint8_t>(Unit::Type::s), (sizeof(uint16_t) << 4) | 0
+  ));
+  // clang-format on
 }
 
 TEST_F(DistanceSensor_test, getConfigItemValuesMsg) {
   uint8_t buf[11] = {};
   EXPECT_EQ(pDs->getConfigItemValuesMsg(buf), 11);
-  EXPECT_THAT(buf, ElementsAre(7, 3, 0, 0, 10, 1, 0, 60, 2, 0, 60));
+  // clang-format off
+  EXPECT_THAT(
+    buf,
+    ElementsAre(
+        7, 3,
+        0, highByte(0), lowByte(10),
+        1, highByte(0), lowByte(60),
+        2, highByte(0), lowByte(60)
+  ));
+  // clang-format on
 }
 
-TEST_F(DistanceSensor_test, setConfigs) {
-  uint8_t buf[] = {0, 0x03, 0xE8, 1, 0x03, 0xE9, 2, 0x03, 0xEA};
+TEST_F(DistanceSensor_test, setConfigs_all_in_order) {
+  uint8_t buf[] = {
+      // clang-format off
+    0, highByte(1000), lowByte(1000),
+    1, highByte(1001), lowByte(1001),
+    2, highByte(1002), lowByte(1002)
+      // clang-format on
+  };
   EXPECT_TRUE(pDs->setConfigs(3, buf));
   uint8_t expect_buf[11] = {};
   EXPECT_EQ(pDs->getConfigItemValuesMsg(expect_buf), 11);
-  EXPECT_THAT(expect_buf, ElementsAre(7, 3, 0, 0x03, 0xE8,  // 1000
-                                      1, 0x03, 0xE9,        // 1001
-                                      2, 0x03, 0xEA));      // 1002
+  // clang-format off
+  EXPECT_THAT(
+    expect_buf,
+    ElementsAre(
+        7, 3,
+        0, highByte(1000), lowByte(1000),
+        1, highByte(1001), lowByte(1001),
+        2, highByte(1002), lowByte(1002)
+  ));
+  // clang-format on
 }
 
-TEST_F(DistanceSensor_test, setConfigs_wrong_number) {
-  uint8_t buf[] = {0, 0x03, 0xE8, 1, 0x03, 0xE9, 2, 0x03, 0xEA};
-  EXPECT_FALSE(pDs->setConfigs(2, buf));
+TEST_F(DistanceSensor_test, setConfigs_all_out_of_order) {
+  uint8_t buf[] = {
+      // clang-format off
+      2, highByte(2002), lowByte(2002),
+      1, highByte(2001), lowByte(2001),
+      0, highByte(2000), lowByte(2000)
+      // clang-format on
+  };
+  EXPECT_TRUE(pDs->setConfigs(3, buf));
+  uint8_t expect_buf[11] = {};
+  EXPECT_EQ(pDs->getConfigItemValuesMsg(expect_buf), 11);
+  // clang-format off
+  EXPECT_THAT(
+    expect_buf,
+    ElementsAre(
+        7, 3,
+        0, highByte(2000), lowByte(2000),
+        1, highByte(2001), lowByte(2001),
+        2, highByte(2002), lowByte(2002)
+  ));
+  // clang-format on
+}
+
+TEST_F(DistanceSensor_test, setConfigs_one) {
+  uint8_t buf[] = {
+      // clang-format off
+      2, highByte(3002), lowByte(3002)
+      // clang-format on
+  };
+  EXPECT_TRUE(pDs->setConfigs(1, buf));
+  uint8_t expect_buf[11] = {};
+  EXPECT_EQ(pDs->getConfigItemValuesMsg(expect_buf), 11);
+  // clang-format off
+  EXPECT_THAT(
+    expect_buf,
+    ElementsAre(
+        7, 3,
+        0, highByte(0), lowByte(10),
+        1, highByte(0), lowByte(60),
+        2, highByte(3002), lowByte(3002)
+  ));
+  // clang-format on
+}
+
+TEST_F(DistanceSensor_test, setConfigs_too_many) {
+  uint8_t buf[] = {
+      // clang-format off
+      0, highByte(1000), lowByte(1000),
+      1, highByte(1001), lowByte(1001),
+      2, highByte(1002), lowByte(1002),
+      3, highByte(1003), lowByte(1003)
+      // clang-format on
+  };
+  EXPECT_FALSE(pDs->setConfigs(4, buf));
 }
 
 TEST_F(DistanceSensor_test,
        update_largeValueDiff_largeTimeDiff_withConfigsZero_shall_return_false) {
   EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(10));
   EXPECT_CALL(*pArduinoMock, millis()).Times(0);
-  uint8_t buf[] = {0, 0, 0, 1, 0, 0, 2, 0, 0};
-  EXPECT_EQ(pDs->setConfigs(3, buf), true);
-  EXPECT_EQ(pDs->update(), false);
+  uint8_t buf[] = {
+      // clang-format off
+      0, 0, 0,
+      1, 0, 0,
+      2, 0, 0
+      // clang-format on
+  };
+  EXPECT_TRUE(pDs->setConfigs(3, buf));
+  EXPECT_FALSE(pDs->update());
 }

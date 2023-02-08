@@ -33,8 +33,6 @@ class ICover : public virtual IComponent {
  public:
   virtual ~ICover() = default;
 
-  virtual void callService(CoverService service) = 0;
-
   virtual CoverState getState() const = 0;
 
   virtual const char* getStateName() const = 0;
@@ -54,10 +52,6 @@ class ICover : public virtual IComponent {
   virtual bool isDiffLastReportedState() const = 0;
 
   virtual void setState(CoverState state) = 0;
-
- private:
-  CoverState mState = {CoverState::closed};
-  CoverState mLastReportedState = {CoverState::closed};
 };
 
 class Cover : public virtual ICover, public Component {
@@ -67,10 +61,6 @@ class Cover : public virtual ICover, public Component {
       : Component(entityId, name), mDeviceClass{deviceClass} {}
 
   bool hasService() final { return true; }
-
-  // void callService(uint8_t service) final {
-  //   callService(static_cast<CoverService>(service));
-  // }
 
   CoverState getState() const final { return mState; }
 

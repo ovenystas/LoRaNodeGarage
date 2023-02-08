@@ -4,7 +4,20 @@
 
 #include "Cover.h"
 
-class GarageCover : public Cover {
+class IGarageCover : public virtual ICover {
+ public:
+  virtual ~IGarageCover() = default;
+
+  virtual bool update() = 0;
+
+  virtual void callService(const CoverService service) = 0;
+
+  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) = 0;
+
+  virtual bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) = 0;
+};
+
+class GarageCover : public virtual IGarageCover, public Cover {
  public:
   GarageCover(uint8_t entityId, const char* name, uint8_t pinClosed,
               uint8_t pinOpen, uint8_t pinRelay)

@@ -6,6 +6,7 @@
 #include "Unit.h"
 #include "Util.h"
 
+// From https://www.home-assistant.io/integrations/sensor/ at 2023-01-17
 enum class SensorDeviceClass {
   none,
   apparent_power,
@@ -59,9 +60,6 @@ enum class SensorDeviceClass {
 template <class T>
 class ISensor : public virtual IComponent {
  public:
-  // From https://www.home-assistant.io/integrations/sensor/ at 2023-01-17
-
- protected:
   virtual ~ISensor() = default;
 
   virtual T getValue() const = 0;
