@@ -93,3 +93,9 @@ add_executable(
                                      ../Util.cpp mocks/Arduino.cpp)
 target_link_libraries(HeightSensor_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(HeightSensor_test)
+
+add_executable(
+  HumiditySensor_test EXCLUDE_FROM_ALL
+  HumiditySensor_test.cpp ../HumiditySensor.cpp ../Util.cpp mocks/Arduino.cpp)
+target_link_libraries(HumiditySensor_test GTest::gtest_main GTest::gmock_main)
+gtest_discover_tests(HumiditySensor_test)

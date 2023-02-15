@@ -27,7 +27,7 @@ class HeightSensor : public virtual IDistanceSensor, public Sensor<HeightT> {
                IDistanceSensor& distanceSensor)
       : Sensor<HeightT>(entityId, name, SensorDeviceClass::distance,
                         Unit::Type::cm),
-        mDistanseSensor{distanceSensor} {}
+        mDistanceSensor{distanceSensor} {}
 
   bool update() final;
 
@@ -56,5 +56,5 @@ class HeightSensor : public virtual IDistanceSensor, public Sensor<HeightT> {
   };
 
   Config mConfig;
-  IDistanceSensor& mDistanseSensor;
+  IDistanceSensor& mDistanceSensor;
 };

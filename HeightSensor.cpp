@@ -11,7 +11,7 @@
 #include "Util.h"
 
 bool HeightSensor::update() {
-  HeightT newValue = mConfig.zeroValue.getValue() - mDistanseSensor.getValue();
+  HeightT newValue = mConfig.zeroValue.getValue() - mDistanceSensor.getValue();
 
   setValue(newValue);
 
@@ -58,6 +58,7 @@ bool HeightSensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
   if (numberOfConfigs > mConfig.numberOfConfigItems) {
     return false;
   }
+
   const uint8_t* p = buffer;
   while (numberOfConfigs-- > 0) {
     switch (*p) {
@@ -77,5 +78,6 @@ bool HeightSensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
         return false;
     }
   }
+
   return true;
 }

@@ -1,8 +1,3 @@
-/*
- *  Created on: 28 feb. 2021
- *      Author: oveny
- */
-
 #pragma once
 
 #include <DHT.h>
@@ -14,22 +9,32 @@
 
 using HumidityT = int8_t;  // %
 
-class HumiditySensor : public Sensor<HumidityT> {
+class IHumiditySensor : public virtual ISensor<HumidityT> {
+ public:
+  virtual ~IHumiditySensor() = default;
+
+  virtual bool update() = 0;
+
+  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) = 0;
+
+  virtual bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) = 0;
+};
+
+class HumiditySensor : public virtual IHumiditySensor,
+                       public Sensor<HumidityT> {
  public:
   HumiditySensor(uint8_t entityId, const char* name, DHT& dht)
-      : Sensor<HumidityT>(entityId, name, Unit::Type::percent), mDht{dht} {}
+      : Sensor<HumidityT>(entityId, name, SensorDeviceClass::humidity,
+                          Unit::Type::percent),
+        mDht{dht} {}
 
   bool update() final;
 
-  inline DeviceClass getDeviceClass() const final {
-    return DeviceClass::humidity;
-  }
+  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 
-  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+  uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
 
-  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
-
-  virtual void setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
+  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
 
  private:
   struct Config {
