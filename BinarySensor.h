@@ -4,6 +4,7 @@
 #include <WString.h>
 
 #include "Component.h"
+#include "Unit.h"
 #include "Util.h"
 
 // From https://www.home-assistant.io/integrations/binary_sensor/ at
@@ -61,8 +62,11 @@ class BinarySensor : public virtual IBinarySensor, public Component {
  public:
   BinarySensor(
       uint8_t entityId, const char* name,
-      BinarySensorDeviceClass deviceClass = BinarySensorDeviceClass::none)
-      : Component(entityId, name), mDeviceClass{deviceClass} {}
+      BinarySensorDeviceClass deviceClass = BinarySensorDeviceClass::none,
+      Unit::Type unitType = Unit::Type::none)
+      : Component(entityId, name),
+        mDeviceClass{deviceClass},
+        mUnit{Unit(unitType)} {}
 
   bool hasService() final { return false; }
 
@@ -81,7 +85,7 @@ class BinarySensor : public virtual IBinarySensor, public Component {
 
   BinarySensorDeviceClass getDeviceClass() const final { return mDeviceClass; }
 
-  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+  uint8_t getDiscoveryMsg(uint8_t* buffer) override;
 
   uint8_t getValueMsg(uint8_t* buffer) final;
 
@@ -100,6 +104,7 @@ class BinarySensor : public virtual IBinarySensor, public Component {
 
  private:
   const BinarySensorDeviceClass mDeviceClass = {BinarySensorDeviceClass::none};
+  const Unit mUnit;
   bool mState = {};
   bool mLastReportedState = {};
 };

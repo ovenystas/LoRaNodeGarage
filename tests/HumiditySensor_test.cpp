@@ -179,6 +179,15 @@ TEST_F(HumiditySensor_test, setConfigs_too_many) {
   EXPECT_FALSE(pHs->setConfigs(5, buf));
 }
 
+TEST_F(HumiditySensor_test, setConfigs_out_of_range) {
+  uint8_t buf[] = {
+      // clang-format off
+      4, highByte(3004), lowByte(3004)
+      // clang-format on
+  };
+  EXPECT_FALSE(pHs->setConfigs(1, buf));
+}
+
 TEST_F(HumiditySensor_test,
        update_largeValueDiff_largeTimeDiff_withConfigsZero_shall_return_false) {
   EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(2));

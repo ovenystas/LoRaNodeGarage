@@ -99,3 +99,27 @@ add_executable(
   HumiditySensor_test.cpp ../HumiditySensor.cpp ../Util.cpp mocks/Arduino.cpp)
 target_link_libraries(HumiditySensor_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(HumiditySensor_test)
+
+add_executable(
+  PresenceBinarySensor_test EXCLUDE_FROM_ALL
+  PresenceBinarySensor_test.cpp ../PresenceBinarySensor.cpp ../Util.cpp
+  ../BinarySensor.cpp mocks/Arduino.cpp)
+target_link_libraries(PresenceBinarySensor_test GTest::gtest_main
+                      GTest::gmock_main)
+gtest_discover_tests(PresenceBinarySensor_test)
+
+add_custom_target(
+  test_all
+  COMMENT "Target to build all unit tests"
+  DEPENDS Unit_test
+          Util_test
+          ConfigItem_test
+          Component_test
+          BinarySensor_test
+          Cover_test
+          Sensor_test
+          GarageCover_test
+          DistanceSensor_test
+          HeightSensor_test
+          HumiditySensor_test
+          PresenceBinarySensor_test)

@@ -21,7 +21,7 @@ class IHeightSensor : public virtual ISensor<HeightT> {
   virtual bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) = 0;
 };
 
-class HeightSensor : public virtual IDistanceSensor, public Sensor<HeightT> {
+class HeightSensor : public virtual IHeightSensor, public Sensor<HeightT> {
  public:
   HeightSensor(uint8_t entityId, const char* name,
                IDistanceSensor& distanceSensor)
