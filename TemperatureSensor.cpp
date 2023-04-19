@@ -1,8 +1,3 @@
-/*
- *  Created on: 7 mar. 2021
- *      Author: oveny
- */
-
 #include "TemperatureSensor.h"
 
 #include <Arduino.h>
@@ -18,15 +13,20 @@ bool TemperatureSensor::update() {
   setValue(newValue);
 
   bool largeChange =
-      absDiffLastReportedValue() > mConfig.reportHysteresis.getValue();
+      mConfig.reportHysteresis.getValue() > 0
+          ? absDiffLastReportedValue() >= mConfig.reportHysteresis.getValue()
+          : false;
 
-  bool reportIsDue = timeSinceLastReport() > mConfig.reportInterval.getValue();
+  bool reportIsDue =
+      mConfig.reportInterval.getValue() > 0
+          ? timeSinceLastReport() >= mConfig.reportInterval.getValue()
+          : false;
 
   return (largeChange || reportIsDue);
 }
 
-uint8_t TemperatureSensor::getDiscoveryMsg(uint8_t* buffer) {
-  uint8_t* p = buffer;
+uint8_t TemperatureSensor::getDiscoveryMsg(uint8_t *buffer) {
+  uint8_t *p = buffer;
   p += Sensor::getDiscoveryMsg(p);
   *p++ = mConfig.numberOfConfigItems;
 
@@ -38,8 +38,8 @@ uint8_t TemperatureSensor::getDiscoveryMsg(uint8_t* buffer) {
   return p - buffer;
 }
 
-uint8_t TemperatureSensor::getConfigItemValuesMsg(uint8_t* buffer) {
-  uint8_t* p = buffer;
+uint8_t TemperatureSensor::getConfigItemValuesMsg(uint8_t *buffer) {
+  uint8_t *p = buffer;
 
   *p++ = getEntityId();
   *p++ = mConfig.numberOfConfigItems;
@@ -52,14 +52,30 @@ uint8_t TemperatureSensor::getConfigItemValuesMsg(uint8_t* buffer) {
   return p - buffer;
 }
 
-void TemperatureSensor::setConfigs(uint8_t numberOfConfigs,
-                                   const uint8_t* buffer) {
-  if (numberOfConfigs != mConfig.numberOfConfigItems) {
-    return;
+bool TemperatureSensor::setConfigs(uint8_t numberOfConfigs,
+                                   const uint8_t *buffer) {
+  if (numberOfConfigs > mConfig.numberOfConfigItems) {
+    return false;
   }
-  const uint8_t* p = buffer;
-  p += mConfig.reportHysteresis.setConfigValue(p[0], &p[1]);
-  p += mConfig.measureInterval.setConfigValue(p[0], &p[1]);
-  p += mConfig.reportInterval.setConfigValue(p[0], &p[1]);
-  mConfig.compensation.setConfigValue(p[0], &p[1]);
+  const uint8_t *p = buffer;
+  while (numberOfConfigs-- > 0) {
+    switch (*p) {
+      case 0:
+        p += mConfig.reportHysteresis.setConfigValue(p[0], &p[1]);
+        break;
+      case 1:
+        p += mConfig.measureInterval.setConfigValue(p[0], &p[1]);
+        break;
+      case 2:
+        p += mConfig.reportInterval.setConfigValue(p[0], &p[1]);
+        break;
+      case 3:
+        p += mConfig.compensation.setConfigValue(p[0], &p[1]);
+        break;
+      default:
+        return false;
+    }
+  }
+
+  return true;
 }

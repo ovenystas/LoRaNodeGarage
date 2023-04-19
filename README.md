@@ -15,7 +15,7 @@ Has support for Home Assistant discovery to send information on available sensor
 
 ## Build
 
-Use Arduino IDE or similiar to build and download to Arduino board.
+Use Arduino IDE or similar to build and download to Arduino board.
 
 ## Test
 

@@ -1,8 +1,3 @@
-/*
- *  Created on: 28 feb. 2021
- *      Author: oveny
- */
-
 #include "HumiditySensor.h"
 
 #include <Arduino.h>
@@ -29,8 +24,8 @@ bool HumiditySensor::update() {
   return (largeChange || reportIsDue);
 }
 
-uint8_t HumiditySensor::getDiscoveryMsg(uint8_t* buffer) {
-  uint8_t* p = buffer;
+uint8_t HumiditySensor::getDiscoveryMsg(uint8_t *buffer) {
+  uint8_t *p = buffer;
   p += Sensor::getDiscoveryMsg(p);
   *p++ = mConfig.numberOfConfigItems;
 
@@ -42,8 +37,8 @@ uint8_t HumiditySensor::getDiscoveryMsg(uint8_t* buffer) {
   return p - buffer;
 }
 
-uint8_t HumiditySensor::getConfigItemValuesMsg(uint8_t* buffer) {
-  uint8_t* p = buffer;
+uint8_t HumiditySensor::getConfigItemValuesMsg(uint8_t *buffer) {
+  uint8_t *p = buffer;
   *p++ = getEntityId();
   *p++ = mConfig.numberOfConfigItems;
 
@@ -56,12 +51,12 @@ uint8_t HumiditySensor::getConfigItemValuesMsg(uint8_t* buffer) {
 }
 
 bool HumiditySensor::setConfigs(uint8_t numberOfConfigs,
-                                const uint8_t* buffer) {
+                                const uint8_t *buffer) {
   if (numberOfConfigs > mConfig.numberOfConfigItems) {
     return false;
   }
 
-  const uint8_t* p = buffer;
+  const uint8_t *p = buffer;
   while (numberOfConfigs-- > 0) {
     switch (*p) {
       case 0:

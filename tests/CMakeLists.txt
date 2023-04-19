@@ -108,6 +108,14 @@ target_link_libraries(PresenceBinarySensor_test GTest::gtest_main
                       GTest::gmock_main)
 gtest_discover_tests(PresenceBinarySensor_test)
 
+add_executable(
+  TemperatureSensor_test EXCLUDE_FROM_ALL
+  TemperatureSensor_test.cpp ../TemperatureSensor.cpp ../Util.cpp
+  mocks/Arduino.cpp)
+target_link_libraries(TemperatureSensor_test GTest::gtest_main
+                      GTest::gmock_main)
+gtest_discover_tests(TemperatureSensor_test)
+
 add_custom_target(
   test_all
   COMMENT "Target to build all unit tests"
@@ -122,4 +130,5 @@ add_custom_target(
           DistanceSensor_test
           HeightSensor_test
           HumiditySensor_test
-          PresenceBinarySensor_test)
+          PresenceBinarySensor_test
+          TemperatureSensor_test)
