@@ -30,7 +30,7 @@ int LoRaHandler::loraRx() {
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
     // received a packet
-    Serial.print("Received packet '");
+    Serial.print(F("Received packet '"));
 
     // read packet
 
@@ -52,12 +52,12 @@ int LoRaHandler::loraRx() {
     }
 
     // print RSSI of packet
-    Serial.print("' with RSSI ");
+    Serial.print(F("' with RSSI "));
     rxMsg.rssi = static_cast<int8_t>(LoRa.packetRssi());
     Serial.print(rxMsg.rssi);
 
     if (sendAckIfRequested(&rxMsg.header) == 1) {
-      Serial.print(", ACK sent");
+      Serial.print(F(", ACK sent"));
     }
     Serial.println();
 
