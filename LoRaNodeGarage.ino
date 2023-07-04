@@ -1,6 +1,11 @@
 /*
  *  Created on: 26 feb. 2021
  *      Author: oveny
+ *
+ * Board: Arduino Pro Mini, 8 MHz, 3.3 V
+ * Libraries: DHT sensor library by Adafruit v1.4.4
+ *            NewPing by Tim Eckel v1.9.7
+ *            LoRa by Sandeep Mistry v0.8.0
  */
 
 /* TODO: Store configs in EEPROM

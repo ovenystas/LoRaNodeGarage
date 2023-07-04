@@ -12,12 +12,6 @@ using TemperatureT = int16_t;  // Degree C
 class ITemperatureSensor : public virtual ISensor<TemperatureT> {
  public:
   virtual ~ITemperatureSensor() = default;
-
-  virtual bool update() = 0;
-
-  virtual uint8_t getConfigItemValuesMsg(uint8_t *buffer) = 0;
-
-  virtual bool setConfigs(uint8_t numberOfConfigs, const uint8_t *buffer) = 0;
 };
 
 class TemperatureSensor : public virtual ITemperatureSensor,

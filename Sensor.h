@@ -72,10 +72,6 @@ class ISensor : public virtual IComponent {
 
   virtual const char* getUnitName() const = 0;
 
-  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) = 0;
-
-  virtual uint8_t getValueMsg(uint8_t* buffer) = 0;
-
   virtual T absDiffLastReportedValue() const = 0;
 
   virtual void setValue(T value) = 0;
@@ -158,6 +154,21 @@ class Sensor : public virtual ISensor<T>, public Component {
   }
 
   void setValue(T value) final { mValue = value; }
+
+  void callService(uint8_t service) final { (void)service; }
+
+  uint8_t getConfigItemValuesMsg(uint8_t* buffer) override {
+    (void)buffer;
+    return false;
+  }
+
+  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) override {
+    (void)numberOfConfigs;
+    (void)buffer;
+    return false;
+  }
+
+  bool update() override { return false; }
 
  private:
   int16_t factors[4] = {1, 10, 100, 1000};

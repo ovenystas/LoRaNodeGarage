@@ -64,10 +64,10 @@ uint8_t GarageCover::getDiscoveryMsg(uint8_t* buffer) {
   return p - buffer;
 }
 
-void GarageCover::callService(const CoverService service) {
+void GarageCover::callService(uint8_t service) {
   CoverState state = getState();
 
-  switch (service) {
+  switch (serviceDecode(service)) {
     case CoverService::open:
       if (state == CoverState::closed) {
         activateRelay(1);
@@ -96,6 +96,9 @@ void GarageCover::callService(const CoverService service) {
       } else if (state == CoverState::opening || state == CoverState::closing) {
         activateRelay(2);
       }
+      break;
+
+    default:
       break;
   }
 }

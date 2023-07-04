@@ -27,7 +27,7 @@ enum class CoverDeviceClass {
 
 enum class CoverState { closed, open, opening, closing };
 
-enum class CoverService { open, close, stop, toggle };
+enum class CoverService { open, close, stop, toggle, unknown };
 
 class ICover : public virtual IComponent {
  public:
@@ -45,10 +45,6 @@ class ICover : public virtual IComponent {
 
   virtual CoverDeviceClass getDeviceClass() const = 0;
 
-  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) = 0;
-
-  virtual uint8_t getValueMsg(uint8_t* buffer) = 0;
-
   virtual bool isDiffLastReportedState() const = 0;
 
   virtual void setState(CoverState state) = 0;
@@ -59,6 +55,8 @@ class Cover : public virtual ICover, public Component {
   Cover(uint8_t entityId, const char* name,
         CoverDeviceClass deviceClass = CoverDeviceClass::none)
       : Component(entityId, name), mDeviceClass{deviceClass} {}
+
+  void callService(uint8_t service) override { (void)service; }
 
   bool hasService() final { return true; }
 
@@ -100,6 +98,22 @@ class Cover : public virtual ICover, public Component {
   void print(Stream& stream, uint8_t service) final;
 
   void setState(CoverState state) final { mState = state; }
+
+  uint8_t getConfigItemValuesMsg(uint8_t* buffer) override {
+    (void)buffer;
+    return false;
+  }
+
+  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) override {
+    (void)numberOfConfigs;
+    (void)buffer;
+    return false;
+  }
+
+  bool update() override { return false; }
+
+ protected:
+  CoverService serviceDecode(uint8_t service);
 
  private:
   const CoverDeviceClass mDeviceClass = {CoverDeviceClass::none};

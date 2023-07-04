@@ -13,6 +13,8 @@ class ComponentChild : public Component, public virtual IComponent {
   ComponentChild(uint8_t entityId, const char* name)
       : Component(entityId, name) {}
 
+  void callService(uint8_t service) final { (void)service; }
+
   bool hasService() final { return false; }
 
   void print(Stream& stream, uint8_t service) final {
@@ -25,6 +27,29 @@ class ComponentChild : public Component, public virtual IComponent {
     (void)stream;
     return;
   }
+
+  uint8_t getDiscoveryMsg(uint8_t* buffer) final {
+    (void)buffer;
+    return 0;
+  }
+
+  uint8_t getValueMsg(uint8_t* buffer) final {
+    (void)buffer;
+    return 0;
+  }
+
+  uint8_t getConfigItemValuesMsg(uint8_t* buffer) override {
+    (void)buffer;
+    return false;
+  }
+
+  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final {
+    (void)numberOfConfigs;
+    (void)buffer;
+    return true;
+  }
+
+  bool update() override { return false; }
 };
 
 TEST(Component_test, getEntityId_constructor_1_param) {

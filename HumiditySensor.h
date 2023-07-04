@@ -12,12 +12,6 @@ using HumidityT = int8_t;  // %
 class IHumiditySensor : public virtual ISensor<HumidityT> {
  public:
   virtual ~IHumiditySensor() = default;
-
-  virtual bool update() = 0;
-
-  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) = 0;
-
-  virtual bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) = 0;
 };
 
 class HumiditySensor : public virtual IHumiditySensor,

@@ -8,12 +8,6 @@
 class IPresenceBinarySensor : public virtual IBinarySensor {
  public:
   virtual ~IPresenceBinarySensor() = default;
-
-  virtual bool update() = 0;
-
-  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) = 0;
-
-  virtual bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) = 0;
 };
 
 class PresenceBinarySensor : public virtual IPresenceBinarySensor,

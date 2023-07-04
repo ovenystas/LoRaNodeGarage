@@ -14,6 +14,7 @@ class HeightSensorMock : public virtual IHeightSensor {
   MOCK_METHOD(HeightT, getValue, (), (const, override));
   MOCK_METHOD(bool, update, (), (override));
   MOCK_METHOD(uint8_t, getConfigItemValuesMsg, (uint8_t*), (override));
+  MOCK_METHOD(void, callService, (uint8_t), (final));
   MOCK_METHOD(bool, hasService, (), (override));
   MOCK_METHOD(bool, setConfigs, (uint8_t, const uint8_t*), (override));
   MOCK_METHOD(void, print, (Stream&, uint8_t), (override));

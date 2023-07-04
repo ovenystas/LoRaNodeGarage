@@ -49,10 +49,6 @@ class IBinarySensor : public virtual IComponent {
 
   virtual BinarySensorDeviceClass getDeviceClass() const = 0;
 
-  virtual uint8_t getDiscoveryMsg(uint8_t* buffer) = 0;
-
-  virtual uint8_t getValueMsg(uint8_t* buffer) = 0;
-
   virtual bool isDiffLastReportedState() const = 0;
 
   virtual void setState(bool state) = 0;
@@ -101,6 +97,21 @@ class BinarySensor : public virtual IBinarySensor, public Component {
   void print(Stream& stream) final;
 
   void setState(bool state) final { mState = state; }
+
+  void callService(uint8_t service) final { (void)service; }
+
+  uint8_t getConfigItemValuesMsg(uint8_t* buffer) override {
+    (void)buffer;
+    return false;
+  }
+
+  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) override {
+    (void)numberOfConfigs;
+    (void)buffer;
+    return false;
+  }
+
+  bool update() override { return false; }
 
  private:
   const BinarySensorDeviceClass mDeviceClass = {BinarySensorDeviceClass::none};

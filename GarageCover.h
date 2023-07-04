@@ -7,14 +7,6 @@
 class IGarageCover : public virtual ICover {
  public:
   virtual ~IGarageCover() = default;
-
-  virtual bool update() = 0;
-
-  virtual void callService(const CoverService service) = 0;
-
-  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) = 0;
-
-  virtual bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) = 0;
 };
 
 class GarageCover : public virtual IGarageCover, public Cover {
@@ -33,7 +25,7 @@ class GarageCover : public virtual IGarageCover, public Cover {
 
   bool update() final;
 
-  void callService(const CoverService service) override;
+  void callService(uint8_t service) override;
 
   uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 

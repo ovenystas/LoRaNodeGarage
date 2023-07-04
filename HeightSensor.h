@@ -13,12 +13,6 @@ using HeightT = int16_t;  // cm
 class IHeightSensor : public virtual ISensor<HeightT> {
  public:
   virtual ~IHeightSensor() = default;
-
-  virtual bool update() = 0;
-
-  virtual uint8_t getConfigItemValuesMsg(uint8_t* buffer) = 0;
-
-  virtual bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) = 0;
 };
 
 class HeightSensor : public virtual IHeightSensor, public Sensor<HeightT> {

@@ -7,7 +7,7 @@
 
 #include "LoRaHandler.h"
 
-#include <LoRa.h>  // LoRa by Sandeep Mistry
+#include <LoRa.h>  // LoRa by Sandeep Mistry v0.8.0
 
 #include "Util.h"
 
