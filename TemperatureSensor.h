@@ -9,13 +9,7 @@
 
 using TemperatureT = int16_t;  // Degree C
 
-class ITemperatureSensor : public virtual ISensor<TemperatureT> {
- public:
-  virtual ~ITemperatureSensor() = default;
-};
-
-class TemperatureSensor : public virtual ITemperatureSensor,
-                          public Sensor<TemperatureT> {
+class TemperatureSensor : public Sensor<TemperatureT> {
  public:
   TemperatureSensor() = delete;
 

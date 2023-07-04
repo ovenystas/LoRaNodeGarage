@@ -4,12 +4,7 @@
 
 #include "Cover.h"
 
-class IGarageCover : public virtual ICover {
- public:
-  virtual ~IGarageCover() = default;
-};
-
-class GarageCover : public virtual IGarageCover, public Cover {
+class GarageCover : public Cover {
  public:
   GarageCover(uint8_t entityId, const char* name, uint8_t pinClosed,
               uint8_t pinOpen, uint8_t pinRelay)

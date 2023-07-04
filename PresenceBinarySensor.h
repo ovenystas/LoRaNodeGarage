@@ -5,18 +5,12 @@
 #include "BinarySensor.h"
 #include "HeightSensor.h"
 
-class IPresenceBinarySensor : public virtual IBinarySensor {
- public:
-  virtual ~IPresenceBinarySensor() = default;
-};
-
-class PresenceBinarySensor : public virtual IPresenceBinarySensor,
-                             public BinarySensor {
+class PresenceBinarySensor : public BinarySensor {
  public:
   PresenceBinarySensor() = delete;
 
   PresenceBinarySensor(uint8_t entityId, const char* name,
-                       IHeightSensor& heightSensor)
+                       ISensor<HeightT>& heightSensor)
       : BinarySensor(entityId, name, BinarySensorDeviceClass::presence),
         mHeightSensor{heightSensor} {}
 
@@ -47,7 +41,7 @@ class PresenceBinarySensor : public virtual IPresenceBinarySensor,
   };
 
   Config mConfig;
-  IHeightSensor& mHeightSensor;
+  ISensor<HeightT>& mHeightSensor;
   uint32_t mLastChangedTime = {};
   bool mStableState = {};
 };

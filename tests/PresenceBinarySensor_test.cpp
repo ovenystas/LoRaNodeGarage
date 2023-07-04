@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 #include "Unit.h"
-#include "mocks/HeightSensor.h"
+#include "mocks/Sensor.h"
 
 using ::testing::ElementsAre;
 using ::testing::Return;
@@ -14,7 +14,7 @@ class PresenceBinarySensor_test : public ::testing::Test {
  protected:
   void SetUp() override {
     pArduinoMock = arduinoMockInstance();
-    pHeightSensorMock = new HeightSensorMock();
+    pHeightSensorMock = new SensorMock<HeightT>();
     pPbs = new PresenceBinarySensor(89, "PresenceBinarySensor",
                                     *pHeightSensorMock);
   }
@@ -26,7 +26,7 @@ class PresenceBinarySensor_test : public ::testing::Test {
   }
 
   ArduinoMock* pArduinoMock;
-  HeightSensorMock* pHeightSensorMock;
+  SensorMock<HeightT>* pHeightSensorMock;
   PresenceBinarySensor* pPbs;
 };
 

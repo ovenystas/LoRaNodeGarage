@@ -10,15 +10,10 @@
 
 using HeightT = int16_t;  // cm
 
-class IHeightSensor : public virtual ISensor<HeightT> {
- public:
-  virtual ~IHeightSensor() = default;
-};
-
-class HeightSensor : public virtual IHeightSensor, public Sensor<HeightT> {
+class HeightSensor : public Sensor<HeightT> {
  public:
   HeightSensor(uint8_t entityId, const char* name,
-               IDistanceSensor& distanceSensor)
+               ISensor<DistanceT>& distanceSensor)
       : Sensor<HeightT>(entityId, name, SensorDeviceClass::distance,
                         Unit::Type::cm),
         mDistanceSensor{distanceSensor} {}
@@ -50,5 +45,5 @@ class HeightSensor : public virtual IHeightSensor, public Sensor<HeightT> {
   };
 
   Config mConfig;
-  IDistanceSensor& mDistanceSensor;
+  ISensor<DistanceT>& mDistanceSensor;
 };

@@ -9,13 +9,7 @@
 
 using HumidityT = int8_t;  // %
 
-class IHumiditySensor : public virtual ISensor<HumidityT> {
- public:
-  virtual ~IHumiditySensor() = default;
-};
-
-class HumiditySensor : public virtual IHumiditySensor,
-                       public Sensor<HumidityT> {
+class HumiditySensor : public Sensor<HumidityT> {
  public:
   HumiditySensor(uint8_t entityId, const char* name, DHT& dht)
       : Sensor<HumidityT>(entityId, name, SensorDeviceClass::humidity,

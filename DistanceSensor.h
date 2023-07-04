@@ -9,13 +9,7 @@
 
 using DistanceT = int16_t;  // cm
 
-class IDistanceSensor : public virtual ISensor<DistanceT> {
- public:
-  virtual ~IDistanceSensor() = default;
-};
-
-class DistanceSensor : public virtual IDistanceSensor,
-                       public Sensor<DistanceT> {
+class DistanceSensor : public Sensor<DistanceT> {
  public:
   DistanceSensor(uint8_t entityId, const char* name, NewPing& sonar)
       : Sensor<DistanceT>(entityId, name, SensorDeviceClass::distance,

@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 #include "Unit.h"
-#include "mocks/DistanceSensor.h"
+#include "mocks/Sensor.h"
 
 using ::testing::ElementsAre;
 using ::testing::Return;
@@ -14,7 +14,7 @@ class HeightSensor_test : public ::testing::Test {
  protected:
   void SetUp() override {
     pArduinoMock = arduinoMockInstance();
-    pDistanceSensorMock = new DistanceSensorMock();
+    pDistanceSensorMock = new SensorMock<DistanceT>();
     pHs = new HeightSensor(39, "HeightSensor", *pDistanceSensorMock);
   }
 
@@ -25,7 +25,7 @@ class HeightSensor_test : public ::testing::Test {
   }
 
   ArduinoMock* pArduinoMock;
-  DistanceSensorMock* pDistanceSensorMock;
+  SensorMock<DistanceT>* pDistanceSensorMock;
   HeightSensor* pHs;
 };
 
