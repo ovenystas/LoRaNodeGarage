@@ -43,10 +43,8 @@ class Component : public virtual IComponent {
  public:
   explicit Component(uint8_t entityId) : mEntityId{entityId} {}
 
-  Component(uint8_t entityId, const char* name) : mEntityId{entityId} {
-    strncpy(mName, name, maxNameLength);
-    mName[maxNameLength - 1] = '\0';
-  }
+  Component(uint8_t entityId, const char* name)
+      : mEntityId{entityId}, mName{name} {}
 
   void setReported() override { mLastReportTime = seconds(); }
 
@@ -59,9 +57,7 @@ class Component : public virtual IComponent {
   const char* getName() const final { return mName; }
 
  private:
-  static const uint8_t maxNameLength = 20 + 1;  // 20 chars + null terminator
-
   uint32_t mLastReportTime = {};  // s
   const uint8_t mEntityId = {};
-  char mName[maxNameLength] = {};
+  const char* mName = "";
 };

@@ -92,12 +92,7 @@ TEST(Component_test, getName_when_shortest_name_is_set) {
   EXPECT_STREQ(cmp.getName(), "H");
 }
 
-TEST(Component_test, getName_when_largest_name_is_set) {
-  ComponentChild cmp = ComponentChild(23, "12345678901234567890");
-  EXPECT_STREQ(cmp.getName(), "12345678901234567890");
-}
-
-TEST(Component_test, getName_when_too_large_name_is_set_shall_truncate) {
+TEST(Component_test, getName_when_large_name_is_set_shall) {
   ComponentChild cmp = ComponentChild(23, "123456789012345678901234567890");
-  EXPECT_STREQ(cmp.getName(), "12345678901234567890");
+  EXPECT_STREQ(cmp.getName(), "123456789012345678901234567890");
 }
