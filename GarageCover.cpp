@@ -15,13 +15,14 @@ bool GarageCover::isOpen(bool closedSensor, bool openSensor) {
 
 bool GarageCover::isClosing(bool closedSensor, bool openSensor) {
   return closedSensor == HIGH && openSensor == HIGH &&
-         (getState() == CoverState::closing || getState() == CoverState::open);
+         (mCover.getState() == CoverState::closing ||
+          mCover.getState() == CoverState::open);
 }
 
 bool GarageCover::isOpening(bool closedSensor, bool openSensor) {
   return closedSensor == HIGH && openSensor == HIGH &&
-         (getState() == CoverState::opening ||
-          getState() == CoverState::closed);
+         (mCover.getState() == CoverState::opening ||
+          mCover.getState() == CoverState::closed);
 }
 
 CoverState GarageCover::determineState() {
@@ -44,30 +45,30 @@ CoverState GarageCover::determineState() {
     return CoverState::opening;
   }
 
-  return getState();  // Error condition, both sensors can't be LOW.
+  return mCover.getState();  // Error condition, both sensors can't be LOW.
 }
 
 bool GarageCover::update() {
   CoverState newState = determineState();
-  bool hasChanged = newState != getState();
+  bool hasChanged = newState != mCover.getState();
 
-  setState(newState);
+  mCover.setState(newState);
 
   return hasChanged;
 }
 
 uint8_t GarageCover::getDiscoveryMsg(uint8_t* buffer) {
   uint8_t* p = buffer;
-  p += Cover::getDiscoveryMsg(p);
+  p += mCover.getDiscoveryMsg(p);
   *p++ = 0;  // No config items
 
   return p - buffer;
 }
 
 void GarageCover::callService(uint8_t service) {
-  CoverState state = getState();
+  CoverState state = mCover.getState();
 
-  switch (serviceDecode(service)) {
+  switch (mCover.serviceDecode(service)) {
     case CoverService::open:
       if (state == CoverState::closed) {
         activateRelay(1);

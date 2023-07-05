@@ -1,6 +1,8 @@
 # GoogleTest requires at least C++11
 set(CMAKE_CXX_STANDARD 11)
 
+add_compile_definitions(TESTING="true")
+
 add_compile_options(
   -g
   -O0

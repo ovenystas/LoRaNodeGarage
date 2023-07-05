@@ -1,26 +1,46 @@
 #pragma once
 
-#include <stdint.h>
-
 #include "BinarySensor.h"
+#include "Component.h"
+#include "ConfigItem.h"
 #include "HeightSensor.h"
 
-class PresenceBinarySensor : public BinarySensor {
+class PresenceBinarySensor : public IComponent {
  public:
+  virtual ~PresenceBinarySensor() = default;
+
   PresenceBinarySensor() = delete;
 
   PresenceBinarySensor(uint8_t entityId, const char* name,
                        ISensor<HeightT>& heightSensor)
-      : BinarySensor(entityId, name, BinarySensorDeviceClass::presence),
+      : mBinarySensor{BinarySensor(entityId, name,
+                                   BinarySensorDeviceClass::presence)},
         mHeightSensor{heightSensor} {}
 
-  bool update() final;
-
-  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+  void callService(uint8_t service) final { (void)service; }
 
   uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
 
+  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+
+  uint8_t getEntityId() const final { return mBinarySensor.getEntityId(); }
+
+  uint8_t getValueMsg(uint8_t* buffer) final {
+    return mBinarySensor.getValueMsg(buffer);
+  }
+
+  void print(Stream& stream) final { mBinarySensor.print(stream); };
+
+  void print(Stream& stream, uint8_t service) final {
+    (void)stream;
+    (void)service;
+  };
+
   bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
+
+  void setReported() final { mBinarySensor.setReported(); }
+
+  bool update() final;
 
  private:
   struct Config {
@@ -40,6 +60,7 @@ class PresenceBinarySensor : public BinarySensor {
         ConfigItem<uint16_t>(3, 60, Unit::Type::s, 0)};
   };
 
+  BinarySensor mBinarySensor;
   Config mConfig;
   ISensor<HeightT>& mHeightSensor;
   uint32_t mLastChangedTime = {};

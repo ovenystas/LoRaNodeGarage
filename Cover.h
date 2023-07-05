@@ -104,6 +104,8 @@ class Cover : public virtual ICover, public BaseComponent {
     return false;
   }
 
+  CoverService serviceDecode(uint8_t service);
+
   bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) override {
     (void)numberOfConfigs;
     (void)buffer;
@@ -111,9 +113,6 @@ class Cover : public virtual ICover, public BaseComponent {
   }
 
   bool update() override { return false; }
-
- protected:
-  CoverService serviceDecode(uint8_t service);
 
  private:
   const CoverDeviceClass mDeviceClass = {CoverDeviceClass::none};

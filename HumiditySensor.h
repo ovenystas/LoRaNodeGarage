@@ -3,26 +3,48 @@
 #include <DHT.h>
 #include <stdint.h>
 
+#include "Component.h"
 #include "ConfigItem.h"
 #include "Sensor.h"
 #include "Util.h"
 
 using HumidityT = int8_t;  // %
 
-class HumiditySensor : public Sensor<HumidityT> {
+class HumiditySensor : public IComponent {
  public:
+  virtual ~HumiditySensor() = default;
+
+  HumiditySensor() = delete;
+
   HumiditySensor(uint8_t entityId, const char* name, DHT& dht)
-      : Sensor<HumidityT>(entityId, name, SensorDeviceClass::humidity,
-                          Unit::Type::percent),
+      : mSensor{Sensor<HumidityT>(entityId, name, SensorDeviceClass::humidity,
+                                  Unit::Type::percent)},
         mDht{dht} {}
 
-  bool update() final;
+  void callService(uint8_t service) final { (void)service; }
 
   uint8_t getDiscoveryMsg(uint8_t* buffer) final;
 
+  uint8_t getEntityId() const final { return mSensor.getEntityId(); }
+
   uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
 
+  uint8_t getValueMsg(uint8_t* buffer) final {
+    return mSensor.getValueMsg(buffer);
+  }
+
+  void print(Stream& stream) final { mSensor.print(stream); };
+
+  void print(Stream& stream, uint8_t service) final {
+    (void)stream;
+    (void)service;
+  };
+
   bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
+
+  void setReported() final { mSensor.setReported(); }
+
+  bool update() final;
 
  private:
   struct Config {
@@ -42,6 +64,7 @@ class HumiditySensor : public Sensor<HumidityT> {
         ConfigItem<HumidityT>(3, 0, Unit::Type::percent, 0)};
   };
 
+  Sensor<HumidityT> mSensor;
   Config mConfig;
   DHT& mDht;
 };

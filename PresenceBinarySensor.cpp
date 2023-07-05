@@ -17,12 +17,12 @@ bool PresenceBinarySensor::update() {
   bool newState = (height >= mConfig.lowLimit.getValue()) &&
                   (height <= mConfig.highLimit.getValue());
 
-  if (newState != getState()) {
+  if (newState != mBinarySensor.getState()) {
     mLastChangedTime = timestamp;
     mStableState = false;
   }
 
-  setState(newState);
+  mBinarySensor.setState(newState);
 
   bool enteredNewStableState =
       !mStableState &&
@@ -32,17 +32,17 @@ bool PresenceBinarySensor::update() {
     mStableState = true;
   }
 
-  bool reportIsDue =
-      mConfig.reportInterval.getValue() > 0
-          ? timeSinceLastReport() >= mConfig.reportInterval.getValue()
-          : false;
+  bool reportIsDue = mConfig.reportInterval.getValue() > 0
+                         ? mBinarySensor.timeSinceLastReport() >=
+                               mConfig.reportInterval.getValue()
+                         : false;
 
   return (enteredNewStableState || reportIsDue);
 }
 
 uint8_t PresenceBinarySensor::getDiscoveryMsg(uint8_t* buffer) {
   uint8_t* p = buffer;
-  p += BinarySensor::getDiscoveryMsg(p);
+  p += mBinarySensor.getDiscoveryMsg(p);
   *p++ = mConfig.numberOfConfigItems;
 
   p += mConfig.lowLimit.writeDiscoveryItem(p);
@@ -55,7 +55,7 @@ uint8_t PresenceBinarySensor::getDiscoveryMsg(uint8_t* buffer) {
 
 uint8_t PresenceBinarySensor::getConfigItemValuesMsg(uint8_t* buffer) {
   uint8_t* p = buffer;
-  *p++ = getEntityId();
+  *p++ = mBinarySensor.getEntityId();
   *p++ = mConfig.numberOfConfigItems;
 
   p += mConfig.lowLimit.writeConfigItemValue(p);

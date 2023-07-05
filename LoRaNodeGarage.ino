@@ -76,9 +76,10 @@ GarageCover garageCover =
 TemperatureSensor temperatureSensor = TemperatureSensor(2, "Temperature", dht);
 HumiditySensor humiditySensor = HumiditySensor(3, "Humidity", dht);
 DistanceSensor distanceSensor = DistanceSensor(4, "Distance", sonar);
-HeightSensor heightSensor = HeightSensor(5, "Height", distanceSensor);
+HeightSensor heightSensor =
+    HeightSensor(5, "Height", distanceSensor.getSensor());
 PresenceBinarySensor carPresenceSensor =
-    PresenceBinarySensor(6, "Car", heightSensor);
+    PresenceBinarySensor(6, "Car", heightSensor.getSensor());
 
 Node node = Node(&garageCover, &temperatureSensor, &humiditySensor,
                  &distanceSensor, &heightSensor, &carPresenceSensor);
@@ -144,16 +145,14 @@ void onConfigReqMsg(uint8_t entityId) {
 }
 
 void onConfigSetReqMsg(const LoRaConfigValuePayloadT& payload) {
-  BaseComponent* c = node.getComponentByEntityId(payload.entityId);
+  IComponent* c = node.getComponentByEntityId(payload.entityId);
   c->setConfigs(payload.numberOfConfigs, payload.subPayload);
 }
 
 void onServiceReqMsg(const LoRaServiceItemT& item) {
-  BaseComponent* c = node.getComponentByEntityId(item.entityId);
-  if (c->hasService()) {
-    LOG_SERVICE(c, item.service);
-    c->callService(item.service);
-  }
+  IComponent* c = node.getComponentByEntityId(item.entityId);
+  LOG_SERVICE(c, item.service);
+  c->callService(item.service);
 }
 
 static void updateSensors() {
@@ -163,7 +162,7 @@ static void updateSensors() {
   lora.beginValueMsg();
 
   for (uint8_t i = 0; i < node.getSize(); i++) {
-    BaseComponent* c = node.getComponent(i);
+    IComponent* c = node.getComponent(i);
 
     if (c->update()) {
       LOG_SENSOR(c);
@@ -208,7 +207,7 @@ static void sendAllSensorValues() {
 void sendSensorValue(uint8_t entityId) {
   uint8_t buffer[1 + sizeof(uint32_t)];
 
-  BaseComponent* c = node.getComponentByEntityId(entityId);
+  IComponent* c = node.getComponentByEntityId(entityId);
 
   uint8_t length = c->getValueMsg(buffer);
 

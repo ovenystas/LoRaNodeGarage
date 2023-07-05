@@ -10,16 +10,16 @@ bool TemperatureSensor::update() {
   TemperatureT newValue =
       round(mDht.readTemperature() * 10) + mConfig.compensation.getValue();
 
-  setValue(newValue);
+  mSensor.setValue(newValue);
 
-  bool largeChange =
-      mConfig.reportHysteresis.getValue() > 0
-          ? absDiffLastReportedValue() >= mConfig.reportHysteresis.getValue()
-          : false;
+  bool largeChange = mConfig.reportHysteresis.getValue() > 0
+                         ? mSensor.absDiffLastReportedValue() >=
+                               mConfig.reportHysteresis.getValue()
+                         : false;
 
   bool reportIsDue =
       mConfig.reportInterval.getValue() > 0
-          ? timeSinceLastReport() >= mConfig.reportInterval.getValue()
+          ? mSensor.timeSinceLastReport() >= mConfig.reportInterval.getValue()
           : false;
 
   return (largeChange || reportIsDue);
@@ -27,7 +27,7 @@ bool TemperatureSensor::update() {
 
 uint8_t TemperatureSensor::getDiscoveryMsg(uint8_t *buffer) {
   uint8_t *p = buffer;
-  p += Sensor::getDiscoveryMsg(p);
+  p += mSensor.getDiscoveryMsg(p);
   *p++ = mConfig.numberOfConfigItems;
 
   p += mConfig.reportHysteresis.writeDiscoveryItem(p);
@@ -41,7 +41,7 @@ uint8_t TemperatureSensor::getDiscoveryMsg(uint8_t *buffer) {
 uint8_t TemperatureSensor::getConfigItemValuesMsg(uint8_t *buffer) {
   uint8_t *p = buffer;
 
-  *p++ = getEntityId();
+  *p++ = mSensor.getEntityId();
   *p++ = mConfig.numberOfConfigItems;
 
   p += mConfig.reportHysteresis.writeConfigItemValue(p);

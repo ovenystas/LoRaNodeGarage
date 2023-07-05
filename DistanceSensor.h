@@ -1,28 +1,51 @@
 #pragma once
 
 #include <NewPing.h>
-#include <stdint.h>
 
+#include "Component.h"
 #include "ConfigItem.h"
 #include "Sensor.h"
 #include "Util.h"
 
 using DistanceT = int16_t;  // cm
 
-class DistanceSensor : public Sensor<DistanceT> {
+class DistanceSensor : public IComponent {
  public:
+  virtual ~DistanceSensor() = default;
+
+  DistanceSensor() = delete;
+
   DistanceSensor(uint8_t entityId, const char* name, NewPing& sonar)
-      : Sensor<DistanceT>(entityId, name, SensorDeviceClass::distance,
-                          Unit::Type::cm),
+      : mSensor{Sensor<DistanceT>(entityId, name, SensorDeviceClass::distance,
+                                  Unit::Type::cm)},
         mSonar{sonar} {}
 
-  bool update() final;
-
-  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+  void callService(uint8_t service) final { (void)service; }
 
   uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
 
+  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+
+  uint8_t getEntityId() const final { return mSensor.getEntityId(); }
+
+  ISensor<DistanceT>& getSensor() { return mSensor; }
+
+  uint8_t getValueMsg(uint8_t* buffer) final {
+    return mSensor.getValueMsg(buffer);
+  }
+
+  void print(Stream& stream) final { mSensor.print(stream); };
+
+  void print(Stream& stream, uint8_t service) final {
+    (void)stream;
+    (void)service;
+  };
+
   bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
+
+  void setReported() final { mSensor.setReported(); }
+
+  bool update() final;
 
  private:
   struct Config {
@@ -39,6 +62,7 @@ class DistanceSensor : public Sensor<DistanceT> {
         ConfigItem<uint16_t>(2, 60, Unit::Type::s)};
   };
 
+  Sensor<DistanceT> mSensor;
   Config mConfig;
   NewPing& mSonar;
 };
