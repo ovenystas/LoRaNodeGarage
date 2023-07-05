@@ -5,7 +5,7 @@
 
 #include "Util.h"
 
-class IComponent {
+class IBaseComponent {
  public:
   enum class Type { binarySensor, sensor, cover };
 
@@ -28,7 +28,7 @@ class IComponent {
   virtual bool update() = 0;
 
  protected:
-  virtual ~IComponent() = default;
+  virtual ~IBaseComponent() = default;
 
   virtual void setReported() = 0;
 
@@ -39,11 +39,11 @@ class IComponent {
   virtual const char* getName() const = 0;
 };
 
-class Component : public virtual IComponent {
+class BaseComponent : public virtual IBaseComponent {
  public:
-  explicit Component(uint8_t entityId) : mEntityId{entityId} {}
+  explicit BaseComponent(uint8_t entityId) : mEntityId{entityId} {}
 
-  Component(uint8_t entityId, const char* name)
+  BaseComponent(uint8_t entityId, const char* name)
       : mEntityId{entityId}, mName{name} {}
 
   void setReported() override { mLastReportTime = seconds(); }

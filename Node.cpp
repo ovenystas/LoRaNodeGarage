@@ -5,8 +5,8 @@
 
 #include "Node.h"
 
-Node::Node(Component* c0, Component* c1, Component* c2, Component* c3,
-           Component* c4, Component* c5) {
+Node::Node(BaseComponent* c0, BaseComponent* c1, BaseComponent* c2,
+           BaseComponent* c3, BaseComponent* c4, BaseComponent* c5) {
   mEntities[0] = c0;
   mEntities[1] = c1;
   mEntities[2] = c2;
@@ -20,7 +20,7 @@ uint8_t Node::getDiscoveryMsg(uint8_t* buffer, uint8_t idx) {
 }
 
 uint8_t Node::getDiscoveryMsgByEntityId(uint8_t* buffer, uint8_t entityId) {
-  Component* c = getComponentByEntityId(entityId);
+  BaseComponent* c = getComponentByEntityId(entityId);
   if (c) {
     return c->getDiscoveryMsg(buffer);
   }
@@ -28,7 +28,7 @@ uint8_t Node::getDiscoveryMsgByEntityId(uint8_t* buffer, uint8_t entityId) {
 }
 
 uint8_t Node::getConfigItemValuesMsg(uint8_t* buffer, uint8_t entityId) {
-  Component* c = getComponentByEntityId(entityId);
+  BaseComponent* c = getComponentByEntityId(entityId);
   if (c) {
     return c->getConfigItemValuesMsg(buffer);
   }
@@ -40,21 +40,21 @@ uint8_t Node::getValueMsg(uint8_t* buffer, uint8_t idx) {
 }
 
 uint8_t Node::getValueMsgByEntityId(uint8_t* buffer, uint8_t entityId) {
-  Component* c = getComponentByEntityId(entityId);
+  BaseComponent* c = getComponentByEntityId(entityId);
   if (c) {
     return c->getValueMsg(buffer);
   }
   return 0;
 }
 
-Component* Node::getComponent(uint8_t idx) {
+BaseComponent* Node::getComponent(uint8_t idx) {
   if (idx < getSize()) {
     return mEntities[idx];
   }
   return nullptr;
 }
 
-Component* Node::getComponentByEntityId(uint8_t entityId) {
+BaseComponent* Node::getComponentByEntityId(uint8_t entityId) {
   for (uint8_t i = 0; i < mEntities.maxSize; i++) {
     if (mEntities[i]->getEntityId() == entityId) {
       return mEntities[i];

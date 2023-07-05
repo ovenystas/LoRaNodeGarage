@@ -1,4 +1,4 @@
-#include "Component.h"
+#include "BaseComponent.h"
 
 #include <gtest/gtest.h>
 
@@ -6,12 +6,12 @@
 
 using ::testing::Return;
 
-class ComponentChild : public Component, public virtual IComponent {
+class ComponentChild : public BaseComponent, public virtual IBaseComponent {
  public:
-  explicit ComponentChild(uint8_t entityId) : Component(entityId) {}
+  explicit ComponentChild(uint8_t entityId) : BaseComponent(entityId) {}
 
   ComponentChild(uint8_t entityId, const char* name)
-      : Component(entityId, name) {}
+      : BaseComponent(entityId, name) {}
 
   void callService(uint8_t service) final { (void)service; }
 

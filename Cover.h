@@ -2,7 +2,7 @@
 
 #include <Stream.h>
 
-#include "Component.h"
+#include "BaseComponent.h"
 #include "Util.h"
 
 static const char CoverStateName[][8] = {"closed", "open", "opening",
@@ -29,7 +29,7 @@ enum class CoverState { closed, open, opening, closing };
 
 enum class CoverService { open, close, stop, toggle, unknown };
 
-class ICover : public virtual IComponent {
+class ICover : public virtual IBaseComponent {
  public:
   virtual ~ICover() = default;
 
@@ -41,7 +41,7 @@ class ICover : public virtual IComponent {
 
   virtual const char* getServiceName(CoverService service) const = 0;
 
-  virtual IComponent::Type getComponentType() const = 0;
+  virtual IBaseComponent::Type getComponentType() const = 0;
 
   virtual CoverDeviceClass getDeviceClass() const = 0;
 
@@ -50,11 +50,11 @@ class ICover : public virtual IComponent {
   virtual void setState(CoverState state) = 0;
 };
 
-class Cover : public virtual ICover, public Component {
+class Cover : public virtual ICover, public BaseComponent {
  public:
   Cover(uint8_t entityId, const char* name,
         CoverDeviceClass deviceClass = CoverDeviceClass::none)
-      : Component(entityId, name), mDeviceClass{deviceClass} {}
+      : BaseComponent(entityId, name), mDeviceClass{deviceClass} {}
 
   void callService(uint8_t service) override { (void)service; }
 
@@ -74,8 +74,8 @@ class Cover : public virtual ICover, public Component {
     return CoverServiceName[static_cast<uint8_t>(service)];
   }
 
-  IComponent::Type getComponentType() const final {
-    return IComponent::Type::cover;
+  IBaseComponent::Type getComponentType() const final {
+    return IBaseComponent::Type::cover;
   }
 
   CoverDeviceClass getDeviceClass() const final { return mDeviceClass; }
@@ -85,7 +85,7 @@ class Cover : public virtual ICover, public Component {
   uint8_t getValueMsg(uint8_t* buffer) final;
 
   void setReported() final {
-    Component::setReported();
+    BaseComponent::setReported();
     mLastReportedState = mState;
   }
 

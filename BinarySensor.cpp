@@ -2,7 +2,7 @@
 
 #include <WString.h>
 
-#include "Component.h"
+#include "BaseComponent.h"
 #include "Unit.h"
 
 const __FlashStringHelper* BinarySensor::getStateName() {

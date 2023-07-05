@@ -71,7 +71,7 @@ TEST_F(DistanceSensor_test, getDiscoveryMsg) {
       buf,
       ElementsAre(
           7,
-          static_cast<uint8_t>(Component::Type::sensor),
+          static_cast<uint8_t>(BaseComponent::Type::sensor),
           static_cast<uint8_t>(SensorDeviceClass::distance),
           static_cast<uint8_t>(Unit::Type::cm),
           (sizeof(DistanceT) << 4) | 0,

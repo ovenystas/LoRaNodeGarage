@@ -39,7 +39,7 @@ TEST_F(BinarySensor_test, getStateName_when_true) {
 }
 
 TEST_F(BinarySensor_test, getComponentType) {
-  EXPECT_EQ(bs.getComponentType(), Component::Type::binarySensor);
+  EXPECT_EQ(bs.getComponentType(), BaseComponent::Type::binarySensor);
 }
 
 TEST_F(BinarySensor_test, getDeviceClass) {
@@ -50,9 +50,10 @@ TEST_F(BinarySensor_test, getDiscoveryMsg) {
   uint8_t buf[5] = {};
   EXPECT_EQ(bs.getDiscoveryMsg(buf), 5);
   EXPECT_THAT(
-      buf, ElementsAre(34, static_cast<uint8_t>(Component::Type::binarySensor),
-                       static_cast<uint8_t>(BinarySensorDeviceClass::none),
-                       static_cast<uint8_t>(Unit::Type::none), (1 << 4) | 0));
+      buf,
+      ElementsAre(34, static_cast<uint8_t>(BaseComponent::Type::binarySensor),
+                  static_cast<uint8_t>(BinarySensorDeviceClass::none),
+                  static_cast<uint8_t>(Unit::Type::none), (1 << 4) | 0));
 }
 
 TEST_F(BinarySensor_test, getValueMsg_when_false) {

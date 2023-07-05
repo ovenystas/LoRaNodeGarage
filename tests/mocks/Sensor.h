@@ -22,7 +22,7 @@ class SensorMock : public virtual ISensor<T> {
   MOCK_METHOD(uint32_t, timeSinceLastReport, (), (const, override));
   MOCK_METHOD(uint8_t, getEntityId, (), (const, override));
   MOCK_METHOD(const char*, getName, (), (const, override));
-  MOCK_METHOD(Component::Type, getComponentType, (), (const, override));
+  MOCK_METHOD(BaseComponent::Type, getComponentType, (), (const, override));
   MOCK_METHOD(SensorDeviceClass, getDeviceClass, (), (const, override));
   MOCK_METHOD(const char*, getUnitName, (), (const, override));
   MOCK_METHOD(uint8_t, getDiscoveryMsg, (uint8_t*), (override));

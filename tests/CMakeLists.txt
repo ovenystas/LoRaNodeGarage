@@ -55,10 +55,10 @@ add_executable(ConfigItem_test EXCLUDE_FROM_ALL ConfigItem_test.cpp ../Util.cpp
 target_link_libraries(ConfigItem_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(ConfigItem_test)
 
-add_executable(Component_test EXCLUDE_FROM_ALL Component_test.cpp ../Util.cpp
-                                               mocks/Arduino.cpp)
-target_link_libraries(Component_test GTest::gtest_main GTest::gmock_main)
-gtest_discover_tests(Component_test)
+add_executable(BaseComponent_test EXCLUDE_FROM_ALL
+               BaseComponent_test.cpp ../Util.cpp mocks/Arduino.cpp)
+target_link_libraries(BaseComponent_test GTest::gtest_main GTest::gmock_main)
+gtest_discover_tests(BaseComponent_test)
 
 add_executable(
   BinarySensor_test EXCLUDE_FROM_ALL BinarySensor_test.cpp ../BinarySensor.cpp
@@ -122,7 +122,7 @@ add_custom_target(
   DEPENDS Unit_test
           Util_test
           ConfigItem_test
-          Component_test
+          BaseComponent_test
           BinarySensor_test
           Cover_test
           Sensor_test

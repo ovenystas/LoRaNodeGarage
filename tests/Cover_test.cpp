@@ -50,7 +50,7 @@ TEST_F(Cover_test, getServiceName_of_service_as_arg) {
 }
 
 TEST_F(Cover_test, getComponentType) {
-  EXPECT_EQ(cc.getComponentType(), Component::Type::cover);
+  EXPECT_EQ(cc.getComponentType(), BaseComponent::Type::cover);
 }
 
 TEST_F(Cover_test, getDeviceClass) {
@@ -61,7 +61,7 @@ TEST_F(Cover_test, getDiscoveryMsg) {
   uint8_t buf[5] = {};
   EXPECT_EQ(cc.getDiscoveryMsg(buf), 5);
   EXPECT_THAT(
-      buf, ElementsAre(34, static_cast<uint8_t>(Component::Type::cover),
+      buf, ElementsAre(34, static_cast<uint8_t>(BaseComponent::Type::cover),
                        static_cast<uint8_t>(CoverDeviceClass::none),
                        static_cast<uint8_t>(Unit::Type::none), (1 << 4) | 0));
 }

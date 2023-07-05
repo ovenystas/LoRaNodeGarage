@@ -65,7 +65,7 @@ TEST_F(HumiditySensor_test, getDiscoveryMsg) {
       buf,
       ElementsAre(
           51,
-          static_cast<uint8_t>(Component::Type::sensor),
+          static_cast<uint8_t>(BaseComponent::Type::sensor),
           static_cast<uint8_t>(SensorDeviceClass::humidity),
           static_cast<uint8_t>(Unit::Type::percent),
           (sizeof(HumidityT) << 4) | 0,

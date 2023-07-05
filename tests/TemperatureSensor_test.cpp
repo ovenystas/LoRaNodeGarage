@@ -65,7 +65,7 @@ TEST_F(TemperatureSensor_test, getDiscoveryMsg) {
       buf,
       ElementsAre(
           15,
-          static_cast<uint8_t>(Component::Type::sensor),
+          static_cast<uint8_t>(BaseComponent::Type::sensor),
           static_cast<uint8_t>(SensorDeviceClass::temperature),
           static_cast<uint8_t>(Unit::Type::C),
           (sizeof(TemperatureT) << 4) | 1,

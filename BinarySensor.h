@@ -3,7 +3,7 @@
 #include <Stream.h>
 #include <WString.h>
 
-#include "Component.h"
+#include "BaseComponent.h"
 #include "Unit.h"
 #include "Util.h"
 
@@ -37,7 +37,7 @@ enum class BinarySensorDeviceClass {
   window
 };
 
-class IBinarySensor : public virtual IComponent {
+class IBinarySensor : public virtual IBaseComponent {
  protected:
   virtual ~IBinarySensor() = default;
 
@@ -45,7 +45,7 @@ class IBinarySensor : public virtual IComponent {
 
   virtual const __FlashStringHelper* getStateName() = 0;
 
-  virtual IComponent::Type getComponentType() const = 0;
+  virtual IBaseComponent::Type getComponentType() const = 0;
 
   virtual BinarySensorDeviceClass getDeviceClass() const = 0;
 
@@ -54,13 +54,13 @@ class IBinarySensor : public virtual IComponent {
   virtual void setState(bool state) = 0;
 };
 
-class BinarySensor : public virtual IBinarySensor, public Component {
+class BinarySensor : public virtual IBinarySensor, public BaseComponent {
  public:
   BinarySensor(
       uint8_t entityId, const char* name,
       BinarySensorDeviceClass deviceClass = BinarySensorDeviceClass::none,
       Unit::Type unitType = Unit::Type::none)
-      : Component(entityId, name),
+      : BaseComponent(entityId, name),
         mDeviceClass{deviceClass},
         mUnit{Unit(unitType)} {}
 
@@ -75,8 +75,8 @@ class BinarySensor : public virtual IBinarySensor, public Component {
 
   const __FlashStringHelper* getStateName() final;
 
-  Component::Type getComponentType() const final {
-    return Component::Type::binarySensor;
+  BaseComponent::Type getComponentType() const final {
+    return BaseComponent::Type::binarySensor;
   }
 
   BinarySensorDeviceClass getDeviceClass() const final { return mDeviceClass; }
@@ -86,7 +86,7 @@ class BinarySensor : public virtual IBinarySensor, public Component {
   uint8_t getValueMsg(uint8_t* buffer) final;
 
   void setReported() final {
-    Component::setReported();
+    BaseComponent::setReported();
     mLastReportedState = mState;
   }
 

@@ -1,6 +1,6 @@
 #include "Cover.h"
 
-#include "Component.h"
+#include "BaseComponent.h"
 #include "Unit.h"
 
 uint8_t Cover::getDiscoveryMsg(uint8_t* buffer) {

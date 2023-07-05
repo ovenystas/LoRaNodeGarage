@@ -88,7 +88,7 @@ TEST_F(GarageCover_test, getDiscoveryMsg) {
   uint8_t buf[6] = {};
   EXPECT_EQ(pGc->getDiscoveryMsg(buf), 6);
   EXPECT_THAT(buf,
-              ElementsAre(91, static_cast<uint8_t>(Component::Type::cover),
+              ElementsAre(91, static_cast<uint8_t>(BaseComponent::Type::cover),
                           static_cast<uint8_t>(CoverDeviceClass::garage),
                           static_cast<uint8_t>(Unit::Type::none), (1 << 4) | 0,
                           0));  // No config items

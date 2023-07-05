@@ -2,7 +2,7 @@
 
 #include <Stream.h>
 
-#include "Component.h"
+#include "BaseComponent.h"
 #include "Unit.h"
 #include "Util.h"
 
@@ -58,13 +58,13 @@ enum class SensorDeviceClass {
 };
 
 template <class T>
-class ISensor : public virtual IComponent {
+class ISensor : public virtual IBaseComponent {
  public:
   virtual ~ISensor() = default;
 
   virtual T getValue() const = 0;
 
-  virtual Component::Type getComponentType() const = 0;
+  virtual BaseComponent::Type getComponentType() const = 0;
 
   virtual SensorDeviceClass getDeviceClass() const = 0;
 
@@ -78,14 +78,14 @@ class ISensor : public virtual IComponent {
 };
 
 template <class T>
-class Sensor : public virtual ISensor<T>, public Component {
+class Sensor : public virtual ISensor<T>, public BaseComponent {
  public:
-  explicit Sensor(uint8_t entityId) : Component(entityId) {}
+  explicit Sensor(uint8_t entityId) : BaseComponent(entityId) {}
 
   Sensor(uint8_t entityId, const char* name,
          SensorDeviceClass deviceClass = SensorDeviceClass::none,
          Unit::Type unitType = Unit::Type::none, uint8_t precision = 0)
-      : Component(entityId, name),
+      : BaseComponent(entityId, name),
         mDeviceClass{deviceClass},
         mUnit{unitType},
         mPrecision{precision > 3 ? static_cast<uint8_t>(3) : precision},
@@ -95,8 +95,8 @@ class Sensor : public virtual ISensor<T>, public Component {
 
   T getValue() const final { return mValue; }
 
-  Component::Type getComponentType() const final {
-    return Component::Type::sensor;
+  BaseComponent::Type getComponentType() const final {
+    return BaseComponent::Type::sensor;
   }
 
   SensorDeviceClass getDeviceClass() const final { return mDeviceClass; }
@@ -126,7 +126,7 @@ class Sensor : public virtual ISensor<T>, public Component {
   }
 
   void setReported() final {
-    Component::setReported();
+    BaseComponent::setReported();
     mLastReportedValue = mValue;
   }
 

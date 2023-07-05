@@ -128,7 +128,7 @@ TEST_F(PresenceBinarySensor_test, getDiscoveryMsg) {
       buf,
       ElementsAre(
           89,
-          static_cast<uint8_t>(Component::Type::binarySensor),
+          static_cast<uint8_t>(BaseComponent::Type::binarySensor),
           static_cast<uint8_t>(BinarySensorDeviceClass::presence),
           static_cast<uint8_t>(Unit::Type::none),
           (1 << 4) | 0,

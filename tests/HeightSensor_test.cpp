@@ -65,7 +65,7 @@ TEST_F(HeightSensor_test, getDiscoveryMsg) {
       buf,
       ElementsAre(
           39,
-          static_cast<uint8_t>(Component::Type::sensor),
+          static_cast<uint8_t>(BaseComponent::Type::sensor),
           static_cast<uint8_t>(SensorDeviceClass::distance),
           static_cast<uint8_t>(Unit::Type::cm),
           (sizeof(HeightT) << 4) | 0,

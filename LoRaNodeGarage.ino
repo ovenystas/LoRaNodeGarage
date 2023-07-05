@@ -144,12 +144,12 @@ void onConfigReqMsg(uint8_t entityId) {
 }
 
 void onConfigSetReqMsg(const LoRaConfigValuePayloadT& payload) {
-  Component* c = node.getComponentByEntityId(payload.entityId);
+  BaseComponent* c = node.getComponentByEntityId(payload.entityId);
   c->setConfigs(payload.numberOfConfigs, payload.subPayload);
 }
 
 void onServiceReqMsg(const LoRaServiceItemT& item) {
-  Component* c = node.getComponentByEntityId(item.entityId);
+  BaseComponent* c = node.getComponentByEntityId(item.entityId);
   if (c->hasService()) {
     LOG_SERVICE(c, item.service);
     c->callService(item.service);
@@ -163,7 +163,7 @@ static void updateSensors() {
   lora.beginValueMsg();
 
   for (uint8_t i = 0; i < node.getSize(); i++) {
-    Component* c = node.getComponent(i);
+    BaseComponent* c = node.getComponent(i);
 
     if (c->update()) {
       LOG_SENSOR(c);
@@ -208,7 +208,7 @@ static void sendAllSensorValues() {
 void sendSensorValue(uint8_t entityId) {
   uint8_t buffer[1 + sizeof(uint32_t)];
 
-  Component* c = node.getComponentByEntityId(entityId);
+  BaseComponent* c = node.getComponentByEntityId(entityId);
 
   uint8_t length = c->getValueMsg(buffer);
 
