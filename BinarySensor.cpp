@@ -54,7 +54,7 @@ const __FlashStringHelper* BinarySensor::getStateName() {
 }
 
 uint8_t BinarySensor::getDiscoveryMsg(uint8_t* buffer) {
-  buffer[0] = getEntityId();
+  buffer[0] = mBaseComponent.getEntityId();
   buffer[1] = static_cast<uint8_t>(getComponentType());
   buffer[2] = static_cast<uint8_t>(getDeviceClass());
   buffer[3] = static_cast<uint8_t>(mUnit.getType());
@@ -64,14 +64,14 @@ uint8_t BinarySensor::getDiscoveryMsg(uint8_t* buffer) {
 
 uint8_t BinarySensor::getValueMsg(uint8_t* buffer) {
   uint8_t* p = buffer;
-  *p++ = getEntityId();
+  *p++ = mBaseComponent.getEntityId();
   *p++ = getState();
 
   return p - buffer;
 }
 
 void BinarySensor::print(Stream& stream) {
-  stream.print(getName());
+  stream.print(mBaseComponent.getName());
   stream.print(": ");
   stream.print(getStateName());
 }

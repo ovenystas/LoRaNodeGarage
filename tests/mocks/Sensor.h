@@ -7,7 +7,7 @@
 #include "Sensor.h"
 
 template <class T>
-class SensorMock : public virtual ISensor<T> {
+class SensorMock : public virtual Sensor<T> {
  public:
   virtual ~SensorMock() = default;
   MOCK_METHOD(T, getValue, (), (const, override));

@@ -13,8 +13,6 @@ class BinarySensor_test : public ::testing::Test {
   BinarySensor bs = BinarySensor(34, "BinarySensor");
 };
 
-TEST_F(BinarySensor_test, hasService_no) { EXPECT_EQ(bs.hasService(), false); }
-
 // TEST_F(BinarySensor_test, print) {
 //   bs.print(Serial, 0);
 //   SUCCEED();

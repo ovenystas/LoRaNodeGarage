@@ -13,8 +13,6 @@ class Cover_test : public ::testing::Test {
   Cover cc = Cover(34, "Cover");
 };
 
-TEST_F(Cover_test, hasService_yes) { EXPECT_EQ(cc.hasService(), true); }
-
 TEST_F(Cover_test, getState) {
   EXPECT_EQ(cc.getState(), CoverState::closed);
   cc.setState(CoverState::opening);

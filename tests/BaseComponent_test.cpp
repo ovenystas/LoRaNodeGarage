@@ -6,64 +6,18 @@
 
 using ::testing::Return;
 
-class ComponentChild : public BaseComponent, public virtual IBaseComponent {
- public:
-  explicit ComponentChild(uint8_t entityId) : BaseComponent(entityId) {}
-
-  ComponentChild(uint8_t entityId, const char* name)
-      : BaseComponent(entityId, name) {}
-
-  void callService(uint8_t service) final { (void)service; }
-
-  bool hasService() final { return false; }
-
-  void print(Stream& stream, uint8_t service) final {
-    (void)stream;
-    (void)service;
-    return;
-  }
-
-  void print(Stream& stream) final {
-    (void)stream;
-    return;
-  }
-
-  uint8_t getDiscoveryMsg(uint8_t* buffer) final {
-    (void)buffer;
-    return 0;
-  }
-
-  uint8_t getValueMsg(uint8_t* buffer) final {
-    (void)buffer;
-    return 0;
-  }
-
-  uint8_t getConfigItemValuesMsg(uint8_t* buffer) override {
-    (void)buffer;
-    return false;
-  }
-
-  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final {
-    (void)numberOfConfigs;
-    (void)buffer;
-    return true;
-  }
-
-  bool update() override { return false; }
-};
-
-TEST(Component_test, getEntityId_constructor_1_param) {
-  ComponentChild cmp = ComponentChild(23);
+TEST(BaseComponent_test, getEntityId_constructor_1_param) {
+  BaseComponent cmp = BaseComponent(23);
   EXPECT_EQ(cmp.getEntityId(), 23);
 }
 
-TEST(Component_test, getEntityId_constructor_2_params) {
-  ComponentChild cmp = ComponentChild(23, "Hello");
+TEST(BaseComponent_test, getEntityId_constructor_2_params) {
+  BaseComponent cmp = BaseComponent(23, "Hello");
   EXPECT_EQ(cmp.getEntityId(), 23);
 }
 
-TEST(Component_test, setReported_and_timeSinceLastReport) {
-  ComponentChild cmp = ComponentChild(23);
+TEST(BaseComponent_test, setReported_and_timeSinceLastReport) {
+  BaseComponent cmp = BaseComponent(23);
   ArduinoMock* arduinoMock = arduinoMockInstance();
   EXPECT_CALL(*arduinoMock, millis())
       .WillOnce(Return(10000ul))
@@ -77,22 +31,22 @@ TEST(Component_test, setReported_and_timeSinceLastReport) {
   releaseArduinoMock();
 }
 
-TEST(Component_test, getName_when_no_name_is_set) {
-  ComponentChild cmp = ComponentChild(23);
+TEST(BaseComponent_test, getName_when_no_name_is_set) {
+  BaseComponent cmp = BaseComponent(23);
   EXPECT_STREQ(cmp.getName(), "");
 }
 
-TEST(Component_test, getName_when_empty_name_is_set) {
-  ComponentChild cmp = ComponentChild(23, "");
+TEST(BaseComponent_test, getName_when_empty_name_is_set) {
+  BaseComponent cmp = BaseComponent(23, "");
   EXPECT_STREQ(cmp.getName(), "");
 }
 
-TEST(Component_test, getName_when_shortest_name_is_set) {
-  ComponentChild cmp = ComponentChild(23, "H");
+TEST(BaseComponent_test, getName_when_shortest_name_is_set) {
+  BaseComponent cmp = BaseComponent(23, "H");
   EXPECT_STREQ(cmp.getName(), "H");
 }
 
-TEST(Component_test, getName_when_large_name_is_set_shall) {
-  ComponentChild cmp = ComponentChild(23, "123456789012345678901234567890");
+TEST(BaseComponent_test, getName_when_large_name_is_set_shall) {
+  BaseComponent cmp = BaseComponent(23, "123456789012345678901234567890");
   EXPECT_STREQ(cmp.getName(), "123456789012345678901234567890");
 }

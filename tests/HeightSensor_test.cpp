@@ -2,8 +2,8 @@
 
 #include <gtest/gtest.h>
 
+#include "Sensor.h"
 #include "Unit.h"
-#include "mocks/Sensor.h"
 
 using ::testing::ElementsAre;
 using ::testing::Return;
@@ -14,45 +14,46 @@ class HeightSensor_test : public ::testing::Test {
  protected:
   void SetUp() override {
     pArduinoMock = arduinoMockInstance();
-    pDistanceSensorMock = new SensorMock<DistanceT>();
-    pHs = new HeightSensor(39, "HeightSensor", *pDistanceSensorMock);
+    pDistanceSensor = new Sensor<DistanceT>(
+        99, "Distance", SensorDeviceClass::distance, Unit::Type::cm);
+    pHs = new HeightSensor(39, "HeightSensor", *pDistanceSensor);
   }
 
   void TearDown() override {
     delete pHs;
-    delete pDistanceSensorMock;
+    delete pDistanceSensor;
     releaseArduinoMock();
   }
 
   ArduinoMock* pArduinoMock;
-  SensorMock<DistanceT>* pDistanceSensorMock;
+  Sensor<DistanceT>* pDistanceSensor;
   HeightSensor* pHs;
 };
 
 TEST_F(HeightSensor_test,
        update_smallValueDiff_smallTimeDiff_shall_return_false) {
-  EXPECT_CALL(*pDistanceSensorMock, getValue()).WillOnce(Return(69));
+  pDistanceSensor->setValue(69);
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
   EXPECT_FALSE(pHs->update());
 }
 
 TEST_F(HeightSensor_test,
        update_smallValueDiff_largeTimeDiff_shall_return_true) {
-  EXPECT_CALL(*pDistanceSensorMock, getValue()).WillOnce(Return(69));
+  pDistanceSensor->setValue(69);
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
   EXPECT_TRUE(pHs->update());
 }
 
 TEST_F(HeightSensor_test,
        update_largeValueDiff_smallTimeDiff_shall_return_true) {
-  EXPECT_CALL(*pDistanceSensorMock, getValue()).WillOnce(Return(70));
+  pDistanceSensor->setValue(70);
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
   EXPECT_TRUE(pHs->update());
 }
 
 TEST_F(HeightSensor_test,
        update_largeValueDiff_largeTimeDiff_shall_return_true) {
-  EXPECT_CALL(*pDistanceSensorMock, getValue()).WillOnce(Return(70));
+  pDistanceSensor->setValue(70);
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
   EXPECT_TRUE(pHs->update());
 }
@@ -190,7 +191,7 @@ TEST_F(HeightSensor_test, setConfigs_out_of_range) {
 
 TEST_F(HeightSensor_test,
        update_largeValueDiff_largeTimeDiff_withConfigsZero_shall_return_false) {
-  EXPECT_CALL(*pDistanceSensorMock, getValue()).WillOnce(Return(70));
+  pDistanceSensor->setValue(70);
   EXPECT_CALL(*pArduinoMock, millis()).Times(0);
   uint8_t buf[] = {
       // clang-format off

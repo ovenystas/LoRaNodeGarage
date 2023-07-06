@@ -41,12 +41,6 @@ class SensorInt32BatteryCm_test : public ::testing::Test {
       132, "Sensor32", SensorDeviceClass::battery, Unit::Type::cm);
 };
 
-TEST_F(SensorInt8_test, hasService_no) { EXPECT_EQ(sc.hasService(), false); }
-
-TEST_F(SensorInt16_test, hasService_no) { EXPECT_EQ(sc.hasService(), false); }
-
-TEST_F(SensorInt32_test, hasService_no) { EXPECT_EQ(sc.hasService(), false); }
-
 TEST_F(SensorInt8_test, getValue) {
   EXPECT_EQ(sc.getValue(), 0);
   sc.setValue(INT8_MIN);

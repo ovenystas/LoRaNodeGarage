@@ -5,11 +5,6 @@
 #include "BaseComponent.h"
 #include "Util.h"
 
-static const char CoverStateName[][8] = {"closed", "open", "opening",
-                                         "closing"};
-
-static const char CoverServiceName[][7] = {"open", "close", "stop", "toggle"};
-
 // From https://www.home-assistant.io/integrations/cover/ at 2021-03-21
 enum class CoverDeviceClass {
   none,
@@ -29,92 +24,54 @@ enum class CoverState { closed, open, opening, closing };
 
 enum class CoverService { open, close, stop, toggle, unknown };
 
-class ICover : public virtual IBaseComponent {
- public:
-  virtual ~ICover() = default;
-
-  virtual CoverState getState() const = 0;
-
-  virtual const char* getStateName() const = 0;
-
-  virtual const char* getStateName(CoverState state) const = 0;
-
-  virtual const char* getServiceName(CoverService service) const = 0;
-
-  virtual IBaseComponent::Type getComponentType() const = 0;
-
-  virtual CoverDeviceClass getDeviceClass() const = 0;
-
-  virtual bool isDiffLastReportedState() const = 0;
-
-  virtual void setState(CoverState state) = 0;
-};
-
-class Cover : public virtual ICover, public BaseComponent {
+class Cover {
  public:
   Cover(uint8_t entityId, const char* name,
         CoverDeviceClass deviceClass = CoverDeviceClass::none)
-      : BaseComponent(entityId, name), mDeviceClass{deviceClass} {}
+      : mBaseComponent{BaseComponent(entityId, name)},
+        mDeviceClass{deviceClass} {}
 
-  void callService(uint8_t service) override { (void)service; }
-
-  bool hasService() final { return true; }
-
-  CoverState getState() const final { return mState; }
-
-  const char* getStateName() const final {
-    return CoverStateName[static_cast<uint8_t>(mState)];
+  BaseComponent::Type getComponentType() const {
+    return BaseComponent::Type::cover;
   }
 
-  const char* getStateName(CoverState state) const final {
-    return CoverStateName[static_cast<uint8_t>(state)];
-  }
+  CoverDeviceClass getDeviceClass() const { return mDeviceClass; }
 
-  const char* getServiceName(CoverService service) const final {
-    return CoverServiceName[static_cast<uint8_t>(service)];
-  }
+  uint8_t getDiscoveryMsg(uint8_t* buffer);
 
-  IBaseComponent::Type getComponentType() const final {
-    return IBaseComponent::Type::cover;
-  }
+  uint8_t getEntityId() const { return mBaseComponent.getEntityId(); }
 
-  CoverDeviceClass getDeviceClass() const final { return mDeviceClass; }
+  const char* getServiceName(CoverService service) const;
 
-  uint8_t getDiscoveryMsg(uint8_t* buffer) override;
+  CoverState getState() const { return mState; }
 
-  uint8_t getValueMsg(uint8_t* buffer) final;
+  const char* getStateName() const;
 
-  void setReported() final {
-    BaseComponent::setReported();
-    mLastReportedState = mState;
-  }
+  const char* getStateName(CoverState state) const;
 
-  bool isDiffLastReportedState() const final {
-    return mState != mLastReportedState;
-  }
+  uint8_t getValueMsg(uint8_t* buffer);
 
-  void print(Stream& stream) final;
+  bool isDiffLastReportedState() const { return mState != mLastReportedState; }
 
-  void print(Stream& stream, uint8_t service) final;
+  void print(Stream& stream);
 
-  void setState(CoverState state) final { mState = state; }
-
-  uint8_t getConfigItemValuesMsg(uint8_t* buffer) override {
-    (void)buffer;
-    return false;
-  }
+  void print(Stream& stream, uint8_t service);
 
   CoverService serviceDecode(uint8_t service);
 
-  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) override {
-    (void)numberOfConfigs;
-    (void)buffer;
-    return false;
+  void setReported() {
+    mBaseComponent.setReported();
+    mLastReportedState = mState;
   }
 
-  bool update() override { return false; }
+  void setState(CoverState state) { mState = state; }
+
+  uint32_t timeSinceLastReport() const {
+    return mBaseComponent.timeSinceLastReport();
+  }
 
  private:
+  BaseComponent mBaseComponent;
   const CoverDeviceClass mDeviceClass = {CoverDeviceClass::none};
   CoverState mState = {CoverState::closed};
   CoverState mLastReportedState = {CoverState::closed};

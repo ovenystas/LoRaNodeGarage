@@ -28,7 +28,7 @@ class DistanceSensor : public IComponent {
 
   uint8_t getEntityId() const final { return mSensor.getEntityId(); }
 
-  ISensor<DistanceT>& getSensor() { return mSensor; }
+  Sensor<DistanceT>& getSensor() { return mSensor; }
 
   uint8_t getValueMsg(uint8_t* buffer) final {
     return mSensor.getValueMsg(buffer);

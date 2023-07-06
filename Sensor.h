@@ -58,55 +58,27 @@ enum class SensorDeviceClass {
 };
 
 template <class T>
-class ISensor : public virtual IBaseComponent {
+class Sensor {
  public:
-  virtual ~ISensor() = default;
-
-  virtual T getValue() const = 0;
-
-  virtual BaseComponent::Type getComponentType() const = 0;
-
-  virtual SensorDeviceClass getDeviceClass() const = 0;
-
-  virtual Unit::Type getUnitType() const = 0;
-
-  virtual const char* getUnitName() const = 0;
-
-  virtual T absDiffLastReportedValue() const = 0;
-
-  virtual void setValue(T value) = 0;
-};
-
-template <class T>
-class Sensor : public virtual ISensor<T>, public BaseComponent {
- public:
-  explicit Sensor(uint8_t entityId) : BaseComponent(entityId) {}
+  explicit Sensor(uint8_t entityId) : mBaseComponent{BaseComponent(entityId)} {}
 
   Sensor(uint8_t entityId, const char* name,
          SensorDeviceClass deviceClass = SensorDeviceClass::none,
          Unit::Type unitType = Unit::Type::none, uint8_t precision = 0)
-      : BaseComponent(entityId, name),
+      : mBaseComponent{BaseComponent(entityId, name)},
         mDeviceClass{deviceClass},
         mUnit{unitType},
         mPrecision{precision > 3 ? static_cast<uint8_t>(3) : precision},
         mScaleFactor{factors[mPrecision]} {}
 
-  bool hasService() final { return false; }
-
-  T getValue() const final { return mValue; }
-
-  BaseComponent::Type getComponentType() const final {
+  BaseComponent::Type getComponentType() const {
     return BaseComponent::Type::sensor;
   }
 
-  SensorDeviceClass getDeviceClass() const final { return mDeviceClass; }
+  SensorDeviceClass getDeviceClass() const { return mDeviceClass; }
 
-  Unit::Type getUnitType() const final { return mUnit.getType(); }
-
-  const char* getUnitName() const final { return mUnit.getName(); }
-
-  uint8_t getDiscoveryMsg(uint8_t* buffer) override {
-    buffer[0] = getEntityId();
+  uint8_t getDiscoveryMsg(uint8_t* buffer) {
+    buffer[0] = mBaseComponent.getEntityId();
     buffer[1] = static_cast<uint8_t>(getComponentType());
     buffer[2] = static_cast<uint8_t>(getDeviceClass());
     buffer[3] = static_cast<uint8_t>(mUnit.getType());
@@ -114,28 +86,31 @@ class Sensor : public virtual ISensor<T>, public BaseComponent {
     return 5;
   }
 
-  uint8_t getValueMsg(uint8_t* buffer) final {
+  uint8_t getEntityId() const { return mBaseComponent.getEntityId(); }
+
+  T absDiffLastReportedValue() const {
+    return abs(mValue - mLastReportedValue);
+  }
+
+  const char* getUnitName() const { return mUnit.getName(); }
+
+  Unit::Type getUnitType() const { return mUnit.getType(); }
+
+  T getValue() const { return mValue; }
+
+  uint8_t getValueMsg(uint8_t* buffer) {
     uint8_t* p = buffer;
-    *p++ = getEntityId();
+    *p++ = mBaseComponent.getEntityId();
 
     T* vp = reinterpret_cast<T*>(p);
-    *vp = hton(getValue());
+    *vp = hton(mValue);
     p += sizeof(T);
 
     return p - buffer;
   }
 
-  void setReported() final {
-    BaseComponent::setReported();
-    mLastReportedValue = mValue;
-  }
-
-  T absDiffLastReportedValue() const final {
-    return abs(mValue - mLastReportedValue);
-  }
-
-  void print(Stream& stream) final {
-    stream.print(getName());
+  void print(Stream& stream) {
+    stream.print(mBaseComponent.getName());
     stream.print(": ");
     if (mScaleFactor == 1) {
       stream.print(mValue);
@@ -148,31 +123,21 @@ class Sensor : public virtual ISensor<T>, public BaseComponent {
     stream.print(mUnit.getName());
   }
 
-  void print(Stream& stream, uint8_t service) final {
-    (void)stream;
-    (void)service;
+  void setReported() {
+    mBaseComponent.setReported();
+    mLastReportedValue = mValue;
   }
 
-  void setValue(T value) final { mValue = value; }
+  void setValue(T value) { mValue = value; }
 
-  void callService(uint8_t service) final { (void)service; }
-
-  uint8_t getConfigItemValuesMsg(uint8_t* buffer) override {
-    (void)buffer;
-    return false;
+  uint32_t timeSinceLastReport() const {
+    return mBaseComponent.timeSinceLastReport();
   }
-
-  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) override {
-    (void)numberOfConfigs;
-    (void)buffer;
-    return false;
-  }
-
-  bool update() override { return false; }
 
  private:
   int16_t factors[4] = {1, 10, 100, 1000};
 
+  BaseComponent mBaseComponent;
   T mValue = {};
   T mLastReportedValue = {};
   const SensorDeviceClass mDeviceClass = {SensorDeviceClass::none};

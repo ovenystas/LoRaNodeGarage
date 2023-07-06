@@ -2,8 +2,8 @@
 
 #include <gtest/gtest.h>
 
+#include "Sensor.h"
 #include "Unit.h"
-#include "mocks/Sensor.h"
 
 using ::testing::ElementsAre;
 using ::testing::Return;
@@ -14,26 +14,26 @@ class PresenceBinarySensor_test : public ::testing::Test {
  protected:
   void SetUp() override {
     pArduinoMock = arduinoMockInstance();
-    pHeightSensorMock = new SensorMock<HeightT>();
-    pPbs = new PresenceBinarySensor(89, "PresenceBinarySensor",
-                                    *pHeightSensorMock);
+    pHeightSensor = new Sensor<HeightT>(
+        99, "Height", SensorDeviceClass::distance, Unit::Type::cm);
+    pPbs = new PresenceBinarySensor(89, "PresenceBinarySensor", *pHeightSensor);
   }
 
   void TearDown() override {
     delete pPbs;
-    delete pHeightSensorMock;
+    delete pHeightSensor;
     releaseArduinoMock();
   }
 
   ArduinoMock* pArduinoMock;
-  SensorMock<HeightT>* pHeightSensorMock;
+  Sensor<HeightT>* pHeightSensor;
   PresenceBinarySensor* pPbs;
 };
 
 TEST_F(
     PresenceBinarySensor_test,
     update_belowLowLimit_belowMinStableTime_belowLastReportedTimeLimit_shall_return_false) {
-  EXPECT_CALL(*pHeightSensorMock, getValue()).WillOnce(Return(179));
+  pHeightSensor->setValue(179);
   EXPECT_CALL(*pArduinoMock, millis())
       .WillOnce(Return(9999))
       .WillOnce(Return(59999));
@@ -43,7 +43,7 @@ TEST_F(
 TEST_F(
     PresenceBinarySensor_test,
     update_aboveLowLimit_belowMinStableTime_belowLastReportedTimeLimit_shall_return_false) {
-  EXPECT_CALL(*pHeightSensorMock, getValue()).WillOnce(Return(180));
+  pHeightSensor->setValue(180);
   EXPECT_CALL(*pArduinoMock, millis())
       .WillOnce(Return(9999))
       .WillOnce(Return(59999));
@@ -53,7 +53,7 @@ TEST_F(
 TEST_F(
     PresenceBinarySensor_test,
     update_belowHighLimit_belowMinStableTime_belowLastReportedTimeLimit_shall_return_false) {
-  EXPECT_CALL(*pHeightSensorMock, getValue()).WillOnce(Return(200));
+  pHeightSensor->setValue(200);
   EXPECT_CALL(*pArduinoMock, millis())
       .WillOnce(Return(9999))
       .WillOnce(Return(59999));
@@ -63,7 +63,7 @@ TEST_F(
 TEST_F(
     PresenceBinarySensor_test,
     update_aboveHighLimit_belowMinStableTime_belowLastReportedTimeLimit_shall_return_false) {
-  EXPECT_CALL(*pHeightSensorMock, getValue()).WillOnce(Return(201));
+  pHeightSensor->setValue(201);
   EXPECT_CALL(*pArduinoMock, millis())
       .WillOnce(Return(9999))
       .WillOnce(Return(59999));
@@ -73,7 +73,7 @@ TEST_F(
 TEST_F(
     PresenceBinarySensor_test,
     update_belowLowLimit_aboveMinStableTime_belowLastReportedTimeLimit_shall_return_true) {
-  EXPECT_CALL(*pHeightSensorMock, getValue()).WillOnce(Return(179));
+  pHeightSensor->setValue(179);
   EXPECT_CALL(*pArduinoMock, millis())
       .WillOnce(Return(10000))
       .WillOnce(Return(59999));
@@ -83,7 +83,7 @@ TEST_F(
 TEST_F(
     PresenceBinarySensor_test,
     update_aboveLowLimit_aboveMinStableTime_belowLastReportedTimeLimit_shall_return_false) {
-  EXPECT_CALL(*pHeightSensorMock, getValue()).WillOnce(Return(180));
+  pHeightSensor->setValue(180);
   EXPECT_CALL(*pArduinoMock, millis())
       .WillOnce(Return(10000))
       .WillOnce(Return(59999));
@@ -93,7 +93,7 @@ TEST_F(
 TEST_F(
     PresenceBinarySensor_test,
     update_belowHighLimit_aboveMinStableTime_belowLastReportedTimeLimit_shall_return_false) {
-  EXPECT_CALL(*pHeightSensorMock, getValue()).WillOnce(Return(200));
+  pHeightSensor->setValue(200);
   EXPECT_CALL(*pArduinoMock, millis())
       .WillOnce(Return(10000))
       .WillOnce(Return(59999));
@@ -103,7 +103,7 @@ TEST_F(
 TEST_F(
     PresenceBinarySensor_test,
     update_aboveHighLimit_aboveMinStableTime_belowLastReportedTimeLimit_shall_return_true) {
-  EXPECT_CALL(*pHeightSensorMock, getValue()).WillOnce(Return(201));
+  pHeightSensor->setValue(201);
   EXPECT_CALL(*pArduinoMock, millis())
       .WillOnce(Return(10000))
       .WillOnce(Return(59999));
@@ -113,7 +113,7 @@ TEST_F(
 TEST_F(
     PresenceBinarySensor_test,
     update_belowLowLimit_belowMinStableTime_aboveLastReportedTimeLimit_shall_return_true) {
-  EXPECT_CALL(*pHeightSensorMock, getValue()).WillOnce(Return(179));
+  pHeightSensor->setValue(179);
   EXPECT_CALL(*pArduinoMock, millis())
       .WillOnce(Return(9999))
       .WillOnce(Return(60000));
@@ -254,7 +254,7 @@ TEST_F(PresenceBinarySensor_test, setConfigs_out_of_range) {
 TEST_F(
     PresenceBinarySensor_test,
     update_belowLowLimit_belowMinStableTime_aboveLastReportedTimeLimit_zeroMinReportTime_shall_return_false) {
-  EXPECT_CALL(*pHeightSensorMock, getValue()).WillOnce(Return(179));
+  pHeightSensor->setValue(179);
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(9999));
   uint8_t buf[] = {
       // clang-format off

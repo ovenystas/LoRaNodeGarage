@@ -12,7 +12,7 @@ class PresenceBinarySensor : public IComponent {
   PresenceBinarySensor() = delete;
 
   PresenceBinarySensor(uint8_t entityId, const char* name,
-                       ISensor<HeightT>& heightSensor)
+                       Sensor<HeightT>& heightSensor)
       : mBinarySensor{BinarySensor(entityId, name,
                                    BinarySensorDeviceClass::presence)},
         mHeightSensor{heightSensor} {}
@@ -62,7 +62,7 @@ class PresenceBinarySensor : public IComponent {
 
   BinarySensor mBinarySensor;
   Config mConfig;
-  ISensor<HeightT>& mHeightSensor;
+  Sensor<HeightT>& mHeightSensor;
   uint32_t mLastChangedTime = {};
   bool mStableState = {};
 };

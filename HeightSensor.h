@@ -18,7 +18,7 @@ class HeightSensor : public IComponent {
   HeightSensor() = delete;
 
   HeightSensor(uint8_t entityId, const char* name,
-               ISensor<DistanceT>& distanceSensor)
+               Sensor<DistanceT>& distanceSensor)
       : mSensor{Sensor<HeightT>(entityId, name, SensorDeviceClass::distance,
                                 Unit::Type::cm)},
         mDistanceSensor{distanceSensor} {}
@@ -31,7 +31,7 @@ class HeightSensor : public IComponent {
 
   uint8_t getEntityId() const final { return mSensor.getEntityId(); }
 
-  ISensor<HeightT>& getSensor() { return mSensor; }
+  Sensor<HeightT>& getSensor() { return mSensor; }
 
   uint8_t getValueMsg(uint8_t* buffer) final {
     return mSensor.getValueMsg(buffer);
@@ -70,5 +70,5 @@ class HeightSensor : public IComponent {
 
   Sensor<HeightT> mSensor;
   Config mConfig;
-  ISensor<DistanceT>& mDistanceSensor;
+  Sensor<DistanceT>& mDistanceSensor;
 };
