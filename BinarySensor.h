@@ -39,8 +39,6 @@ enum class BinarySensorDeviceClass {
 
 class BinarySensor {
  public:
-  virtual ~BinarySensor() = default;
-
   BinarySensor(
       uint8_t entityId, const char* name,
       BinarySensorDeviceClass deviceClass = BinarySensorDeviceClass::none,

@@ -30,8 +30,6 @@ class Unit {
 
   explicit Unit(Type type) : mType{type} {}
 
-  virtual ~Unit() = default;
-
   inline Type getType() const { return mType; }
 
   inline const char* getName() const {
