@@ -8,6 +8,8 @@ class BaseComponent {
  public:
   enum class Type { binarySensor, sensor, cover };
 
+  BaseComponent() = delete;
+
   explicit BaseComponent(uint8_t entityId) : mEntityId{entityId} {}
 
   BaseComponent(uint8_t entityId, const char* name)

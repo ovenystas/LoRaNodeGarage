@@ -26,6 +26,8 @@ enum class CoverService { open, close, stop, toggle, unknown };
 
 class Cover {
  public:
+  Cover() = delete;
+
   Cover(uint8_t entityId, const char* name,
         CoverDeviceClass deviceClass = CoverDeviceClass::none)
       : mBaseComponent{BaseComponent(entityId, name)},

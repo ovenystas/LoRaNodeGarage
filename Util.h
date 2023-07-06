@@ -41,18 +41,3 @@ void printVersion(Stream& stream, int major, int minor, int patch);
 void printHex(Stream& stream, uint8_t value, bool prefix = false);
 void printHex(Stream& stream, uint16_t value, bool prefix = false);
 void printHex(Stream& stream, uint32_t value, bool prefix = false);
-
-template <typename T, uint8_t max_size>
-class arrayHelper {
- public:
-  arrayHelper(T val = T()) : maxSize{max_size} {};
-
-  T& operator[](uint8_t idx) { return mData[idx]; }
-
-  T* data() { return this->mData; }
-
-  const uint8_t maxSize;
-
- private:
-  T mData[max_size] = {};
-};

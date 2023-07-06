@@ -13,7 +13,7 @@
  *   Byte 3:  flags
  *   Byte 4:  len - Length of payload in bytes
  *
- * Messages:
+ * Payloads:
  *   Ping request:
  *     Empty payload
  *
@@ -42,16 +42,14 @@
  *     Byte 0:   EntityId (0-254, 255 is request values from all entities)
  *
  *   Value message:
- *     Byte 0:       Number of entities (1-k)
- *     Byte 1:       Entity Id
- *     Byte 2-n:     Value in big endian style (1, 2 or 4 bytes)
- *     Byte (n+1)-m: Repeat Byte 2-n for second entity
+ *     Byte 0:       Entity Id (0-254, 255 is reserved for broadcast)
+ *     Byte 1-n:     Value in big endian (1, 2 or 4 bytes)
  *
  *   Config request:
- *     Byte 0:   EntityId
+ *     Byte 0:   EntityId (0-254, 255 is request configs from all entities)
  *
  *   Config message:
- *     Byte 0:       EntityId
+ *     Byte 0:       EntityId (0-254, 255 is reserved for broadcast)
  *     Byte 1:       Number of configs (1-?)
  *     Byte 2:       ConfigId
  *     Byte 3-n:     Value

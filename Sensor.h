@@ -60,6 +60,8 @@ enum class SensorDeviceClass {
 template <class T>
 class Sensor {
  public:
+  Sensor() = delete;
+
   explicit Sensor(uint8_t entityId) : mBaseComponent{BaseComponent(entityId)} {}
 
   Sensor(uint8_t entityId, const char* name,

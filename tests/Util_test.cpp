@@ -64,17 +64,3 @@ TEST(Util_test, ntoh) {
 //   printMillis(serial);
 //   releaseArduinoMock();
 // }
-
-TEST(Util_test, arrayHelper) {
-  arrayHelper<uint8_t, 3> arr_val;
-  arr_val[0] = 1u;
-  arr_val[1] = 128u;
-  arr_val[2] = 255u;
-  EXPECT_EQ(arr_val.maxSize, 3);
-  EXPECT_EQ(arr_val[0], 1u);
-  EXPECT_EQ(arr_val[1], 128u);
-  EXPECT_EQ(arr_val[2], 255u);
-  EXPECT_EQ(arr_val.data()[0], 1u);
-  EXPECT_EQ(arr_val.data()[1], 128u);
-  EXPECT_EQ(arr_val.data()[2], 255u);
-}

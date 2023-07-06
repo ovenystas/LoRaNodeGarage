@@ -39,6 +39,8 @@ enum class BinarySensorDeviceClass {
 
 class BinarySensor {
  public:
+  BinarySensor() = delete;
+
   BinarySensor(
       uint8_t entityId, const char* name,
       BinarySensorDeviceClass deviceClass = BinarySensorDeviceClass::none,

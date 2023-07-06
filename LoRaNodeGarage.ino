@@ -8,8 +8,9 @@
  *            LoRa by Sandeep Mistry v0.8.0
  */
 
-/* TODO: Store configs in EEPROM
- *
+/* TODO:
+ * - Store configs in EEPROM
+ * - Handle millis() wrap-around
  */
 
 #include <Arduino.h>
@@ -17,6 +18,7 @@
 #include <NewPing.h>  // NewPing by Tim Eckel
 #include <SPI.h>
 
+#include "Component.h"
 #include "DistanceSensor.h"
 #include "GarageCover.h"
 #include "HeightSensor.h"
@@ -72,17 +74,20 @@ NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 uint32_t nextRunTime = UPDATE_SENSORS_INTERVAL;
 
 GarageCover garageCover =
-    GarageCover(1, "Port", COVER_CLOSED_PIN, COVER_OPEN_PIN, COVER_RELAY_PIN);
-TemperatureSensor temperatureSensor = TemperatureSensor(2, "Temperature", dht);
-HumiditySensor humiditySensor = HumiditySensor(3, "Humidity", dht);
-DistanceSensor distanceSensor = DistanceSensor(4, "Distance", sonar);
+    GarageCover(0, "Port", COVER_CLOSED_PIN, COVER_OPEN_PIN, COVER_RELAY_PIN);
+TemperatureSensor temperatureSensor = TemperatureSensor(1, "Temperature", dht);
+HumiditySensor humiditySensor = HumiditySensor(2, "Humidity", dht);
+DistanceSensor distanceSensor = DistanceSensor(3, "Distance", sonar);
 HeightSensor heightSensor =
-    HeightSensor(5, "Height", distanceSensor.getSensor());
+    HeightSensor(4, "Height", distanceSensor.getSensor());
 PresenceBinarySensor carPresenceSensor =
-    PresenceBinarySensor(6, "Car", heightSensor.getSensor());
+    PresenceBinarySensor(5, "Car", heightSensor.getSensor());
 
-Node node = Node(&garageCover, &temperatureSensor, &humiditySensor,
-                 &distanceSensor, &heightSensor, &carPresenceSensor);
+IComponent* const components[6] = {&garageCover,    &temperatureSensor,
+                                   &humiditySensor, &distanceSensor,
+                                   &heightSensor,   &carPresenceSensor};
+
+Node node = Node(components, sizeof(components) / sizeof(components[0]));
 
 LoRaHandler lora;
 
@@ -102,7 +107,7 @@ void setup() {
     }
   }
 
-  sendAllDiscoveryMsgs();
+  sendDiscoveryMsgForAllComponents();
 
   dht.begin();
 }
@@ -125,104 +130,91 @@ void loop() {
 
 void onDiscoveryReqMsg(uint8_t entityId) {
   if (entityId == 255) {
-    sendAllDiscoveryMsgs();
+    sendDiscoveryMsgForAllComponents();
     return;
   }
-  sendDiscoveryMsg(entityId);
+  sendDiscoveryMsgForEntity(entityId);
 }
 
 void onValueReqMsg(uint8_t entityId) {
   if (entityId == 255) {
-    sendAllSensorValues();
+    sendSensorValueForAllComponents();
     return;
   }
-  sendSensorValue(entityId);
+  sendSensorValueForEntity(entityId);
 }
 
 void onConfigReqMsg(uint8_t entityId) {
-  (void)entityId;
-  sendAllConfigValues(entityId);
+  if (entityId == 255) {
+    sendConfigValuesForAllComponents();
+    return;
+  }
+  sendConfigValuesForEntity(entityId);
 }
 
 void onConfigSetReqMsg(const LoRaConfigValuePayloadT& payload) {
   IComponent* c = node.getComponentByEntityId(payload.entityId);
-  c->setConfigs(payload.numberOfConfigs, payload.subPayload);
+  if (c) {
+    c->setConfigs(payload.numberOfConfigs, payload.subPayload);
+  }
 }
 
 void onServiceReqMsg(const LoRaServiceItemT& item) {
   IComponent* c = node.getComponentByEntityId(item.entityId);
-  LOG_SERVICE(c, item.service);
-  c->callService(item.service);
+  if (c) {
+    LOG_SERVICE(c, item.service);
+    c->callService(item.service);
+  }
 }
 
 static void updateSensors() {
-  uint8_t buffer[1 + sizeof(uint32_t)];
-  bool valueAdded = false;
-
-  lora.beginValueMsg();
-
   for (uint8_t i = 0; i < node.getSize(); i++) {
     IComponent* c = node.getComponent(i);
 
     if (c->update()) {
       LOG_SENSOR(c);
-
-      uint8_t length = c->getValueMsg(buffer);
-
-      if (length > 0) {
-        lora.addValueItem(buffer, length);
-      }
-
-      c->setReported();
-
-      valueAdded = true;
+      sendSensorValue(c);
     }
-  }
-
-  if (valueAdded) {
-    lora.endMsg();
   }
 }
 
-static void sendAllSensorValues() {
-  uint8_t buffer[1 + sizeof(uint32_t)];
-  bool valueAdded = false;
-
-  lora.beginValueMsg();
-
-  for (uint8_t i = 0; i < node.getSize(); i++) {
-    uint8_t length = node.getValueMsg(buffer, i);
-
-    if (length) {
-      lora.addValueItem(buffer, length);
-      valueAdded = true;
-    }
+static void sendSensorValue(IComponent* component) {
+  if (component == nullptr) {
+    return;
   }
 
-  if (valueAdded) {
-    lora.endMsg();
-  }
-}
-
-void sendSensorValue(uint8_t entityId) {
   uint8_t buffer[1 + sizeof(uint32_t)];
 
-  IComponent* c = node.getComponentByEntityId(entityId);
-
-  uint8_t length = c->getValueMsg(buffer);
+  uint8_t length = component->getValueMsg(buffer);
 
   if (length) {
     lora.beginValueMsg();
     lora.addValueItem(buffer, length);
-    c->setReported();
+    component->setReported();
     lora.endMsg();
   }
 }
 
-static void sendAllConfigValues(uint8_t entityId) {
+static void sendSensorValueForAllComponents() {
+  for (uint8_t i = 0; i < node.getSize(); i++) {
+    IComponent* c = node.getComponent(i);
+    sendSensorValue(c);
+  }
+}
+
+void sendSensorValueForEntity(uint8_t entityId) {
+  IComponent* c = node.getComponentByEntityId(entityId);
+  sendSensorValue(c);
+}
+
+static void sendConfigValues(IComponent* component) {
+  if (component == nullptr) {
+    return;
+  }
+
   uint8_t buffer[LORA_MAX_PAYLOAD_LENGTH];
 
-  uint8_t length = node.getConfigItemValuesMsg(buffer, entityId);
+  uint8_t length = component->getConfigItemValuesMsg(buffer);
 
   if (length) {
     lora.beginConfigsValueMsg();
@@ -231,29 +223,44 @@ static void sendAllConfigValues(uint8_t entityId) {
   }
 }
 
-static void sendAllDiscoveryMsgs() {
-  uint8_t buffer[LORA_MAX_PAYLOAD_LENGTH];
-
+static void sendConfigValuesForAllComponents() {
   for (uint8_t i = 0; i < node.getSize(); i++) {
-    uint8_t length = node.getDiscoveryMsg(buffer, i);
-
-    if (length) {
-      lora.beginDiscoveryMsg();
-      lora.addDiscoveryItem(buffer, length);
-      lora.endMsg();
-    }
+    IComponent* c = node.getComponent(i);
+    sendConfigValues(c);
   }
 }
 
-void sendDiscoveryMsg(uint8_t entityId) {
+void sendConfigValuesForEntity(uint8_t entityId) {
+  IComponent* c = node.getComponentByEntityId(entityId);
+  sendConfigValues(c);
+}
+
+static void sendDiscoveryMsg(IComponent* component) {
+  if (component == nullptr) {
+    return;
+  }
+
   uint8_t buffer[LORA_MAX_PAYLOAD_LENGTH];
 
-  uint8_t length = node.getDiscoveryMsgByEntityId(buffer, entityId);
+  uint8_t length = component->getDiscoveryMsg(buffer);
+
   if (length) {
     lora.beginDiscoveryMsg();
     lora.addDiscoveryItem(buffer, length);
     lora.endMsg();
   }
+}
+
+static void sendDiscoveryMsgForAllComponents() {
+  for (uint8_t i = 0; i < node.getSize(); i++) {
+    IComponent* c = node.getComponent(i);
+    sendDiscoveryMsg(c);
+  }
+}
+
+void sendDiscoveryMsgForEntity(uint8_t entityId) {
+  IComponent* c = node.getComponentByEntityId(entityId);
+  sendDiscoveryMsg(c);
 }
 
 void printWelcomeMsg() {
