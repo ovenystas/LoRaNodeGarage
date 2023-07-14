@@ -16,17 +16,29 @@ void printUptime(Stream& stream) {
   uint8_t minutes = t / 60000;
   t = t % 60000;
 
-  uint8_t seconds = t / 60;
+  uint8_t seconds = t / 1000;
 
-  uint8_t milliseconds = t % 1000;
+  uint16_t milliseconds = t % 1000;
 
   stream.print('[');
   stream.print(hours);
   stream.print(':');
+  if (minutes < 10) {
+    stream.print('0');
+  }
   stream.print(minutes);
   stream.print(':');
+  if (seconds < 10) {
+    stream.print('0');
+  }
   stream.print(seconds);
   stream.print('.');
+  if (milliseconds < 100) {
+    stream.print('0');
+  }
+  if (milliseconds < 10) {
+    stream.print('0');
+  }
   stream.print(milliseconds);
   stream.print("] ");
 }
@@ -39,13 +51,12 @@ void printMillis(Stream& stream) {
   stream.print("] ");
 }
 
-void printVersion(Stream& stream, int major, int minor, int patch) {
+void printVersion(Stream& stream, uint8_t major, uint8_t minor, uint8_t patch) {
   stream.print(major);
   stream.print('.');
   stream.print(minor);
   stream.print('.');
   stream.print(patch);
-  stream.print('.');
 }
 
 void printHex(Stream& stream, uint8_t value, bool prefix) {

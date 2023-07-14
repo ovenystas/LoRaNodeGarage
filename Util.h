@@ -38,7 +38,7 @@ inline int32_t ntoh(int32_t v) { return ntohl(v); }
 
 void printMillis(Stream& stream);
 void printUptime(Stream& stream);
-void printVersion(Stream& stream, int major, int minor, int patch);
+void printVersion(Stream& stream, uint8_t major, uint8_t minor, uint8_t patch);
 void printHex(Stream& stream, uint8_t value, bool prefix = false);
 void printHex(Stream& stream, uint16_t value, bool prefix = false);
 void printHex(Stream& stream, uint32_t value, bool prefix = false);

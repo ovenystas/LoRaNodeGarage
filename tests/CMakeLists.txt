@@ -135,8 +135,9 @@ add_executable(Unit_test EXCLUDE_FROM_ALL Unit_test.cpp)
 target_link_libraries(Unit_test GTest::gtest_main)
 gtest_discover_tests(Unit_test)
 
-add_executable(Util_test EXCLUDE_FROM_ALL Util_test.cpp ../Util.cpp
-                                          mocks/Arduino.cpp mocks/Print.cpp)
+add_executable(
+  Util_test EXCLUDE_FROM_ALL Util_test.cpp ../Util.cpp mocks/Arduino.cpp
+                             mocks/Print.cpp mocks/BufferSerial.cpp)
 target_link_libraries(Util_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(Util_test)
 
