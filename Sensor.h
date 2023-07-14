@@ -111,18 +111,37 @@ class Sensor {
     return p - buffer;
   }
 
-  void print(Stream& stream) {
-    stream.print(mBaseComponent.getName());
-    stream.print(": ");
+  size_t print(Stream& stream) {
+    size_t n = 0;
+    n += stream.print(mBaseComponent.getName());
+    n += stream.print(": ");
+
     if (mScaleFactor == 1) {
-      stream.print(mValue);
+      n += stream.print(mValue);
     } else {
-      stream.print(mValue / mScaleFactor);
-      stream.print('.');
-      stream.print(abs(mValue % mScaleFactor));
+      if (mValue < 0) {
+        n += stream.print('-');
+      }
+      uint32_t integer = abs(mValue / mScaleFactor);
+      n += stream.print(integer);
+
+      n += stream.print('.');
+
+      uint32_t fractional = abs(mValue % mScaleFactor);
+      if (mScaleFactor >= 1000 && fractional < 100) {
+        n += stream.print('0');
+      }
+      if (mScaleFactor >= 100 && fractional < 10) {
+        n += stream.print('0');
+      }
+      n += stream.print(fractional);
     }
-    stream.print(' ');
-    stream.print(mUnit.getName());
+
+    if (mUnit.getType() != Unit::Type::none) {
+      n += stream.print(' ');
+      n += stream.print(mUnit.getName());
+    }
+    return n;
   }
 
   void setReported() {

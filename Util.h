@@ -6,6 +6,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <Stream.h>
 
 // TODO: Handle wrap-around after 49 days.
 #define seconds() (millis() / 1000)

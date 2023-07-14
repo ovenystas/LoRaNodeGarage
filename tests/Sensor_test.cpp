@@ -4,9 +4,35 @@
 
 #include "Unit.h"
 #include "mocks/Arduino.h"
+#include "mocks/BufferSerial.h"
 
 using ::testing::ElementsAre;
 using ::testing::Return;
+
+class SensorPrint_test : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    pSerial = new BufferSerial(256);
+    strBuf[0] = '\0';
+  }
+
+  void TearDown() override { delete pSerial; }
+
+  void bufSerReadStr() {
+    size_t i = 0;
+    while (pSerial->available()) {
+      int c = pSerial->read();
+      if (c < 0) {
+        break;
+      }
+      strBuf[i++] = static_cast<char>(c);
+    }
+    strBuf[i] = '\0';
+  }
+
+  char strBuf[256];
+  BufferSerial* pSerial;
+};
 
 class SensorInt8_test : public ::testing::Test {
  protected:
@@ -250,12 +276,53 @@ TEST_F(SensorInt8_test, setReported) {
   releaseArduinoMock();
 }
 
-// TEST_F(SensorInt8_test, print) {
-//   sc.print(Serial);
-//   SUCCEED();
-// }
+TEST_F(SensorPrint_test, print_negative_value_scalefactor_1_unit_none) {
+  const char* expectStr = "Sensor8: -123";
+  Sensor<int8_t> sc = Sensor<int8_t>(108, "Sensor8");
+  sc.setValue(-123);
 
-// TEST_F(SensorInt8_test, print) {
-//   sc.print(Serial, 0);
-//   SUCCEED();
-// }
+  size_t printedChars = sc.print(*pSerial);
+
+  bufSerReadStr();
+  EXPECT_STREQ(strBuf, expectStr);
+  EXPECT_EQ(printedChars, strlen(expectStr));
+}
+
+TEST_F(SensorPrint_test, print_positive_value_scalefactor_1000_unit_percent) {
+  const char* expectStr = "Sensor8: 0.001 %";
+  Sensor<int8_t> sc = Sensor<int8_t>(
+      108, "Sensor8", SensorDeviceClass::humidity, Unit::Type::percent, 3);
+  sc.setValue(1);
+
+  size_t printedChars = sc.print(*pSerial);
+
+  bufSerReadStr();
+  EXPECT_STREQ(strBuf, expectStr);
+  EXPECT_EQ(printedChars, strlen(expectStr));
+}
+
+TEST_F(SensorPrint_test, print_negative_value_scalefactor_10_unit_mm) {
+  const char* expectStr = "Sensor16: -1234.5 mm";
+  Sensor<int16_t> sc = Sensor<int16_t>(
+      116, "Sensor16", SensorDeviceClass::distance, Unit::Type::mm, 1);
+  sc.setValue(-12345);
+
+  size_t printedChars = sc.print(*pSerial);
+
+  bufSerReadStr();
+  EXPECT_STREQ(strBuf, expectStr);
+  EXPECT_EQ(printedChars, strlen(expectStr));
+}
+
+TEST_F(SensorPrint_test, print_negative_value_scalefactor_1000_unit_um) {
+  const char* expectStr = "Sensor32: -2147483.648 um";
+  Sensor<int32_t> sc = Sensor<int32_t>(
+      116, "Sensor32", SensorDeviceClass::distance, Unit::Type::um, 3);
+  sc.setValue(INT32_MIN);
+
+  size_t printedChars = sc.print(*pSerial);
+
+  bufSerReadStr();
+  EXPECT_STREQ(strBuf, expectStr);
+  EXPECT_EQ(printedChars, strlen(expectStr));
+}

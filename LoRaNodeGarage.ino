@@ -14,7 +14,8 @@
  */
 
 #include <Arduino.h>
-#include <DHT.h>      // DHT sensor library by Adafruit
+#include <DHT.h>  // DHT sensor library by Adafruit
+#include <LoRa.h>
 #include <NewPing.h>  // NewPing by Tim Eckel
 #include <SPI.h>
 
@@ -31,7 +32,7 @@
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 0
-#define VERSION_PATCH 5
+#define VERSION_PATCH 6
 
 #define DEBUG_SENSOR_VALUES
 #define DEBUG_SENSOR_REPORT
@@ -68,6 +69,9 @@
 
 #define UPDATE_SENSORS_INTERVAL 1000
 
+#define LORA_MY_ADDRESS 1
+#define LORA_GATEWAY_ADDRESS 0
+
 DHT dht(DHTPIN, DHTTYPE);
 NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 
@@ -89,7 +93,7 @@ IComponent* const components[6] = {&garageCover,    &temperatureSensor,
 
 Node node = Node(components, sizeof(components) / sizeof(components[0]));
 
-LoRaHandler lora;
+LoRaHandler lora(LoRa, Serial, LORA_GATEWAY_ADDRESS, LORA_MY_ADDRESS);
 
 void setup() {
   Serial.begin(115200);
@@ -122,7 +126,7 @@ void loop() {
     updateSensors();
 
 #ifdef DEBUG_SENSOR_VALUES
-    printMillis(Serial);
+    printUptime(Serial);
     printAllSensors(Serial);
 #endif
   }
@@ -217,7 +221,7 @@ static void sendConfigValues(IComponent* component) {
   uint8_t length = component->getConfigItemValuesMsg(buffer);
 
   if (length) {
-    lora.beginConfigsValueMsg();
+    lora.beginConfigsValueMsg(component->getEntityId());
     lora.addConfigItemValues(buffer, length);
     lora.endMsg();
   }
@@ -267,9 +271,9 @@ void printWelcomeMsg() {
   Serial.print(F("LoRa Garage Node v"));
   printVersion(Serial, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
   Serial.print(F(", address="));
-  Serial.print(MY_ADDRESS);
+  Serial.print(LORA_MY_ADDRESS);
   Serial.print(F(", gateway="));
-  Serial.println(GATEWAY_ADDRESS);
+  Serial.println(LORA_GATEWAY_ADDRESS);
 }
 
 #ifdef DEBUG_SENSOR_VALUES

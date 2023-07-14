@@ -70,8 +70,10 @@ uint8_t BinarySensor::getValueMsg(uint8_t* buffer) {
   return p - buffer;
 }
 
-void BinarySensor::print(Stream& stream) {
-  stream.print(mBaseComponent.getName());
-  stream.print(": ");
-  stream.print(getStateName());
+size_t BinarySensor::print(Stream& stream) {
+  size_t n = 0;
+  n += stream.print(mBaseComponent.getName());
+  n += stream.print(": ");
+  n += stream.print(getStateName());
+  return n;
 }

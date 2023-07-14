@@ -67,7 +67,7 @@ class BinarySensor {
 
   bool isDiffLastReportedState() const { return mState != mLastReportedState; }
 
-  void print(Stream& stream);
+  size_t print(Stream& stream);
 
   void setReported() {
     mBaseComponent.setReported();

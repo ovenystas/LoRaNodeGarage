@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <Stream.h>
 #include <stdint.h>
 
 #include "Component.h"

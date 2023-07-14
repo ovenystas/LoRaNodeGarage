@@ -43,80 +43,102 @@ include(CodeCoverage)
 
 include_directories(.. mocks)
 
-add_executable(Unit_test EXCLUDE_FROM_ALL Unit_test.cpp)
-target_link_libraries(Unit_test GTest::gtest_main)
-gtest_discover_tests(Unit_test)
-
-add_executable(Util_test EXCLUDE_FROM_ALL Util_test.cpp ../Util.cpp
-                                          mocks/Arduino.cpp)
-target_link_libraries(Util_test GTest::gtest_main GTest::gmock_main)
-gtest_discover_tests(Util_test)
-
-add_executable(ConfigItem_test EXCLUDE_FROM_ALL ConfigItem_test.cpp ../Util.cpp
-                                                mocks/Arduino.cpp)
-target_link_libraries(ConfigItem_test GTest::gtest_main GTest::gmock_main)
-gtest_discover_tests(ConfigItem_test)
-
-add_executable(BaseComponent_test EXCLUDE_FROM_ALL
-               BaseComponent_test.cpp ../Util.cpp mocks/Arduino.cpp)
+add_executable(
+  BaseComponent_test EXCLUDE_FROM_ALL BaseComponent_test.cpp ../Util.cpp
+                                      mocks/Arduino.cpp mocks/Print.cpp)
 target_link_libraries(BaseComponent_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(BaseComponent_test)
 
 add_executable(
-  BinarySensor_test EXCLUDE_FROM_ALL BinarySensor_test.cpp ../BinarySensor.cpp
-                                     ../Util.cpp mocks/Arduino.cpp)
+  BinarySensor_test EXCLUDE_FROM_ALL
+  BinarySensor_test.cpp ../BinarySensor.cpp ../Util.cpp mocks/Arduino.cpp
+  mocks/Print.cpp mocks/BufferSerial.cpp)
 target_link_libraries(BinarySensor_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(BinarySensor_test)
 
-add_executable(Cover_test EXCLUDE_FROM_ALL Cover_test.cpp ../Cover.cpp
-                                           ../Util.cpp mocks/Arduino.cpp)
+add_executable(
+  ConfigItem_test EXCLUDE_FROM_ALL ConfigItem_test.cpp ../Util.cpp
+                                   mocks/Arduino.cpp mocks/Print.cpp)
+target_link_libraries(ConfigItem_test GTest::gtest_main GTest::gmock_main)
+gtest_discover_tests(ConfigItem_test)
+
+add_executable(
+  Cover_test EXCLUDE_FROM_ALL
+  Cover_test.cpp ../Cover.cpp ../Util.cpp mocks/Arduino.cpp mocks/Print.cpp
+  mocks/BufferSerial.cpp)
 target_link_libraries(Cover_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(Cover_test)
 
-add_executable(Sensor_test EXCLUDE_FROM_ALL Sensor_test.cpp ../Util.cpp
-                                            mocks/Arduino.cpp)
-target_link_libraries(Sensor_test GTest::gtest_main GTest::gmock_main)
-gtest_discover_tests(Sensor_test)
-
-add_executable(
-  GarageCover_test EXCLUDE_FROM_ALL GarageCover_test.cpp ../GarageCover.cpp
-                                    ../Cover.cpp ../Util.cpp mocks/Arduino.cpp)
-target_link_libraries(GarageCover_test GTest::gtest_main GTest::gmock_main)
-gtest_discover_tests(GarageCover_test)
-
 add_executable(
   DistanceSensor_test EXCLUDE_FROM_ALL
-  DistanceSensor_test.cpp ../DistanceSensor.cpp ../Util.cpp mocks/Arduino.cpp)
+  DistanceSensor_test.cpp ../DistanceSensor.cpp ../Util.cpp mocks/Arduino.cpp
+  mocks/Print.cpp)
 target_link_libraries(DistanceSensor_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(DistanceSensor_test)
 
 add_executable(
-  HeightSensor_test EXCLUDE_FROM_ALL HeightSensor_test.cpp ../HeightSensor.cpp
-                                     ../Util.cpp mocks/Arduino.cpp)
+  GarageCover_test EXCLUDE_FROM_ALL
+  GarageCover_test.cpp ../GarageCover.cpp ../Cover.cpp ../Util.cpp
+  mocks/Arduino.cpp mocks/Print.cpp)
+target_link_libraries(GarageCover_test GTest::gtest_main GTest::gmock_main)
+gtest_discover_tests(GarageCover_test)
+
+add_executable(
+  HeightSensor_test EXCLUDE_FROM_ALL
+  HeightSensor_test.cpp ../HeightSensor.cpp ../Util.cpp mocks/Arduino.cpp
+  mocks/Print.cpp)
 target_link_libraries(HeightSensor_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(HeightSensor_test)
 
 add_executable(
   HumiditySensor_test EXCLUDE_FROM_ALL
-  HumiditySensor_test.cpp ../HumiditySensor.cpp ../Util.cpp mocks/Arduino.cpp)
+  HumiditySensor_test.cpp ../HumiditySensor.cpp ../Util.cpp mocks/Arduino.cpp
+  mocks/Print.cpp)
 target_link_libraries(HumiditySensor_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(HumiditySensor_test)
 
 add_executable(
+  LoRaHandler_test EXCLUDE_FROM_ALL
+  LoRaHandler_test.cpp ../LoRaHandler.cpp ../Util.cpp mocks/Arduino.cpp
+  mocks/Print.cpp mocks/BufferSerial.cpp)
+target_link_libraries(LoRaHandler_test GTest::gtest_main GTest::gmock_main)
+gtest_discover_tests(LoRaHandler_test)
+
+add_executable(Node_test EXCLUDE_FROM_ALL Node_test.cpp ../Node.cpp
+                                          mocks/Print.cpp)
+target_link_libraries(Node_test GTest::gtest_main GTest::gmock_main)
+gtest_discover_tests(Node_test)
+
+add_executable(
   PresenceBinarySensor_test EXCLUDE_FROM_ALL
   PresenceBinarySensor_test.cpp ../PresenceBinarySensor.cpp ../Util.cpp
-  ../BinarySensor.cpp mocks/Arduino.cpp)
+  ../BinarySensor.cpp mocks/Arduino.cpp mocks/Print.cpp)
 target_link_libraries(PresenceBinarySensor_test GTest::gtest_main
                       GTest::gmock_main)
 gtest_discover_tests(PresenceBinarySensor_test)
 
 add_executable(
+  Sensor_test EXCLUDE_FROM_ALL Sensor_test.cpp ../Util.cpp mocks/Arduino.cpp
+                               mocks/Print.cpp mocks/BufferSerial.cpp)
+target_link_libraries(Sensor_test GTest::gtest_main GTest::gmock_main)
+gtest_discover_tests(Sensor_test)
+
+add_executable(
   TemperatureSensor_test EXCLUDE_FROM_ALL
   TemperatureSensor_test.cpp ../TemperatureSensor.cpp ../Util.cpp
-  mocks/Arduino.cpp)
+  mocks/Arduino.cpp mocks/Print.cpp)
 target_link_libraries(TemperatureSensor_test GTest::gtest_main
                       GTest::gmock_main)
 gtest_discover_tests(TemperatureSensor_test)
+
+add_executable(Unit_test EXCLUDE_FROM_ALL Unit_test.cpp)
+target_link_libraries(Unit_test GTest::gtest_main)
+gtest_discover_tests(Unit_test)
+
+add_executable(Util_test EXCLUDE_FROM_ALL Util_test.cpp ../Util.cpp
+                                          mocks/Arduino.cpp mocks/Print.cpp)
+target_link_libraries(Util_test GTest::gtest_main GTest::gmock_main)
+gtest_discover_tests(Util_test)
 
 add_custom_target(
   test_all

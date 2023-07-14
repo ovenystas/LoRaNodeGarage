@@ -6,7 +6,8 @@
 static const char CoverStateName[][8] = {"closed", "open", "opening",
                                          "closing"};
 
-static const char CoverServiceName[][7] = {"open", "close", "stop", "toggle"};
+static const char CoverServiceName[][8] = {"open", "close", "stop", "toggle",
+                                           "unknown"};
 
 const char* Cover::getServiceName(CoverService service) const {
   return CoverServiceName[static_cast<uint8_t>(service)];
@@ -37,18 +38,22 @@ uint8_t Cover::getValueMsg(uint8_t* buffer) {
   return p - buffer;
 }
 
-void Cover::print(Stream& stream) {
-  stream.print(mBaseComponent.getName());
-  stream.print(": ");
-  stream.print(CoverStateName[static_cast<uint8_t>(mState)]);
+size_t Cover::print(Stream& stream) {
+  size_t n = 0;
+  n += stream.print(mBaseComponent.getName());
+  n += stream.print(": ");
+  n += stream.print(CoverStateName[static_cast<uint8_t>(mState)]);
+  return n;
 }
 
-void Cover::print(Stream& stream, uint8_t service) {
-  stream.print(mBaseComponent.getName());
-  stream.print(F(": Service "));
-  stream.print(getServiceName(static_cast<CoverService>(service)));
-  stream.print(F(" called when in state "));
-  stream.print(CoverStateName[static_cast<uint8_t>(mState)]);
+size_t Cover::print(Stream& stream, uint8_t service) {
+  size_t n = 0;
+  n += stream.print(mBaseComponent.getName());
+  n += stream.print(F(": Service "));
+  n += stream.print(getServiceName(static_cast<CoverService>(service)));
+  n += stream.print(F(" called when in state "));
+  n += stream.print(CoverStateName[static_cast<uint8_t>(mState)]);
+  return n;
 }
 
 CoverService Cover::serviceDecode(uint8_t service) {

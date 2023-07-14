@@ -55,9 +55,9 @@ class Cover {
 
   bool isDiffLastReportedState() const { return mState != mLastReportedState; }
 
-  void print(Stream& stream);
+  size_t print(Stream& stream);
 
-  void print(Stream& stream, uint8_t service);
+  size_t print(Stream& stream, uint8_t service);
 
   CoverService serviceDecode(uint8_t service);
 

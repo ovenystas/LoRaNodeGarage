@@ -34,6 +34,7 @@
  *     Byte 5:    Number of config items (0-?)
  *     Byte 6:    Config Id (0-254, 255 is reserved for all)
  *     Byte 7:    Unit (Unit::TypeE)
+ *     // TODO: Compact Byte 8 into 4 bits.
  *     Byte 8:    High nibble: Size (1, 2 or 4 bytes)
  *                Low nibble:  Precision (Number of decimals 0-3)
  *     Byte 9-11: Repeat byte 6-8 for second config item
@@ -63,13 +64,12 @@
 #pragma once
 
 #include <Arduino.h>
+#include <LoRa.h>
+#include <Stream.h>
 
 #include "Util.h"
 
-#define DEBUG_LORA_MESSAGE
-
-#define MY_ADDRESS 1
-#define GATEWAY_ADDRESS 0
+// #define DEBUG_LORA_MESSAGE
 
 #define LORA_FREQUENCY 868e6
 #define LORA_MAX_MESSAGE_LENGTH 51
@@ -106,6 +106,12 @@ struct LoRaDiscoveryItemT {
   uint8_t unit;
   uint8_t size : 4;
   uint8_t precision : 4;
+
+  bool operator==(const LoRaDiscoveryItemT& rhs) const {
+    return entityId == rhs.entityId && component == rhs.component &&
+           deviceClass == rhs.deviceClass && unit == rhs.unit &&
+           size == rhs.size && precision == rhs.precision;
+  }
 } __attribute__((packed, aligned(1)));
 
 #define LORA_DISCOVERY_ITEM_LENGTH sizeof(LoRaDiscoveryItemT)
@@ -115,6 +121,13 @@ struct LoRaConfigItemT {
   uint8_t unit;
   uint8_t size : 4;
   uint8_t precision : 4;
+
+  bool operator==(const LoRaConfigItemT& rhs) const {
+    return configId == rhs.configId && unit == rhs.unit && size == rhs.size &&
+           precision == rhs.precision;
+  }
+
+  bool operator!=(const LoRaConfigItemT& rhs) const { return !(*this == rhs); }
 } __attribute__((packed, aligned(1)));
 
 #define LORA_CONFIG_ITEM_LENGTH sizeof(LoRaConfigItemT)
@@ -125,17 +138,40 @@ struct LoRaConfigItemT {
 struct LoRaConfigPayloadT {
   uint8_t numberOfConfigs;
   LoRaConfigItemT configItems[LORA_CONFIG_ITEMS_MAX];
+
+  bool operator==(const LoRaConfigPayloadT& rhs) const {
+    if (numberOfConfigs != rhs.numberOfConfigs) {
+      return false;
+    }
+    if (numberOfConfigs > LORA_CONFIG_ITEMS_MAX) {
+      return false;
+    }
+    for (size_t i = 0; i < numberOfConfigs; i++) {
+      if (configItems[i] != rhs.configItems[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
 } __attribute__((packed, aligned(1)));
 
 struct LoRaDiscoveryPayloadT {
   LoRaDiscoveryItemT entity;
   LoRaConfigPayloadT config;
+
+  bool operator==(const LoRaDiscoveryPayloadT& rhs) const {
+    return entity == rhs.entity && config == rhs.config;
+  }
 } __attribute__((packed, aligned(1)));
 
 template <typename T>
 struct LoRaValueItemT {
   uint8_t entityId;
   T value;
+
+  bool operator==(const LoRaValueItemT& rhs) const {
+    return entityId == rhs.entityId && value == rhs.value;
+  }
 } __attribute__((packed, aligned(1)));
 
 struct LoRaValuePayloadT {
@@ -147,6 +183,10 @@ template <typename T>
 struct LoRaConfigItemValueT {
   uint8_t configId;
   T value;
+
+  bool operator==(const LoRaConfigItemValueT& rhs) const {
+    return configId == rhs.configId && value == rhs.value;
+  }
 } __attribute__((packed, aligned(1)));
 
 struct LoRaConfigValuePayloadT {
@@ -176,6 +216,13 @@ class LoRaHandler {
     service_req
   };
 
+  LoRaHandler(LoRaClass& loRa, Stream& stream, uint8_t gatewayAddress,
+              uint8_t myAddress)
+      : mLoRa{loRa},
+        mStream{stream},
+        mGatewayAddress{gatewayAddress},
+        mMyAddress{myAddress} {}
+
   friend inline uint8_t& operator|=(uint8_t& a, const MsgType b) {
     return (a |= static_cast<uint8_t>(b));
   }
@@ -193,7 +240,7 @@ class LoRaHandler {
             OnServiceReqMsgFunc onServiceReqMsgFunc = nullptr);
 
   int loraRx();
-  int loraTx();
+  int loraTx();  // TODO: Unused, Remove?
 
   void beginDiscoveryMsg();
   void addDiscoveryItem(const uint8_t* buffer, uint8_t length);
@@ -201,7 +248,7 @@ class LoRaHandler {
   void beginValueMsg();
   void addValueItem(const uint8_t* buffer, uint8_t length);
 
-  void beginConfigsValueMsg();
+  void beginConfigsValueMsg(uint8_t entityId);
   void addConfigItemValues(const uint8_t* buffer, uint8_t length);
 
   void endMsg();
@@ -221,6 +268,10 @@ class LoRaHandler {
   void sendMsg(const LoRaTxMessageT* msg);
   void sendPing(const uint8_t toAddr, int8_t rssi);
 
+  LoRaClass& mLoRa;
+  Stream& mStream;
+  const uint8_t mGatewayAddress;
+  const uint8_t mMyAddress;
   uint8_t mSeqId = {0};
   LoRaTxMessageT mMsgTx = {};
 

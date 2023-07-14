@@ -7,6 +7,7 @@
 
 #include "LoRaHandler.h"
 
+#include <Arduino.h>
 #include <LoRa.h>  // LoRa by Sandeep Mistry v0.8.0
 
 #include "Util.h"
@@ -22,47 +23,47 @@ int LoRaHandler::begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc,
   mOnConfigSetReqMsgFunc = onConfigSetReqMsgFunc;
   mOnServiceReqMsgFunc = onServiceReqMsgFunc;
 
-  return LoRa.begin(LORA_FREQUENCY);
+  return mLoRa.begin(LORA_FREQUENCY);
 }
 
 int LoRaHandler::loraRx() {
   // try to parse packet
-  int packetSize = LoRa.parsePacket();
+  int packetSize = mLoRa.parsePacket();
   if (packetSize) {
     // received a packet
-    Serial.print(F("Received packet '"));
+    mStream.print(F("Received packet '"));
 
     // read packet
 
     LoRaRxMessageT rxMsg;
-    rxMsg.header.dst = LoRa.read();
-    rxMsg.header.src = LoRa.read();
-    rxMsg.header.id = LoRa.read();
-    rxMsg.header.flags = LoRa.read();
-    rxMsg.header.len = LoRa.read();
+    rxMsg.header.dst = mLoRa.read();
+    rxMsg.header.src = mLoRa.read();
+    rxMsg.header.id = mLoRa.read();
+    rxMsg.header.flags = mLoRa.read();
+    rxMsg.header.len = mLoRa.read();
 
     printHeader(&rxMsg.header);
-    Serial.print(',');
+    mStream.print(',');
 
     uint8_t i = 0;
-    while (LoRa.available()) {
-      uint8_t rxByte = static_cast<uint8_t>(LoRa.read());
+    while (mLoRa.available()) {
+      uint8_t rxByte = static_cast<uint8_t>(mLoRa.read());
       rxMsg.payload[i] = rxByte;
-      Serial.print(rxByte);
+      mStream.print(rxByte);
     }
 
     // print RSSI of packet
-    Serial.print(F("' with RSSI "));
-    rxMsg.rssi = static_cast<int8_t>(LoRa.packetRssi());
-    Serial.print(rxMsg.rssi);
+    mStream.print(F("' with RSSI "));
+    rxMsg.rssi = static_cast<int8_t>(mLoRa.packetRssi());
+    mStream.print(rxMsg.rssi);
 
     if (sendAckIfRequested(&rxMsg.header) == 1) {
-      Serial.print(F(", ACK sent"));
+      mStream.print(F(", ACK sent"));
     }
-    Serial.println();
+    mStream.println();
 
     if (parseMsg(rxMsg) == -1) {
-      Serial.println(F("Error: Failed to parse msg"));
+      mStream.println(F("Error: Failed to parse msg"));
       return -1;
     }
   }
@@ -124,45 +125,45 @@ int8_t LoRaHandler::parseMsg(LoRaRxMessageT& rxMsg) {
 }
 
 void LoRaHandler::printMessage(const LoRaTxMessageT* msg) {
-  Serial.print("H:");
+  mStream.print("H:");
   printHeader(&msg->header);
-  Serial.print(" P:");
+  mStream.print(" P:");
   printPayload(msg->payload, msg->header.len);
-  Serial.println();
+  mStream.println();
 }
 
 void LoRaHandler::printHeader(const LoRaHeaderT* header) {
-  printHex(Serial, header->dst);
-  Serial.print(' ');
-  printHex(Serial, header->src);
-  Serial.print(' ');
-  printHex(Serial, header->id);
-  Serial.print(' ');
-  printHex(Serial, header->flags);
-  Serial.print(' ');
-  printHex(Serial, header->len);
+  printHex(mStream, header->dst);
+  mStream.print(' ');
+  printHex(mStream, header->src);
+  mStream.print(' ');
+  printHex(mStream, header->id);
+  mStream.print(' ');
+  printHex(mStream, header->flags);
+  mStream.print(' ');
+  printHex(mStream, header->len);
 }
 
 void LoRaHandler::printPayload(const uint8_t* payload, uint8_t len) {
   for (uint8_t i = 0; i < len; i++) {
-    printHex(Serial, payload[i]);
+    printHex(mStream, payload[i]);
     if (i < len - 1) {
-      Serial.print(' ');
+      mStream.print(' ');
     }
   }
 }
 
 void LoRaHandler::sendMsg(const LoRaTxMessageT* msg) {
 #ifdef DEBUG_LORA_MESSAGE
-  printMillis(Serial);
-  Serial.print(F("LoRaTx: "));
+  printMillis(mStream);
+  mStream.print(F("LoRaTx: "));
   printMessage(msg);
 #endif
 
-  LoRa.beginPacket();
-  LoRa.write(reinterpret_cast<uint8_t*>(&msg),
-             sizeof(msg->header) + msg->header.len);
-  LoRa.endPacket();
+  mLoRa.beginPacket();
+  mLoRa.write(reinterpret_cast<const uint8_t*>(msg),
+              sizeof(msg->header) + msg->header.len);
+  mLoRa.endPacket();
 
   mSeqId++;
 }
@@ -171,7 +172,7 @@ int LoRaHandler::sendAckIfRequested(const LoRaHeaderT* rxHeader) {
   if (rxHeader->flags & FLAGS_REQ_ACK) {
     LoRaTxMessageT msg;
     msg.header.dst = rxHeader->src;
-    msg.header.src = MY_ADDRESS;
+    msg.header.src = mMyAddress;
     msg.header.id = rxHeader->id;
     msg.header.flags = (rxHeader->flags & msgTypeMask) | FLAGS_ACK;
     msg.header.len = 0;
@@ -191,8 +192,8 @@ void LoRaHandler::sendPing(const uint8_t toAddr, int8_t rssi) {
 }
 
 void LoRaHandler::setDefaultHeader(LoRaHeaderT* header) {
-  header->dst = GATEWAY_ADDRESS;
-  header->src = MY_ADDRESS;
+  header->dst = mGatewayAddress;
+  header->src = mMyAddress;
   header->id = mSeqId;
   header->flags = FLAGS_REQ_ACK;
   header->len = 0;
@@ -230,14 +231,23 @@ void LoRaHandler::addValueItem(const uint8_t* buffer, uint8_t length) {
   }
 }
 
-void LoRaHandler::beginConfigsValueMsg() {
+void LoRaHandler::beginConfigsValueMsg(uint8_t entityId) {
   setDefaultHeader(&mMsgTx.header);
   mMsgTx.header.flags |= MsgType::config_msg;
+  LoRaConfigValuePayloadT* payload =
+      reinterpret_cast<LoRaConfigValuePayloadT*>(mMsgTx.payload);
+  payload->entityId = entityId;
+  payload->numberOfConfigs = 0;
+  mMsgTx.header.len += 2;
 }
 
 void LoRaHandler::addConfigItemValues(const uint8_t* buffer, uint8_t length) {
-  if (mMsgTx.header.len == 0) {
-    memcpy(mMsgTx.payload, buffer, length);
+  if (mMsgTx.header.len + length <= LORA_MAX_PAYLOAD_LENGTH - 1) {
+    memcpy(&mMsgTx.payload[mMsgTx.header.len], buffer, length);
     mMsgTx.header.len += length;
+
+    LoRaConfigValuePayloadT* payload =
+        reinterpret_cast<LoRaConfigValuePayloadT*>(mMsgTx.payload);
+    payload->numberOfConfigs++;
   }
 }

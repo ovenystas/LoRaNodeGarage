@@ -5,6 +5,8 @@
 
 #include "Node.h"
 
+#include <Stream.h>
+
 IComponent* Node::getComponent(uint8_t idx) {
   if (idx < mSize) {
     return mComponents[idx];
