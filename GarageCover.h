@@ -36,10 +36,10 @@ class GarageCover : public IComponent {
     return mCover.getValueMsg(buffer);
   }
 
-  void print(Stream& stream) final { mCover.print(stream); };
+  size_t print(Stream& stream) final { return mCover.print(stream); };
 
-  void print(Stream& stream, uint8_t service) final {
-    mCover.print(stream, service);
+  size_t print(Stream& stream, uint8_t service) final {
+    return mCover.print(stream, service);
   };
 
   bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final {

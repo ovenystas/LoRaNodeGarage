@@ -1,14 +1,13 @@
 #include "GarageCover.h"
 
 #include <Arduino.h>
+#include <assert.h>
 
 #include "Cover.h"
 #include "Util.h"
 
 void GarageCover::activateRelay(uint8_t times) {
-  if (times > 2) {
-    times = 2;
-  }
+  assert(times <= 2);
 
   for (uint8_t i = 0; i < times; i++) {
     digitalWrite(mPinRelay, HIGH);

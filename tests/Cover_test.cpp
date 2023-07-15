@@ -12,13 +12,6 @@ using ::testing::ElementsAre;
 using ::testing::Invoke;
 using ::testing::Return;
 
-char strBuf[256];
-
-size_t appendStrBuf(const char* str) {
-  strcat(strBuf, str);
-  return (strlen(str));
-}
-
 class Cover_test : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -49,40 +42,6 @@ class Cover_test : public ::testing::Test {
   Cover* pC;
 };
 
-TEST_F(Cover_test, getState) {
-  EXPECT_EQ(pC->getState(), CoverState::closed);
-  pC->setState(CoverState::opening);
-  EXPECT_EQ(pC->getState(), CoverState::opening);
-  pC->setState(CoverState::open);
-  EXPECT_EQ(pC->getState(), CoverState::open);
-  pC->setState(CoverState::closing);
-  EXPECT_EQ(pC->getState(), CoverState::closing);
-}
-
-TEST_F(Cover_test, getStateName_of_current_state) {
-  EXPECT_STREQ(pC->getStateName(), "closed");
-  pC->setState(CoverState::opening);
-  EXPECT_STREQ(pC->getStateName(), "opening");
-  pC->setState(CoverState::open);
-  EXPECT_STREQ(pC->getStateName(), "open");
-  pC->setState(CoverState::closing);
-  EXPECT_STREQ(pC->getStateName(), "closing");
-}
-
-TEST_F(Cover_test, getStateName_of_state_as_arg) {
-  EXPECT_STREQ(pC->getStateName(CoverState::closed), "closed");
-  EXPECT_STREQ(pC->getStateName(CoverState::opening), "opening");
-  EXPECT_STREQ(pC->getStateName(CoverState::open), "open");
-  EXPECT_STREQ(pC->getStateName(CoverState::closing), "closing");
-}
-
-TEST_F(Cover_test, getServiceName_of_service_as_arg) {
-  EXPECT_STREQ(pC->getServiceName(CoverService::close), "close");
-  EXPECT_STREQ(pC->getServiceName(CoverService::open), "open");
-  EXPECT_STREQ(pC->getServiceName(CoverService::stop), "stop");
-  EXPECT_STREQ(pC->getServiceName(CoverService::toggle), "toggle");
-}
-
 TEST_F(Cover_test, getComponentType) {
   EXPECT_EQ(pC->getComponentType(), BaseComponent::Type::cover);
 }
@@ -100,22 +59,67 @@ TEST_F(Cover_test, getDiscoveryMsg) {
                        static_cast<uint8_t>(Unit::Type::none), (1 << 4) | 0));
 }
 
+TEST_F(Cover_test, getEntityId) { EXPECT_EQ(pC->getEntityId(), 34); }
+
+TEST_F(Cover_test, getServiceName_of_service_as_arg) {
+  EXPECT_STREQ(pC->getServiceName(CoverService::close), "close");
+  EXPECT_STREQ(pC->getServiceName(CoverService::open), "open");
+  EXPECT_STREQ(pC->getServiceName(CoverService::stop), "stop");
+  EXPECT_STREQ(pC->getServiceName(CoverService::toggle), "toggle");
+}
+
+TEST_F(Cover_test, getState) {
+  EXPECT_EQ(pC->getState(), CoverState::closed);
+
+  pC->setState(CoverState::opening);
+  EXPECT_EQ(pC->getState(), CoverState::opening);
+
+  pC->setState(CoverState::open);
+  EXPECT_EQ(pC->getState(), CoverState::open);
+
+  pC->setState(CoverState::closing);
+  EXPECT_EQ(pC->getState(), CoverState::closing);
+}
+
+TEST_F(Cover_test, getStateName_of_current_state) {
+  EXPECT_STREQ(pC->getStateName(), "closed");
+
+  pC->setState(CoverState::opening);
+  EXPECT_STREQ(pC->getStateName(), "opening");
+
+  pC->setState(CoverState::open);
+  EXPECT_STREQ(pC->getStateName(), "open");
+
+  pC->setState(CoverState::closing);
+  EXPECT_STREQ(pC->getStateName(), "closing");
+}
+
+TEST_F(Cover_test, getStateName_of_state_as_arg) {
+  EXPECT_STREQ(pC->getStateName(CoverState::closed), "closed");
+  EXPECT_STREQ(pC->getStateName(CoverState::opening), "opening");
+  EXPECT_STREQ(pC->getStateName(CoverState::open), "open");
+  EXPECT_STREQ(pC->getStateName(CoverState::closing), "closing");
+}
+
 TEST_F(Cover_test, getValueMsg) {
   uint8_t buf[2] = {};
   EXPECT_EQ(pC->getValueMsg(buf), 2);
   EXPECT_THAT(buf, ElementsAre(34, static_cast<uint8_t>(CoverState::closed)));
+
   pC->setState(CoverState::opening);
   EXPECT_EQ(pC->getValueMsg(buf), 2);
   EXPECT_THAT(buf, ElementsAre(34, static_cast<uint8_t>(CoverState::opening)));
+
   pC->setState(CoverState::open);
   EXPECT_EQ(pC->getValueMsg(buf), 2);
   EXPECT_THAT(buf, ElementsAre(34, static_cast<uint8_t>(CoverState::open)));
+
   pC->setState(CoverState::closing);
   EXPECT_EQ(pC->getValueMsg(buf), 2);
   EXPECT_THAT(buf, ElementsAre(34, static_cast<uint8_t>(CoverState::closing)));
 }
 
-TEST_F(Cover_test, setReported) {
+TEST_F(Cover_test, setReported_isDiffLastReportedState_timeSinceLastReport) {
   ArduinoMock* arduinoMock = arduinoMockInstance();
   EXPECT_CALL(*arduinoMock, millis())
       .WillOnce(Return(0))
@@ -234,4 +238,13 @@ TEST_F(Cover_test, print_when_state_is_closed_and_service_unknown_is_called) {
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
   EXPECT_EQ(printedChars, strlen(expectStr));
+}
+
+TEST_F(Cover_test, serviceDecode) {
+  EXPECT_EQ(pC->serviceDecode(0), CoverService::open);
+  EXPECT_EQ(pC->serviceDecode(1), CoverService::close);
+  EXPECT_EQ(pC->serviceDecode(2), CoverService::stop);
+  EXPECT_EQ(pC->serviceDecode(3), CoverService::toggle);
+  EXPECT_EQ(pC->serviceDecode(4), CoverService::unknown);
+  EXPECT_EQ(pC->serviceDecode(5), CoverService::unknown);
 }

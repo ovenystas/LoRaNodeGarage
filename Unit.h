@@ -37,5 +37,5 @@ class Unit {
   }
 
  private:
-  const Type mType = {Type::none};
+  const Type mType{Type::none};
 };

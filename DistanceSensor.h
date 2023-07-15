@@ -34,11 +34,12 @@ class DistanceSensor : public IComponent {
     return mSensor.getValueMsg(buffer);
   }
 
-  void print(Stream& stream) final { mSensor.print(stream); };
+  size_t print(Stream& stream) final { return mSensor.print(stream); };
 
-  void print(Stream& stream, uint8_t service) final {
+  size_t print(Stream& stream, uint8_t service) final {
     (void)stream;
     (void)service;
+    return 0;
   };
 
   bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;

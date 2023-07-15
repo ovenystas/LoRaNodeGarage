@@ -4,6 +4,7 @@
 
 #include "Unit.h"
 #include "mocks/Arduino.h"
+#include "mocks/BufferSerial.h"
 #include "mocks/NewPing.h"
 
 #define SONAR_TRIGGER_PIN 7
@@ -13,6 +14,31 @@
 using ::testing::ElementsAre;
 using ::testing::Return;
 using DistanceT = int16_t;  // cm
+
+class DistanceSensorPrint_test : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    pSerial = new BufferSerial(256);
+    strBuf[0] = '\0';
+  }
+
+  void TearDown() override { delete pSerial; }
+
+  void bufSerReadStr() {
+    size_t i = 0;
+    while (pSerial->available()) {
+      int c = pSerial->read();
+      if (c < 0) {
+        break;
+      }
+      strBuf[i++] = static_cast<char>(c);
+    }
+    strBuf[i] = '\0';
+  }
+
+  char strBuf[256];
+  BufferSerial* pSerial;
+};
 
 class DistanceSensor_test : public ::testing::Test {
  protected:
@@ -33,35 +59,24 @@ class DistanceSensor_test : public ::testing::Test {
   DistanceSensor* pDs;
 };
 
-TEST_F(DistanceSensor_test,
-       update_smallValueDiff_smallTimeDiff_shall_return_false) {
-  EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(9));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
-  EXPECT_FALSE(pDs->update());
+TEST_F(DistanceSensor_test, callService_shall_do_nothing) {
+  pDs->callService(0);
 }
 
-TEST_F(DistanceSensor_test,
-       update_smallValueDiff_largeTimeDiff_shall_return_true) {
-  EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(9));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
-  EXPECT_TRUE(pDs->update());
+TEST_F(DistanceSensor_test, getConfigItemValuesMsg) {
+  uint8_t buf[11] = {};
+  EXPECT_EQ(pDs->getConfigItemValuesMsg(buf), 11);
+  // clang-format off
+  EXPECT_THAT(
+    buf,
+    ElementsAre(
+        7, 3,
+        0, highByte(0), lowByte(10),
+        1, highByte(0), lowByte(60),
+        2, highByte(0), lowByte(60)
+  ));
+  // clang-format on
 }
-
-TEST_F(DistanceSensor_test,
-       update_largeValueDiff_smallTimeDiff_shall_return_true) {
-  EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(10));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
-  EXPECT_TRUE(pDs->update());
-}
-
-TEST_F(DistanceSensor_test,
-       update_largeValueDiff_largeTimeDiff_shall_return_true) {
-  EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(10));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
-  EXPECT_TRUE(pDs->update());
-}
-
-// TODO: Add test of update where configs are 0
 
 TEST_F(DistanceSensor_test, getDiscoveryMsg) {
   uint8_t buf[15] = {};
@@ -83,19 +98,34 @@ TEST_F(DistanceSensor_test, getDiscoveryMsg) {
   // clang-format on
 }
 
-TEST_F(DistanceSensor_test, getConfigItemValuesMsg) {
-  uint8_t buf[11] = {};
-  EXPECT_EQ(pDs->getConfigItemValuesMsg(buf), 11);
-  // clang-format off
-  EXPECT_THAT(
-    buf,
-    ElementsAre(
-        7, 3,
-        0, highByte(0), lowByte(10),
-        1, highByte(0), lowByte(60),
-        2, highByte(0), lowByte(60)
-  ));
-  // clang-format on
+TEST_F(DistanceSensor_test, getEntityId) { EXPECT_EQ(pDs->getEntityId(), 7); }
+
+TEST_F(DistanceSensor_test, getSensor) {
+  Sensor<DistanceT>& sensor = pDs->getSensor();
+  EXPECT_EQ(sensor.getEntityId(), 7);
+}
+
+TEST_F(DistanceSensor_test, getValueMsg) {
+  uint8_t buf[3];
+  EXPECT_EQ(pDs->getValueMsg(buf), 3);
+  EXPECT_THAT(buf, ElementsAre(7, 0, 0));
+}
+
+TEST_F(DistanceSensorPrint_test, print) {
+  const char* expectStr = "DistanceSensor: 0 cm";
+  NewPingMock sonarMock;
+  DistanceSensor ds = DistanceSensor(7, "DistanceSensor", sonarMock);
+
+  EXPECT_EQ(ds.print(*pSerial), strlen(expectStr));
+
+  bufSerReadStr();
+  EXPECT_STREQ(strBuf, expectStr);
+}
+
+TEST_F(DistanceSensorPrint_test, print_service_shall_do_nothing) {
+  NewPingMock sonarMock;
+  DistanceSensor ds = DistanceSensor(7, "DistanceSensor", sonarMock);
+  EXPECT_EQ(ds.print(*pSerial, 0), 0);
 }
 
 TEST_F(DistanceSensor_test, setConfigs_all_in_order) {
@@ -186,6 +216,11 @@ TEST_F(DistanceSensor_test, setConfigs_out_of_range) {
   EXPECT_FALSE(pDs->setConfigs(1, buf));
 }
 
+TEST_F(DistanceSensor_test, setReported) {
+  EXPECT_CALL(*pArduinoMock, millis()).Times(1);
+  pDs->setReported();
+}
+
 TEST_F(DistanceSensor_test,
        update_largeValueDiff_largeTimeDiff_withConfigsZero_shall_return_false) {
   EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(10));
@@ -200,3 +235,33 @@ TEST_F(DistanceSensor_test,
   EXPECT_TRUE(pDs->setConfigs(3, buf));
   EXPECT_FALSE(pDs->update());
 }
+
+TEST_F(DistanceSensor_test,
+       update_smallValueDiff_smallTimeDiff_shall_return_false) {
+  EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(9));
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
+  EXPECT_FALSE(pDs->update());
+}
+
+TEST_F(DistanceSensor_test,
+       update_smallValueDiff_largeTimeDiff_shall_return_true) {
+  EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(9));
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
+  EXPECT_TRUE(pDs->update());
+}
+
+TEST_F(DistanceSensor_test,
+       update_largeValueDiff_smallTimeDiff_shall_return_true) {
+  EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(10));
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
+  EXPECT_TRUE(pDs->update());
+}
+
+TEST_F(DistanceSensor_test,
+       update_largeValueDiff_largeTimeDiff_shall_return_true) {
+  EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(10));
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
+  EXPECT_TRUE(pDs->update());
+}
+
+// TODO: Add test of update where configs are 0

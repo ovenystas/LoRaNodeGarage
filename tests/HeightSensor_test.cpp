@@ -4,11 +4,37 @@
 
 #include "Sensor.h"
 #include "Unit.h"
+#include "mocks/BufferSerial.h"
 
 using ::testing::ElementsAre;
 using ::testing::Return;
 
 using HeightT = int16_t;  // cm
+
+class HeightSensorPrint_test : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    pSerial = new BufferSerial(256);
+    strBuf[0] = '\0';
+  }
+
+  void TearDown() override { delete pSerial; }
+
+  void bufSerReadStr() {
+    size_t i = 0;
+    while (pSerial->available()) {
+      int c = pSerial->read();
+      if (c < 0) {
+        break;
+      }
+      strBuf[i++] = static_cast<char>(c);
+    }
+    strBuf[i] = '\0';
+  }
+
+  char strBuf[256];
+  BufferSerial* pSerial;
+};
 
 class HeightSensor_test : public ::testing::Test {
  protected:
@@ -30,32 +56,22 @@ class HeightSensor_test : public ::testing::Test {
   HeightSensor* pHs;
 };
 
-TEST_F(HeightSensor_test,
-       update_smallValueDiff_smallTimeDiff_shall_return_false) {
-  pDistanceSensor->setValue(69);
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
-  EXPECT_FALSE(pHs->update());
-}
+TEST_F(HeightSensor_test, callService_shall_do_nothing) { pHs->callService(0); }
 
-TEST_F(HeightSensor_test,
-       update_smallValueDiff_largeTimeDiff_shall_return_true) {
-  pDistanceSensor->setValue(69);
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
-  EXPECT_TRUE(pHs->update());
-}
-
-TEST_F(HeightSensor_test,
-       update_largeValueDiff_smallTimeDiff_shall_return_true) {
-  pDistanceSensor->setValue(70);
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
-  EXPECT_TRUE(pHs->update());
-}
-
-TEST_F(HeightSensor_test,
-       update_largeValueDiff_largeTimeDiff_shall_return_true) {
-  pDistanceSensor->setValue(70);
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
-  EXPECT_TRUE(pHs->update());
+TEST_F(HeightSensor_test, getConfigItemValuesMsg) {
+  uint8_t buf[14] = {};
+  EXPECT_EQ(pHs->getConfigItemValuesMsg(buf), 14);
+  // clang-format off
+  EXPECT_THAT(
+    buf,
+    ElementsAre(
+        39, 4,
+        0, highByte(10), lowByte(10),
+        1, highByte(60), lowByte(60),
+        2, highByte(5000), lowByte(5000),
+        3, highByte(60), lowByte(60)
+  ));
+  // clang-format on
 }
 
 TEST_F(HeightSensor_test, getDiscoveryMsg) {
@@ -79,20 +95,36 @@ TEST_F(HeightSensor_test, getDiscoveryMsg) {
   // clang-format on
 }
 
-TEST_F(HeightSensor_test, getConfigItemValuesMsg) {
-  uint8_t buf[14] = {};
-  EXPECT_EQ(pHs->getConfigItemValuesMsg(buf), 14);
-  // clang-format off
-  EXPECT_THAT(
-    buf,
-    ElementsAre(
-        39, 4,
-        0, highByte(10), lowByte(10),
-        1, highByte(60), lowByte(60),
-        2, highByte(5000), lowByte(5000),
-        3, highByte(60), lowByte(60)
-  ));
-  // clang-format on
+TEST_F(HeightSensor_test, getEntityId) { EXPECT_EQ(pHs->getEntityId(), 39); }
+
+TEST_F(HeightSensor_test, getSensor) {
+  Sensor<HeightT>& sensor = pHs->getSensor();
+  EXPECT_EQ(sensor.getEntityId(), 39);
+}
+
+TEST_F(HeightSensor_test, getValueMsg) {
+  uint8_t buf[3];
+  EXPECT_EQ(pHs->getValueMsg(buf), 3);
+  EXPECT_THAT(buf, ElementsAre(39, 0, 0));
+}
+
+TEST_F(HeightSensorPrint_test, print) {
+  const char* expectStr = "HeightSensor: 0 cm";
+  Sensor<DistanceT>* pDistanceSensor = new Sensor<DistanceT>(
+      99, "Distance", SensorDeviceClass::distance, Unit::Type::cm);
+  HeightSensor hs = HeightSensor(39, "HeightSensor", *pDistanceSensor);
+
+  EXPECT_EQ(hs.print(*pSerial), 18);
+
+  bufSerReadStr();
+  EXPECT_STREQ(strBuf, expectStr);
+}
+
+TEST_F(HeightSensorPrint_test, print_service_shall_do_nothing) {
+  Sensor<DistanceT>* pDistanceSensor = new Sensor<DistanceT>(
+      99, "Distance", SensorDeviceClass::distance, Unit::Type::cm);
+  HeightSensor hs = HeightSensor(39, "HeightSensor", *pDistanceSensor);
+  EXPECT_EQ(hs.print(*pSerial, 0), 0);
 }
 
 TEST_F(HeightSensor_test, setConfigs_all_in_order) {
@@ -189,6 +221,11 @@ TEST_F(HeightSensor_test, setConfigs_out_of_range) {
   EXPECT_FALSE(pHs->setConfigs(1, buf));
 }
 
+TEST_F(HeightSensor_test, setReported) {
+  EXPECT_CALL(*pArduinoMock, millis()).Times(1);
+  pHs->setReported();
+}
+
 TEST_F(HeightSensor_test,
        update_largeValueDiff_largeTimeDiff_withConfigsZero_shall_return_false) {
   pDistanceSensor->setValue(70);
@@ -203,4 +240,32 @@ TEST_F(HeightSensor_test,
   };
   EXPECT_TRUE(pHs->setConfigs(4, buf));
   EXPECT_FALSE(pHs->update());
+}
+
+TEST_F(HeightSensor_test,
+       update_smallValueDiff_smallTimeDiff_shall_return_false) {
+  pDistanceSensor->setValue(69);
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
+  EXPECT_FALSE(pHs->update());
+}
+
+TEST_F(HeightSensor_test,
+       update_smallValueDiff_largeTimeDiff_shall_return_true) {
+  pDistanceSensor->setValue(69);
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
+  EXPECT_TRUE(pHs->update());
+}
+
+TEST_F(HeightSensor_test,
+       update_largeValueDiff_smallTimeDiff_shall_return_true) {
+  pDistanceSensor->setValue(70);
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
+  EXPECT_TRUE(pHs->update());
+}
+
+TEST_F(HeightSensor_test,
+       update_largeValueDiff_largeTimeDiff_shall_return_true) {
+  pDistanceSensor->setValue(70);
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
+  EXPECT_TRUE(pHs->update());
 }

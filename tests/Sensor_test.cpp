@@ -276,6 +276,17 @@ TEST_F(SensorInt8_test, setReported) {
   releaseArduinoMock();
 }
 
+TEST_F(SensorPrint_test, print_simple_constructed_sensor) {
+  const char* expectStr = ": 0";
+  Sensor<int8_t> sc = Sensor<int8_t>(108);
+
+  size_t printedChars = sc.print(*pSerial);
+
+  bufSerReadStr();
+  EXPECT_STREQ(strBuf, expectStr);
+  EXPECT_EQ(printedChars, strlen(expectStr));
+}
+
 TEST_F(SensorPrint_test, print_negative_value_scalefactor_1_unit_none) {
   const char* expectStr = "Sensor8: -123";
   Sensor<int8_t> sc = Sensor<int8_t>(108, "Sensor8");

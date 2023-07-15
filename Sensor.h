@@ -156,13 +156,13 @@ class Sensor {
   }
 
  private:
-  int16_t factors[4] = {1, 10, 100, 1000};
+  const int16_t factors[4] = {1, 10, 100, 1000};
 
   BaseComponent mBaseComponent;
-  T mValue = {};
-  T mLastReportedValue = {};
+  T mValue{};
+  T mLastReportedValue{};
   const SensorDeviceClass mDeviceClass = {SensorDeviceClass::none};
-  const Unit mUnit = {Unit::Type::none};
-  const uint8_t mPrecision = {};
-  const int16_t mScaleFactor = {factors[mPrecision]};
+  const Unit mUnit{Unit::Type::none};
+  const uint8_t mPrecision{};
+  const int16_t mScaleFactor{factors[mPrecision]};
 };

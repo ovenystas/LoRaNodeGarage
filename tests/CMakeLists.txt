@@ -72,28 +72,33 @@ gtest_discover_tests(Cover_test)
 add_executable(
   DistanceSensor_test EXCLUDE_FROM_ALL
   DistanceSensor_test.cpp ../DistanceSensor.cpp ../Util.cpp mocks/Arduino.cpp
-  mocks/Print.cpp)
+  mocks/Print.cpp mocks/BufferSerial.cpp)
 target_link_libraries(DistanceSensor_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(DistanceSensor_test)
 
 add_executable(
   GarageCover_test EXCLUDE_FROM_ALL
-  GarageCover_test.cpp ../GarageCover.cpp ../Cover.cpp ../Util.cpp
-  mocks/Arduino.cpp mocks/Print.cpp)
+  GarageCover_test.cpp
+  ../GarageCover.cpp
+  ../Cover.cpp
+  ../Util.cpp
+  mocks/Arduino.cpp
+  mocks/Print.cpp
+  mocks/BufferSerial.cpp)
 target_link_libraries(GarageCover_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(GarageCover_test)
 
 add_executable(
   HeightSensor_test EXCLUDE_FROM_ALL
   HeightSensor_test.cpp ../HeightSensor.cpp ../Util.cpp mocks/Arduino.cpp
-  mocks/Print.cpp)
+  mocks/Print.cpp mocks/BufferSerial.cpp)
 target_link_libraries(HeightSensor_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(HeightSensor_test)
 
 add_executable(
   HumiditySensor_test EXCLUDE_FROM_ALL
   HumiditySensor_test.cpp ../HumiditySensor.cpp ../Util.cpp mocks/Arduino.cpp
-  mocks/Print.cpp)
+  mocks/Print.cpp mocks/BufferSerial.cpp)
 target_link_libraries(HumiditySensor_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(HumiditySensor_test)
 
@@ -111,8 +116,13 @@ gtest_discover_tests(Node_test)
 
 add_executable(
   PresenceBinarySensor_test EXCLUDE_FROM_ALL
-  PresenceBinarySensor_test.cpp ../PresenceBinarySensor.cpp ../Util.cpp
-  ../BinarySensor.cpp mocks/Arduino.cpp mocks/Print.cpp)
+  PresenceBinarySensor_test.cpp
+  ../PresenceBinarySensor.cpp
+  ../Util.cpp
+  ../BinarySensor.cpp
+  mocks/Arduino.cpp
+  mocks/Print.cpp
+  mocks/BufferSerial.cpp)
 target_link_libraries(PresenceBinarySensor_test GTest::gtest_main
                       GTest::gmock_main)
 gtest_discover_tests(PresenceBinarySensor_test)
@@ -126,7 +136,7 @@ gtest_discover_tests(Sensor_test)
 add_executable(
   TemperatureSensor_test EXCLUDE_FROM_ALL
   TemperatureSensor_test.cpp ../TemperatureSensor.cpp ../Util.cpp
-  mocks/Arduino.cpp mocks/Print.cpp)
+  mocks/Arduino.cpp mocks/Print.cpp mocks/BufferSerial.cpp)
 target_link_libraries(TemperatureSensor_test GTest::gtest_main
                       GTest::gmock_main)
 gtest_discover_tests(TemperatureSensor_test)

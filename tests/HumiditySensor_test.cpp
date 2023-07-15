@@ -3,12 +3,38 @@
 #include <gtest/gtest.h>
 
 #include "Unit.h"
+#include "mocks/BufferSerial.h"
 #include "mocks/DHT.h"
 
 using ::testing::ElementsAre;
 using ::testing::Return;
 
 using HumidityT = int8_t;  // cm
+
+class HumiditySensorPrint_test : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    pSerial = new BufferSerial(256);
+    strBuf[0] = '\0';
+  }
+
+  void TearDown() override { delete pSerial; }
+
+  void bufSerReadStr() {
+    size_t i = 0;
+    while (pSerial->available()) {
+      int c = pSerial->read();
+      if (c < 0) {
+        break;
+      }
+      strBuf[i++] = static_cast<char>(c);
+    }
+    strBuf[i] = '\0';
+  }
+
+  char strBuf[256];
+  BufferSerial* pSerial;
+};
 
 class HumiditySensor_test : public ::testing::Test {
  protected:
@@ -29,32 +55,24 @@ class HumiditySensor_test : public ::testing::Test {
   HumiditySensor* pHs;
 };
 
-TEST_F(HumiditySensor_test,
-       update_smallValueDiff_smallTimeDiff_shall_return_false) {
-  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(1));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
-  EXPECT_FALSE(pHs->update());
+TEST_F(HumiditySensor_test, callService_shall_do_nothing) {
+  pHs->callService(0);
 }
 
-TEST_F(HumiditySensor_test,
-       update_smallValueDiff_largeTimeDiff_shall_return_true) {
-  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(1));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
-  EXPECT_TRUE(pHs->update());
-}
-
-TEST_F(HumiditySensor_test,
-       update_largeValueDiff_smallTimeDiff_shall_return_true) {
-  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(2));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
-  EXPECT_TRUE(pHs->update());
-}
-
-TEST_F(HumiditySensor_test,
-       update_largeValueDiff_largeTimeDiff_shall_return_true) {
-  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(2));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
-  EXPECT_TRUE(pHs->update());
+TEST_F(HumiditySensor_test, getConfigItemValuesMsg) {
+  uint8_t buf[12] = {};
+  EXPECT_EQ(pHs->getConfigItemValuesMsg(buf), 12);
+  // clang-format off
+  EXPECT_THAT(
+    buf,
+    ElementsAre(
+        51, 4,
+        0, 2,
+        1, highByte(60), lowByte(60),
+        2, highByte(60), lowByte(60),
+        3, 0
+  ));
+  // clang-format on
 }
 
 TEST_F(HumiditySensor_test, getDiscoveryMsg) {
@@ -78,20 +96,29 @@ TEST_F(HumiditySensor_test, getDiscoveryMsg) {
   // clang-format on
 }
 
-TEST_F(HumiditySensor_test, getConfigItemValuesMsg) {
-  uint8_t buf[12] = {};
-  EXPECT_EQ(pHs->getConfigItemValuesMsg(buf), 12);
-  // clang-format off
-  EXPECT_THAT(
-    buf,
-    ElementsAre(
-        51, 4,
-        0, 2,
-        1, highByte(60), lowByte(60),
-        2, highByte(60), lowByte(60),
-        3, 0
-  ));
-  // clang-format on
+TEST_F(HumiditySensor_test, getEntityId) { EXPECT_EQ(pHs->getEntityId(), 51); }
+
+TEST_F(HumiditySensor_test, getValueMsg) {
+  uint8_t buf[2];
+  EXPECT_EQ(pHs->getValueMsg(buf), 2);
+  EXPECT_THAT(buf, ElementsAre(51, 0));
+}
+
+TEST_F(HumiditySensorPrint_test, print) {
+  const char* expectStr = "HumiditySensor: 0 %";
+  DHTMock* pDhtMock = new DHTMock();
+  HumiditySensor hs = HumiditySensor(51, "HumiditySensor", *pDhtMock);
+
+  EXPECT_EQ(hs.print(*pSerial), strlen(expectStr));
+
+  bufSerReadStr();
+  EXPECT_STREQ(strBuf, expectStr);
+}
+
+TEST_F(HumiditySensorPrint_test, print_service_shall_do_nothing) {
+  DHTMock* pDhtMock = new DHTMock();
+  HumiditySensor hs = HumiditySensor(51, "HumiditySensor", *pDhtMock);
+  EXPECT_EQ(hs.print(*pSerial, 0), 0);
 }
 
 TEST_F(HumiditySensor_test, setConfigs_all_in_order) {
@@ -188,6 +215,11 @@ TEST_F(HumiditySensor_test, setConfigs_out_of_range) {
   EXPECT_FALSE(pHs->setConfigs(1, buf));
 }
 
+TEST_F(HumiditySensor_test, setReported) {
+  EXPECT_CALL(*pArduinoMock, millis()).Times(1);
+  pHs->setReported();
+}
+
 TEST_F(HumiditySensor_test,
        update_largeValueDiff_largeTimeDiff_withConfigsZero_shall_return_false) {
   EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(2));
@@ -202,4 +234,32 @@ TEST_F(HumiditySensor_test,
   };
   EXPECT_TRUE(pHs->setConfigs(4, buf));
   EXPECT_FALSE(pHs->update());
+}
+
+TEST_F(HumiditySensor_test,
+       update_smallValueDiff_smallTimeDiff_shall_return_false) {
+  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(1));
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
+  EXPECT_FALSE(pHs->update());
+}
+
+TEST_F(HumiditySensor_test,
+       update_smallValueDiff_largeTimeDiff_shall_return_true) {
+  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(1));
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
+  EXPECT_TRUE(pHs->update());
+}
+
+TEST_F(HumiditySensor_test,
+       update_largeValueDiff_smallTimeDiff_shall_return_true) {
+  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(2));
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
+  EXPECT_TRUE(pHs->update());
+}
+
+TEST_F(HumiditySensor_test,
+       update_largeValueDiff_largeTimeDiff_shall_return_true) {
+  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(2));
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
+  EXPECT_TRUE(pHs->update());
 }

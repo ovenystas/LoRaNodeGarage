@@ -40,23 +40,193 @@ class BinarySensor_test : public ::testing::Test {
   BinarySensor* pBS;
 };
 
-TEST_F(BinarySensor_test, getState_when_false) {
-  EXPECT_EQ(pBS->getState(), false);
+TEST(BinarySensor_getStateName_test, battery) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::battery);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "normal");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "low");
 }
 
-TEST_F(BinarySensor_test, getState_when_true) {
-  pBS->setState(true);
-  EXPECT_EQ(pBS->getState(), true);
+TEST(BinarySensor_getStateName_test, cold) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::cold);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "normal");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "cold");
 }
 
-TEST_F(BinarySensor_test, getStateName_when_false) {
-  pBS->setState(false);
-  EXPECT_STREQ(pBS->getStateName(), "off");
+TEST(BinarySensor_getStateName_test, heat) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::heat);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "normal");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "hot");
 }
 
-TEST_F(BinarySensor_test, getStateName_when_true) {
-  pBS->setState(true);
-  EXPECT_STREQ(pBS->getStateName(), "on");
+TEST(BinarySensor_getStateName_test, connectivity) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::connectivity);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "disconnected");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "connected");
+}
+
+TEST(BinarySensor_getStateName_test, door) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::door);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "closed");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "open");
+}
+
+TEST(BinarySensor_getStateName_test, garageDoor) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::garageDoor);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "closed");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "open");
+}
+
+TEST(BinarySensor_getStateName_test, opening) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::opening);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "closed");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "open");
+}
+
+TEST(BinarySensor_getStateName_test, window) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::window);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "closed");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "open");
+}
+
+TEST(BinarySensor_getStateName_test, lock) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::lock);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "locked");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "unlocked");
+}
+
+TEST(BinarySensor_getStateName_test, moisture) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::moisture);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "dry");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "wet");
+}
+
+TEST(BinarySensor_getStateName_test, gas) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::gas);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "clear");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "detected");
+}
+
+TEST(BinarySensor_getStateName_test, motion) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::motion);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "clear");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "detected");
+}
+
+TEST(BinarySensor_getStateName_test, occupancy) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::occupancy);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "clear");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "detected");
+}
+
+TEST(BinarySensor_getStateName_test, smoke) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::smoke);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "clear");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "detected");
+}
+
+TEST(BinarySensor_getStateName_test, sound) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::sound);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "clear");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "detected");
+}
+
+TEST(BinarySensor_getStateName_test, vibration) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::vibration);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "clear");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "detected");
+}
+
+TEST(BinarySensor_getStateName_test, presence) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::presence);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "away");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "home");
+}
+
+TEST(BinarySensor_getStateName_test, problem) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::problem);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "OK");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "problem");
+}
+
+TEST(BinarySensor_getStateName_test, safety) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::safety);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "safe");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "unsafe");
+}
+
+TEST(BinarySensor_getStateName_test, none) {
+  BinarySensor bs =
+      BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::none);
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "off");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "on");
+}
+
+TEST(BinarySensor_getStateName_test, unknown) {
+  BinarySensor bs = BinarySensor(34, "BinarySensor",
+                                 static_cast<BinarySensorDeviceClass>(255));
+  bs.setState(false);
+  EXPECT_STREQ(bs.getStateName(), "off");
+  bs.setState(true);
+  EXPECT_STREQ(bs.getStateName(), "on");
 }
 
 TEST_F(BinarySensor_test, getComponentType) {
@@ -77,34 +247,25 @@ TEST_F(BinarySensor_test, getDiscoveryMsg) {
                   static_cast<uint8_t>(Unit::Type::none), (1 << 4) | 0));
 }
 
-TEST_F(BinarySensor_test, getValueMsg_when_false) {
+TEST_F(BinarySensor_test, getEntityId) { EXPECT_EQ(pBS->getEntityId(), 34); }
+
+TEST_F(BinarySensor_test, getState) {
+  pBS->setState(false);
+  EXPECT_EQ(pBS->getState(), false);
+
+  pBS->setState(true);
+  EXPECT_EQ(pBS->getState(), true);
+}
+
+TEST_F(BinarySensor_test, getValueMsg) {
+  pBS->setState(false);
   uint8_t buf[2] = {};
   EXPECT_EQ(pBS->getValueMsg(buf), 2);
   EXPECT_THAT(buf, ElementsAre(34, false));
-}
 
-TEST_F(BinarySensor_test, getValueMsg_when_true) {
-  uint8_t buf[2] = {};
   pBS->setState(true);
   EXPECT_EQ(pBS->getValueMsg(buf), 2);
   EXPECT_THAT(buf, ElementsAre(34, true));
-}
-
-TEST_F(BinarySensor_test, setReported) {
-  ArduinoMock* arduinoMock = arduinoMockInstance();
-  EXPECT_CALL(*arduinoMock, millis())
-      .WillOnce(Return(0))
-      .WillOnce(Return(10000))
-      .WillOnce(Return(20500))
-      .WillOnce(Return(35999));
-  pBS->setReported();
-  EXPECT_EQ(pBS->isDiffLastReportedState(), false);
-  EXPECT_EQ(pBS->timeSinceLastReport(), 10);
-  pBS->setState(true);
-  EXPECT_EQ(pBS->isDiffLastReportedState(), true);
-  pBS->setReported();
-  EXPECT_EQ(pBS->timeSinceLastReport(), 15);
-  releaseArduinoMock();
 }
 
 TEST_F(BinarySensor_test, print_deviceclass_none_state_false) {
@@ -129,28 +290,20 @@ TEST_F(BinarySensor_test, print_deviceclass_none_state_true) {
   EXPECT_EQ(printedChars, strlen(expectStr));
 }
 
-TEST_F(BinarySensor_test, print_deviceclass_battery_state_false) {
-  const char* expectStr = "BinarySensor: normal";
-  delete pBS;
-  pBS = new BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::battery);
-  pBS->setState(false);
-
-  size_t printedChars = pBS->print(*pSerial);
-
-  bufSerReadStr();
-  EXPECT_STREQ(strBuf, expectStr);
-  EXPECT_EQ(printedChars, strlen(expectStr));
-}
-
-TEST_F(BinarySensor_test, print_deviceclass_battery_state_true) {
-  const char* expectStr = "BinarySensor: low";
-  delete pBS;
-  pBS = new BinarySensor(34, "BinarySensor", BinarySensorDeviceClass::battery);
+TEST_F(BinarySensor_test,
+       setReported_isDiffLastReportedState_timeSinceLastReport) {
+  ArduinoMock* arduinoMock = arduinoMockInstance();
+  EXPECT_CALL(*arduinoMock, millis())
+      .WillOnce(Return(0))
+      .WillOnce(Return(10000))
+      .WillOnce(Return(20500))
+      .WillOnce(Return(35999));
+  pBS->setReported();
+  EXPECT_EQ(pBS->isDiffLastReportedState(), false);
+  EXPECT_EQ(pBS->timeSinceLastReport(), 10);
   pBS->setState(true);
-
-  size_t printedChars = pBS->print(*pSerial);
-
-  bufSerReadStr();
-  EXPECT_STREQ(strBuf, expectStr);
-  EXPECT_EQ(printedChars, strlen(expectStr));
+  EXPECT_EQ(pBS->isDiffLastReportedState(), true);
+  pBS->setReported();
+  EXPECT_EQ(pBS->timeSinceLastReport(), 15);
+  releaseArduinoMock();
 }
