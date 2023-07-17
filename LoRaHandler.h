@@ -9,8 +9,12 @@
  * Header:
  *   Byte 0:  dst - Destination address
  *   Byte 1:  src - Source address
- *   Byte 2:  id
- *   Byte 3:  flags
+ *   Byte 2:  id  - Message sequence id
+ *   Byte 3:  flags - Bit7: Acknowledge response
+ *                    Bit6: Acknowledge request
+ *                    Bit5: Reserved
+ *                    Bit4: Reserved
+ *                    Bit3-0: Message type
  *   Byte 4:  len - Length of payload in bytes
  *
  * Payloads:
@@ -69,7 +73,7 @@
 
 #include "Util.h"
 
-// #define DEBUG_LORA_MESSAGE
+#define DEBUG_LORA_MESSAGE
 
 #define LORA_FREQUENCY 868e6
 #define LORA_MAX_MESSAGE_LENGTH 51
@@ -152,6 +156,10 @@ struct LoRaConfigPayloadT {
       }
     }
     return true;
+  }
+
+  bool operator!=(const LoRaConfigPayloadT& rhs) const {
+    return !(*this == rhs);
   }
 } __attribute__((packed, aligned(1)));
 
@@ -262,9 +270,12 @@ class LoRaHandler {
   void printHeader(const LoRaHeaderT* header);
   void printPayload(const uint8_t* payload, uint8_t len);
 
-  int8_t parseMsg(LoRaRxMessageT& rxMsg);
+  int8_t parseMsg(const LoRaRxMessageT& rxMsg);
 
-  int sendAckIfRequested(const LoRaHeaderT* rx_header);
+  bool isAckRequested(const LoRaHeaderT* rxHeader) const {
+    return (rxHeader->flags & FLAGS_REQ_ACK) != 0;
+  }
+  void sendAck(const LoRaHeaderT* rx_header);
   void sendMsg(const LoRaTxMessageT* msg);
   void sendPing(const uint8_t toAddr, int8_t rssi);
 

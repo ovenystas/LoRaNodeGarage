@@ -109,8 +109,8 @@ add_executable(
 target_link_libraries(LoRaHandler_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(LoRaHandler_test)
 
-add_executable(Node_test EXCLUDE_FROM_ALL Node_test.cpp ../Node.cpp
-                                          mocks/Print.cpp)
+add_executable(Node_test EXCLUDE_FROM_ALL
+               Node_test.cpp ../Node.cpp mocks/Print.cpp mocks/BufferSerial.cpp)
 target_link_libraries(Node_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(Node_test)
 

@@ -117,7 +117,7 @@ void setup() {
 }
 
 void loop() {
-  lora.loraRx();
+  (void)lora.loraRx();
 
   auto curMillis = millis();
   if (curMillis >= nextRunTime) {

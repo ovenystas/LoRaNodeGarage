@@ -29,50 +29,59 @@ int LoRaHandler::begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc,
 int LoRaHandler::loraRx() {
   // try to parse packet
   int packetSize = mLoRa.parsePacket();
-  if (packetSize) {
-    // received a packet
-    mStream.print(F("Received packet '"));
+  if (packetSize <= 0) {
+    return 0;
+  }
 
-    // read packet
+  // received a packet
+  mStream.print(F("Received packet '"));
 
-    LoRaRxMessageT rxMsg;
-    rxMsg.header.dst = mLoRa.read();
-    rxMsg.header.src = mLoRa.read();
-    rxMsg.header.id = mLoRa.read();
-    rxMsg.header.flags = mLoRa.read();
-    rxMsg.header.len = mLoRa.read();
+  // read packet
 
-    printHeader(&rxMsg.header);
-    mStream.print(',');
+  LoRaRxMessageT rxMsg;
+  rxMsg.header.dst = mLoRa.read();
+  rxMsg.header.src = mLoRa.read();
+  rxMsg.header.id = mLoRa.read();
+  rxMsg.header.flags = mLoRa.read();
+  rxMsg.header.len = mLoRa.read();
 
-    uint8_t i = 0;
-    while (mLoRa.available()) {
-      uint8_t rxByte = static_cast<uint8_t>(mLoRa.read());
-      rxMsg.payload[i] = rxByte;
-      mStream.print(rxByte);
-    }
+  printHeader(&rxMsg.header);
+  mStream.print(',');
 
-    // print RSSI of packet
-    mStream.print(F("' with RSSI "));
-    rxMsg.rssi = static_cast<int8_t>(mLoRa.packetRssi());
-    mStream.print(rxMsg.rssi);
+  uint8_t i = 0;
+  while (mLoRa.available() && i < (LORA_MAX_PAYLOAD_LENGTH - 2)) {
+    uint8_t rxByte = static_cast<uint8_t>(mLoRa.read());
+    rxMsg.payload[i++] = rxByte;
+    mStream.print(rxByte);
+  }
 
-    if (sendAckIfRequested(&rxMsg.header) == 1) {
-      mStream.print(F(", ACK sent"));
-    }
-    mStream.println();
+  // print RSSI of packet
+  mStream.print(F("' with RSSI "));
+  rxMsg.rssi = static_cast<int8_t>(mLoRa.packetRssi());
+  mStream.print(rxMsg.rssi);
 
-    if (parseMsg(rxMsg) == -1) {
-      mStream.println(F("Error: Failed to parse msg"));
-      return -1;
-    }
+  if (rxMsg.header.dst != mMyAddress) {
+    mStream.println(F(", not for me, drop msg."));
+    return 0;
+  }
+
+  if (isAckRequested(&rxMsg.header)) {
+    sendAck(&rxMsg.header);
+    mStream.print(F(", ACK sent"));
+  }
+  mStream.println();
+
+  if (parseMsg(rxMsg) == -1) {
+    mStream.println(F("Error: Failed to parse msg"));
+    return -1;
   }
 
   return packetSize;
 }
 
-int8_t LoRaHandler::parseMsg(LoRaRxMessageT& rxMsg) {
-  MsgType msgType = static_cast<MsgType>(rxMsg.header.flags & msgTypeMask);
+int8_t LoRaHandler::parseMsg(const LoRaRxMessageT& rxMsg) {
+  const MsgType msgType =
+      static_cast<MsgType>(rxMsg.header.flags & msgTypeMask);
 
   switch (msgType) {
     case MsgType::ping_req:
@@ -102,8 +111,8 @@ int8_t LoRaHandler::parseMsg(LoRaRxMessageT& rxMsg) {
 
     case MsgType::configSet_req:
       if (mOnConfigSetReqMsgFunc) {
-        LoRaConfigValuePayloadT* payload =
-            reinterpret_cast<LoRaConfigValuePayloadT*>(rxMsg.payload);
+        const LoRaConfigValuePayloadT* payload =
+            reinterpret_cast<const LoRaConfigValuePayloadT*>(rxMsg.payload);
         mOnConfigSetReqMsgFunc(*payload);
       }
       break;
@@ -111,8 +120,8 @@ int8_t LoRaHandler::parseMsg(LoRaRxMessageT& rxMsg) {
     case MsgType::service_req:
       if (mOnServiceReqMsgFunc) {
         if (rxMsg.header.len == sizeof(LoRaServiceItemT)) {
-          LoRaServiceItemT* item =
-              reinterpret_cast<LoRaServiceItemT*>(rxMsg.payload);
+          const LoRaServiceItemT* item =
+              reinterpret_cast<const LoRaServiceItemT*>(rxMsg.payload);
           mOnServiceReqMsgFunc(*item);
         }
       }
@@ -125,9 +134,9 @@ int8_t LoRaHandler::parseMsg(LoRaRxMessageT& rxMsg) {
 }
 
 void LoRaHandler::printMessage(const LoRaTxMessageT* msg) {
-  mStream.print("H:");
+  mStream.print(F("H: "));
   printHeader(&msg->header);
-  mStream.print(" P:");
+  mStream.print(F(" P: "));
   printPayload(msg->payload, msg->header.len);
   mStream.println();
 }
@@ -160,26 +169,22 @@ void LoRaHandler::sendMsg(const LoRaTxMessageT* msg) {
   printMessage(msg);
 #endif
 
-  mLoRa.beginPacket();
-  mLoRa.write(reinterpret_cast<const uint8_t*>(msg),
-              sizeof(msg->header) + msg->header.len);
-  mLoRa.endPacket();
+  (void)mLoRa.beginPacket();
+  (void)mLoRa.write(reinterpret_cast<const uint8_t*>(msg),
+                    sizeof(msg->header) + msg->header.len);
+  (void)mLoRa.endPacket();
 
   mSeqId++;
 }
 
-int LoRaHandler::sendAckIfRequested(const LoRaHeaderT* rxHeader) {
-  if (rxHeader->flags & FLAGS_REQ_ACK) {
-    LoRaTxMessageT msg;
-    msg.header.dst = rxHeader->src;
-    msg.header.src = mMyAddress;
-    msg.header.id = rxHeader->id;
-    msg.header.flags = (rxHeader->flags & msgTypeMask) | FLAGS_ACK;
-    msg.header.len = 0;
-    sendMsg(&msg);
-    return 1;
-  }
-  return 0;
+void LoRaHandler::sendAck(const LoRaHeaderT* rxHeader) {
+  LoRaTxMessageT msg;
+  msg.header.dst = rxHeader->src;
+  msg.header.src = mMyAddress;
+  msg.header.id = rxHeader->id;
+  msg.header.flags = (rxHeader->flags & msgTypeMask) | FLAGS_ACK;
+  msg.header.len = 0;
+  sendMsg(&msg);
 }
 
 void LoRaHandler::sendPing(const uint8_t toAddr, int8_t rssi) {
@@ -189,6 +194,7 @@ void LoRaHandler::sendPing(const uint8_t toAddr, int8_t rssi) {
   msg.header.flags |= MsgType::ping_msg;
   msg.payload[0] = rssi;
   msg.header.len++;
+  sendMsg(&msg);
 }
 
 void LoRaHandler::setDefaultHeader(LoRaHeaderT* header) {

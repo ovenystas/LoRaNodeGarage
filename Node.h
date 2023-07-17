@@ -22,7 +22,7 @@ class Node {
 
   uint8_t getSize() const { return mSize; }
 
-  void print(Stream& stream);
+  size_t print(Stream& stream);
 
  private:
   IComponent** mComponents;

@@ -23,12 +23,14 @@ IComponent* Node::getComponentByEntityId(uint8_t entityId) {
   return nullptr;
 }
 
-void Node::print(Stream& stream) {
+size_t Node::print(Stream& stream) {
   uint8_t i;
+  size_t n = 0;
   for (i = 0; i < mSize - 1; i++) {
-    mComponents[i]->print(stream);
-    stream.print(", ");
+    n += mComponents[i]->print(stream);
+    n += stream.print(", ");
   }
-  mComponents[i]->print(stream);
-  stream.println();
+  n += mComponents[i]->print(stream);
+  n += stream.println();
+  return n;
 }
