@@ -2,11 +2,11 @@
 
 #include <gtest/gtest.h>
 
+#include "Types.h"
 #include "Unit.h"
 #include "mocks/Arduino.h"
 #include "mocks/BufferSerial.h"
 
-using ::testing::ElementsAre;
 using ::testing::Return;
 
 class SensorPrint_test : public ::testing::Test {
@@ -157,106 +157,146 @@ TEST_F(SensorInt32BatteryCm_test, getUnitName_cm) {
   EXPECT_STREQ(sc.getUnitName(), "cm");
 }
 
-TEST_F(SensorInt8_test, getDiscoveryMsg) {
-  uint8_t buf[5] = {};
-  EXPECT_EQ(sc.getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(108, static_cast<uint8_t>(BaseComponent::Type::sensor),
-                       static_cast<uint8_t>(SensorDeviceClass::none),
-                       static_cast<uint8_t>(Unit::Type::none),
-                       (sizeof(int8_t) << 4) | 0));
+TEST_F(SensorInt8_test, getDiscoveryEntityItem) {
+  DiscoveryEntityItemT item;
+
+  sc.getDiscoveryEntityItem(&item);
+
+  EXPECT_EQ(item.entityId, 108);
+  EXPECT_EQ(item.componentType,
+            static_cast<uint8_t>(BaseComponent::Type::sensor));
+  EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::none));
+  EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
+  EXPECT_EQ(item.size, sizeof(int8_t));
+  EXPECT_EQ(item.precision, 0);
 }
 
-TEST_F(SensorInt16_test, getDiscoveryMsg) {
-  uint8_t buf[5] = {};
-  EXPECT_EQ(sc.getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(116, static_cast<uint8_t>(BaseComponent::Type::sensor),
-                       static_cast<uint8_t>(SensorDeviceClass::none),
-                       static_cast<uint8_t>(Unit::Type::none),
-                       (sizeof(int16_t) << 4) | 0));
+TEST_F(SensorInt16_test, getDiscoveryEntityItem) {
+  DiscoveryEntityItemT item;
+
+  sc.getDiscoveryEntityItem(&item);
+
+  EXPECT_EQ(item.entityId, 116);
+  EXPECT_EQ(item.componentType,
+            static_cast<uint8_t>(BaseComponent::Type::sensor));
+  EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::none));
+  EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
+  EXPECT_EQ(item.size, sizeof(int16_t));
+  EXPECT_EQ(item.precision, 0);
 }
 
-TEST_F(SensorInt32_test, getDiscoveryMsg) {
-  uint8_t buf[5] = {};
-  EXPECT_EQ(sc.getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(132, static_cast<uint8_t>(BaseComponent::Type::sensor),
-                       static_cast<uint8_t>(SensorDeviceClass::none),
-                       static_cast<uint8_t>(Unit::Type::none),
-                       (sizeof(int32_t) << 4) | 0));
+TEST_F(SensorInt32_test, getDiscoveryEntityItem) {
+  DiscoveryEntityItemT item;
+
+  sc.getDiscoveryEntityItem(&item);
+
+  EXPECT_EQ(item.entityId, 132);
+  EXPECT_EQ(item.componentType,
+            static_cast<uint8_t>(BaseComponent::Type::sensor));
+  EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::none));
+  EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
+  EXPECT_EQ(item.size, sizeof(int32_t));
+  EXPECT_EQ(item.precision, 0);
 }
 
-TEST_F(SensorInt32_test, getDiscoveryMsg_precision0) {
+TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision0) {
   Sensor<int32_t> sc2 = Sensor<int32_t>(
       132, "Sensor32", SensorDeviceClass::battery, Unit::Type::none, 0);
-  uint8_t buf[5] = {};
-  EXPECT_EQ(sc2.getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(132, static_cast<uint8_t>(BaseComponent::Type::sensor),
-                       static_cast<uint8_t>(SensorDeviceClass::battery),
-                       static_cast<uint8_t>(Unit::Type::none),
-                       (sizeof(int32_t) << 4) | 0));
+  DiscoveryEntityItemT item;
+
+  sc2.getDiscoveryEntityItem(&item);
+
+  EXPECT_EQ(item.entityId, 132);
+  EXPECT_EQ(item.componentType,
+            static_cast<uint8_t>(BaseComponent::Type::sensor));
+  EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::battery));
+  EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
+  EXPECT_EQ(item.size, sizeof(int32_t));
+  EXPECT_EQ(item.precision, 0);
 }
 
-TEST_F(SensorInt32_test, getDiscoveryMsg_precision1) {
+TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision1) {
   Sensor<int32_t> sc2 = Sensor<int32_t>(
       132, "Sensor32", SensorDeviceClass::battery, Unit::Type::none, 1);
-  uint8_t buf[5] = {};
-  EXPECT_EQ(sc2.getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(132, static_cast<uint8_t>(BaseComponent::Type::sensor),
-                       static_cast<uint8_t>(SensorDeviceClass::battery),
-                       static_cast<uint8_t>(Unit::Type::none),
-                       (sizeof(int32_t) << 4) | 1));
+  DiscoveryEntityItemT item;
+
+  sc2.getDiscoveryEntityItem(&item);
+
+  EXPECT_EQ(item.entityId, 132);
+  EXPECT_EQ(item.componentType,
+            static_cast<uint8_t>(BaseComponent::Type::sensor));
+  EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::battery));
+  EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
+  EXPECT_EQ(item.size, sizeof(int32_t));
+  EXPECT_EQ(item.precision, 1);
 }
 
-TEST_F(SensorInt32_test, getDiscoveryMsg_precision2) {
+TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision2) {
   Sensor<int32_t> sc2 = Sensor<int32_t>(
       132, "Sensor32", SensorDeviceClass::battery, Unit::Type::none, 2);
-  uint8_t buf[5] = {};
-  EXPECT_EQ(sc2.getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(132, static_cast<uint8_t>(BaseComponent::Type::sensor),
-                       static_cast<uint8_t>(SensorDeviceClass::battery),
-                       static_cast<uint8_t>(Unit::Type::none),
-                       (sizeof(int32_t) << 4) | 2));
+  DiscoveryEntityItemT item;
+
+  sc2.getDiscoveryEntityItem(&item);
+
+  EXPECT_EQ(item.entityId, 132);
+  EXPECT_EQ(item.componentType,
+            static_cast<uint8_t>(BaseComponent::Type::sensor));
+  EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::battery));
+  EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
+  EXPECT_EQ(item.size, sizeof(int32_t));
+  EXPECT_EQ(item.precision, 2);
 }
 
-TEST_F(SensorInt32_test, getDiscoveryMsg_precision3) {
+TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision3) {
   Sensor<int32_t> sc2 = Sensor<int32_t>(
       132, "Sensor32", SensorDeviceClass::battery, Unit::Type::none, 3);
-  uint8_t buf[5] = {};
-  EXPECT_EQ(sc2.getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(132, static_cast<uint8_t>(BaseComponent::Type::sensor),
-                       static_cast<uint8_t>(SensorDeviceClass::battery),
-                       static_cast<uint8_t>(Unit::Type::none),
-                       (sizeof(int32_t) << 4) | 3));
+  DiscoveryEntityItemT item;
+
+  sc2.getDiscoveryEntityItem(&item);
+
+  EXPECT_EQ(item.entityId, 132);
+  EXPECT_EQ(item.componentType,
+            static_cast<uint8_t>(BaseComponent::Type::sensor));
+  EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::battery));
+  EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
+  EXPECT_EQ(item.size, sizeof(int32_t));
+  EXPECT_EQ(item.precision, 3);
 }
 
-TEST_F(SensorInt8_test, getValueMsg) {
-  uint8_t buf[2] = {};
-  EXPECT_EQ(sc.getValueMsg(buf), 2);
-  EXPECT_THAT(buf, ElementsAre(108, 0));
+TEST_F(SensorInt8_test, getValueItem) {
+  ValueItemT item;
+
+  sc.getValueItem(&item);
+
+  EXPECT_EQ(item.entityId, 108);
+  EXPECT_EQ(item.value, 0);
+
   sc.setValue(-15);
-  EXPECT_EQ(sc.getValueMsg(buf), 2);
-  EXPECT_THAT(buf, ElementsAre(108, -15));
+
+  sc.getValueItem(&item);
+
+  EXPECT_EQ(item.entityId, 108);
+  EXPECT_EQ(item.value, uint32_t(-15));
 }
 
-TEST_F(SensorInt16_test, getValueMsg) {
-  uint8_t buf[3] = {};
+TEST_F(SensorInt16_test, getValueItem) {
   sc.setValue(-1555);
-  EXPECT_EQ(sc.getValueMsg(buf), 3);
-  EXPECT_THAT(buf, ElementsAre(116, 0xF9, 0xED));  // -1555=0xF9ED
+  ValueItemT item;
+
+  sc.getValueItem(&item);
+
+  EXPECT_EQ(item.entityId, 116);
+  EXPECT_EQ(item.value, uint32_t(-1555));
 }
 
-TEST_F(SensorInt32_test, getValueMsg) {
-  uint8_t buf[5] = {};
+TEST_F(SensorInt32_test, getValueItem) {
   sc.setValue(-150000000l);
-  EXPECT_EQ(sc.getValueMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(132, 0xF7, 0x0F, 0x2E, 0x80));  // -150000000=0xF70F2E80
+  ValueItemT item;
+
+  sc.getValueItem(&item);
+
+  EXPECT_EQ(item.entityId, 132);
+  EXPECT_EQ(item.value, uint32_t(-150000000l));
 }
 
 TEST_F(SensorInt8_test, setReported) {

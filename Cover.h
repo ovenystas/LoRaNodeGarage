@@ -3,6 +3,7 @@
 #include <Stream.h>
 
 #include "BaseComponent.h"
+#include "Types.h"
 #include "Util.h"
 
 // From https://www.home-assistant.io/integrations/cover/ at 2021-03-21
@@ -39,7 +40,7 @@ class Cover {
 
   CoverDeviceClass getDeviceClass() const { return mDeviceClass; }
 
-  uint8_t getDiscoveryMsg(uint8_t* buffer);
+  void getDiscoveryEntityItem(DiscoveryEntityItemT* item) const;
 
   uint8_t getEntityId() const { return mBaseComponent.getEntityId(); }
 
@@ -51,15 +52,15 @@ class Cover {
 
   const char* getStateName(CoverState state) const;
 
-  uint8_t getValueMsg(uint8_t* buffer);
+  void getValueItem(ValueItemT* item) const;
 
   bool isDiffLastReportedState() const { return mState != mLastReportedState; }
 
-  size_t print(Stream& stream);
+  size_t print(Stream& stream) const;
 
-  size_t print(Stream& stream, uint8_t service);
+  size_t print(Stream& stream, uint8_t service) const;
 
-  CoverService serviceDecode(uint8_t service);
+  CoverService serviceDecode(uint8_t service) const;
 
   void setReported() {
     mBaseComponent.setReported();

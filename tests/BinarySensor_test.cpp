@@ -2,12 +2,12 @@
 
 #include <gtest/gtest.h>
 
+#include "Types.h"
 #include "Unit.h"
 #include "mocks/Arduino.h"
 #include "mocks/BufferSerial.h"
 
 using ::testing::_;
-using ::testing::ElementsAre;
 using ::testing::Return;
 
 class BinarySensor_test : public ::testing::Test {
@@ -237,14 +237,19 @@ TEST_F(BinarySensor_test, getDeviceClass) {
   EXPECT_EQ(pBS->getDeviceClass(), BinarySensorDeviceClass::none);
 }
 
-TEST_F(BinarySensor_test, getDiscoveryMsg) {
-  uint8_t buf[5] = {};
-  EXPECT_EQ(pBS->getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf,
-      ElementsAre(34, static_cast<uint8_t>(BaseComponent::Type::binarySensor),
-                  static_cast<uint8_t>(BinarySensorDeviceClass::none),
-                  static_cast<uint8_t>(Unit::Type::none), (1 << 4) | 0));
+TEST_F(BinarySensor_test, getDiscoveryEntityItem) {
+  DiscoveryEntityItemT item;
+
+  pBS->getDiscoveryEntityItem(&item);
+
+  EXPECT_EQ(item.entityId, 34);
+  EXPECT_EQ(item.componentType,
+            static_cast<uint8_t>(BaseComponent::Type::binarySensor));
+  EXPECT_EQ(item.deviceClass,
+            static_cast<uint8_t>(BinarySensorDeviceClass::none));
+  EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
+  EXPECT_EQ(item.size, 1);
+  EXPECT_EQ(item.precision, 0);
 }
 
 TEST_F(BinarySensor_test, getEntityId) { EXPECT_EQ(pBS->getEntityId(), 34); }
@@ -257,15 +262,21 @@ TEST_F(BinarySensor_test, getState) {
   EXPECT_EQ(pBS->getState(), true);
 }
 
-TEST_F(BinarySensor_test, getValueMsg) {
+TEST_F(BinarySensor_test, getValueItem) {
+  ValueItemT item;
   pBS->setState(false);
-  uint8_t buf[2] = {};
-  EXPECT_EQ(pBS->getValueMsg(buf), 2);
-  EXPECT_THAT(buf, ElementsAre(34, false));
+
+  pBS->getValueItem(&item);
+
+  EXPECT_EQ(item.entityId, 34);
+  EXPECT_EQ(item.value, 0);
 
   pBS->setState(true);
-  EXPECT_EQ(pBS->getValueMsg(buf), 2);
-  EXPECT_THAT(buf, ElementsAre(34, true));
+
+  pBS->getValueItem(&item);
+
+  EXPECT_EQ(item.entityId, 34);
+  EXPECT_EQ(item.value, 1);
 }
 
 TEST_F(BinarySensor_test, print_deviceclass_none_state_false) {

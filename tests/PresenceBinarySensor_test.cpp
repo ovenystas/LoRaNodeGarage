@@ -6,7 +6,6 @@
 #include "Unit.h"
 #include "mocks/BufferSerial.h"
 
-using ::testing::ElementsAre;
 using ::testing::Return;
 
 using HeightT = int16_t;  // cm
@@ -60,51 +59,73 @@ TEST_F(PresenceBinarySensor_test, callService_shall_do_nothing) {
   pPbs->callService(0);
 }
 
-TEST_F(PresenceBinarySensor_test, getConfigItemValuesMsg) {
-  uint8_t buf[14] = {};
-  EXPECT_EQ(pPbs->getConfigItemValuesMsg(buf), 14);
-  // clang-format off
-  EXPECT_THAT(
-    buf,
-    ElementsAre(
-        89, 4,
-        0, highByte(180), lowByte(180),
-        1, highByte(200), lowByte(200),
-        2, highByte(10000), lowByte(10000),
-        3, highByte(60), lowByte(60)
-  ));
-  // clang-format on
+TEST_F(PresenceBinarySensor_test, getConfigItemValues) {
+  ConfigItemValueT items[4];
+
+  EXPECT_EQ(pPbs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
+            4);
+
+  EXPECT_EQ(items[0].configId, 0);
+  EXPECT_EQ(items[0].value, 180);
+
+  EXPECT_EQ(items[1].configId, 1);
+  EXPECT_EQ(items[1].value, 200);
+
+  EXPECT_EQ(items[2].configId, 2);
+  EXPECT_EQ(items[2].value, 10000);
+
+  EXPECT_EQ(items[3].configId, 3);
+  EXPECT_EQ(items[3].value, 60);
 }
 
-TEST_F(PresenceBinarySensor_test, getDiscoveryMsg) {
-  uint8_t buf[18] = {};
-  EXPECT_EQ(pPbs->getDiscoveryMsg(buf), 18);
-  // clang-format off
-  EXPECT_THAT(
-      buf,
-      ElementsAre(
-          89,
-          static_cast<uint8_t>(BaseComponent::Type::binarySensor),
-          static_cast<uint8_t>(BinarySensorDeviceClass::presence),
-          static_cast<uint8_t>(Unit::Type::none),
-          (1 << 4) | 0,
-          4,
-          0, static_cast<uint8_t>(Unit::Type::cm), (sizeof(HeightT) << 4) | 0,
-          1, static_cast<uint8_t>(Unit::Type::cm), (sizeof(HeightT) << 4) | 0,
-          2, static_cast<uint8_t>(Unit::Type::ms), (sizeof(uint16_t) << 4) | 0,
-          3, static_cast<uint8_t>(Unit::Type::s), (sizeof(uint16_t) << 4) | 0
-  ));
-  // clang-format on
+TEST_F(PresenceBinarySensor_test, getDiscoveryItem) {
+  DiscoveryItemT item;
+
+  pPbs->getDiscoveryItem(&item);
+
+  EXPECT_EQ(item.entity.entityId, 89);
+  EXPECT_EQ(item.entity.componentType,
+            static_cast<uint8_t>(BaseComponent::Type::binarySensor));
+  EXPECT_EQ(item.entity.deviceClass,
+            static_cast<uint8_t>(BinarySensorDeviceClass::presence));
+  EXPECT_EQ(item.entity.unit, static_cast<uint8_t>(Unit::Type::none));
+  EXPECT_EQ(item.entity.size, 1);
+  EXPECT_EQ(item.entity.precision, 0);
+
+  EXPECT_EQ(item.numberOfConfigItems, 4);
+
+  EXPECT_EQ(item.configItems[0].configId, 0);
+  EXPECT_EQ(item.configItems[0].unit, static_cast<uint8_t>(Unit::Type::cm));
+  EXPECT_EQ(item.configItems[0].size, sizeof(HeightT));
+  EXPECT_EQ(item.configItems[0].precision, 0);
+
+  EXPECT_EQ(item.configItems[1].configId, 1);
+  EXPECT_EQ(item.configItems[1].unit, static_cast<uint8_t>(Unit::Type::cm));
+  EXPECT_EQ(item.configItems[1].size, sizeof(HeightT));
+  EXPECT_EQ(item.configItems[1].precision, 0);
+
+  EXPECT_EQ(item.configItems[2].configId, 2);
+  EXPECT_EQ(item.configItems[2].unit, static_cast<uint8_t>(Unit::Type::ms));
+  EXPECT_EQ(item.configItems[2].size, sizeof(uint16_t));
+  EXPECT_EQ(item.configItems[2].precision, 0);
+
+  EXPECT_EQ(item.configItems[3].configId, 3);
+  EXPECT_EQ(item.configItems[3].unit, static_cast<uint8_t>(Unit::Type::s));
+  EXPECT_EQ(item.configItems[3].size, sizeof(uint16_t));
+  EXPECT_EQ(item.configItems[3].precision, 0);
 }
 
 TEST_F(PresenceBinarySensor_test, getEntityId) {
   EXPECT_EQ(pPbs->getEntityId(), 89);
 }
 
-TEST_F(PresenceBinarySensor_test, getValueMsg) {
-  uint8_t buf[2];
-  EXPECT_EQ(pPbs->getValueMsg(buf), 2);
-  EXPECT_THAT(buf, ElementsAre(89, 0));
+TEST_F(PresenceBinarySensor_test, getValueItem) {
+  ValueItemT item;
+
+  pPbs->getValueItem(&item);
+
+  EXPECT_EQ(item.entityId, 89);
+  EXPECT_EQ(item.value, 0);
 }
 
 TEST_F(PresenceBinarySensorPrint_test, print) {
@@ -129,97 +150,53 @@ TEST_F(PresenceBinarySensorPrint_test, print_service_shall_do_nothing) {
 }
 
 TEST_F(PresenceBinarySensor_test, setConfigs_all_in_order) {
-  uint8_t buf[] = {
-      // clang-format off
-      0, highByte(1000), lowByte(1000),
-      1, highByte(1001), lowByte(1001),
-      2, highByte(1002), lowByte(1002),
-      3, highByte(1003), lowByte(1003)
-      // clang-format on
-  };
-  EXPECT_TRUE(pPbs->setConfigs(4, buf));
-  uint8_t expect_buf[14] = {};
-  EXPECT_EQ(pPbs->getConfigItemValuesMsg(expect_buf), 14);
-  // clang-format off
-  EXPECT_THAT(
-    expect_buf,
-    ElementsAre(
-        89, 4,
-        0, highByte(1000), lowByte(1000),
-        1, highByte(1001), lowByte(1001),
-        2, highByte(1002), lowByte(1002),
-        3, highByte(1003), lowByte(1003)
-  ));
-  // clang-format on
+  ConfigItemValueT inItems[4] = {{0, 1000}, {1, 1001}, {2, 1002}, {3, 1003}};
+  EXPECT_TRUE(pPbs->setConfigItemValues(inItems, 4));
+
+  ConfigItemValueT items[4];
+  EXPECT_EQ(pPbs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
+            4);
+  EXPECT_EQ(items[0].value, 1000);
+  EXPECT_EQ(items[1].value, 1001);
+  EXPECT_EQ(items[2].value, 1002);
+  EXPECT_EQ(items[3].value, 1003);
 }
 
 TEST_F(PresenceBinarySensor_test, setConfigs_all_out_of_order) {
-  uint8_t buf[] = {
-      // clang-format off
-      3, highByte(2003), lowByte(2003),
-      2, highByte(2002), lowByte(2002),
-      1, highByte(2001), lowByte(2001),
-      0, highByte(2000), lowByte(2000)
-      // clang-format on
-  };
-  EXPECT_TRUE(pPbs->setConfigs(4, buf));
-  uint8_t expect_buf[14] = {};
-  EXPECT_EQ(pPbs->getConfigItemValuesMsg(expect_buf), 14);
-  // clang-format off
-  EXPECT_THAT(
-    expect_buf,
-    ElementsAre(
-      89, 4,
-      0, highByte(2000), lowByte(2000),
-      1, highByte(2001), lowByte(2001),
-      2, highByte(2002), lowByte(2002),
-      3, highByte(2003), lowByte(2003)
-  ));
-  // clang-format on
+  ConfigItemValueT inItems[4] = {{3, 2003}, {2, 2002}, {1, 2001}, {0, 2000}};
+  EXPECT_TRUE(pPbs->setConfigItemValues(inItems, 4));
+
+  ConfigItemValueT items[4];
+  EXPECT_EQ(pPbs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
+            4);
+  EXPECT_EQ(items[0].value, 2000);
+  EXPECT_EQ(items[1].value, 2001);
+  EXPECT_EQ(items[2].value, 2002);
+  EXPECT_EQ(items[3].value, 2003);
 }
 
 TEST_F(PresenceBinarySensor_test, setConfigs_one) {
-  uint8_t buf[] = {
-      // clang-format off
-      2, highByte(3002), lowByte(3002)
-      // clang-format on
-  };
-  EXPECT_TRUE(pPbs->setConfigs(1, buf));
-  uint8_t expect_buf[14] = {};
-  EXPECT_EQ(pPbs->getConfigItemValuesMsg(expect_buf), 14);
-  // clang-format off
-  EXPECT_THAT(
-    expect_buf,
-    ElementsAre(
-        89, 4,
-        0, highByte(180), lowByte(180),
-        1, highByte(200), lowByte(200),
-        2, highByte(3002), lowByte(3002),
-        3, highByte(60), lowByte(60)
-));
-  // clang-format on
+  ConfigItemValueT inItems[1] = {{2, 3002}};
+  EXPECT_TRUE(pPbs->setConfigItemValues(inItems, 1));
+
+  ConfigItemValueT items[4];
+  EXPECT_EQ(pPbs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
+            4);
+  EXPECT_EQ(items[0].value, 180);
+  EXPECT_EQ(items[1].value, 200);
+  EXPECT_EQ(items[2].value, 3002);
+  EXPECT_EQ(items[3].value, 60);
 }
 
 TEST_F(PresenceBinarySensor_test, setConfigs_too_many) {
-  uint8_t buf[] = {
-      // clang-format off
-      0, highByte(1000), lowByte(1000),
-      1, highByte(1001), lowByte(1001),
-      2, highByte(1002), lowByte(1002),
-      3, highByte(1003), lowByte(1003),
-      4, highByte(1004), lowByte(1004),
-      // clang-format on
-  };
-  EXPECT_FALSE(pPbs->setConfigs(5, buf));
+  ConfigItemValueT inItems[5] = {
+      {0, 1000}, {1, 1001}, {2, 1002}, {3, 1003}, {4, 1004}};
+  EXPECT_FALSE(pPbs->setConfigItemValues(inItems, 5));
 }
 
 TEST_F(PresenceBinarySensor_test, setConfigs_out_of_range) {
-  uint8_t buf[] = {
-      // clang-format off
-      4, highByte(3004), lowByte(3004)
-      // clang-format on
-  };
-  EXPECT_FALSE(pPbs->setConfigs(1, buf));
+  ConfigItemValueT inItems[1] = {{4, 3004}};
+  EXPECT_FALSE(pPbs->setConfigItemValues(inItems, 1));
 }
 
 TEST_F(PresenceBinarySensor_test, setReported) {
@@ -232,12 +209,8 @@ TEST_F(
     update_belowLowLimit_belowMinStableTime_aboveLastReportedTimeLimit_zeroMinReportTime_shall_return_false) {
   pHeightSensor->setValue(179);
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(9999));
-  uint8_t buf[] = {
-      // clang-format off
-      3, highByte(0), lowByte(0)
-      // clang-format on
-  };
-  pPbs->setConfigs(1, buf);
+  ConfigItemValueT inItems[1] = {{3, 0}};
+  EXPECT_TRUE(pPbs->setConfigItemValues(inItems, 1));
   EXPECT_FALSE(pPbs->update());
 }
 

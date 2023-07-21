@@ -5,7 +5,7 @@
 #include "BaseComponent.h"
 #include "Unit.h"
 
-const __FlashStringHelper* BinarySensor::getStateName() {
+const __FlashStringHelper* BinarySensor::getStateName() const {
   switch (getDeviceClass()) {
     case BinarySensorDeviceClass::battery:
       return mState ? F("low") : F("normal");
@@ -53,24 +53,21 @@ const __FlashStringHelper* BinarySensor::getStateName() {
   }
 }
 
-uint8_t BinarySensor::getDiscoveryMsg(uint8_t* buffer) {
-  buffer[0] = mBaseComponent.getEntityId();
-  buffer[1] = static_cast<uint8_t>(getComponentType());
-  buffer[2] = static_cast<uint8_t>(getDeviceClass());
-  buffer[3] = static_cast<uint8_t>(mUnit.getType());
-  buffer[4] = (1 << 4) | 0;
-  return 5;
+void BinarySensor::getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
+  item->entityId = mBaseComponent.getEntityId();
+  item->componentType = static_cast<uint8_t>(getComponentType());
+  item->deviceClass = static_cast<uint8_t>(getDeviceClass());
+  item->unit = static_cast<uint8_t>(mUnit.getType());
+  item->size = 1;
+  item->precision = 0;
 }
 
-uint8_t BinarySensor::getValueMsg(uint8_t* buffer) {
-  uint8_t* p = buffer;
-  *p++ = mBaseComponent.getEntityId();
-  *p++ = getState();
-
-  return p - buffer;
+void BinarySensor::getValueItem(ValueItemT* item) const {
+  item->entityId = mBaseComponent.getEntityId();
+  item->value = static_cast<uint32_t>(mState);
 }
 
-size_t BinarySensor::print(Stream& stream) {
+size_t BinarySensor::print(Stream& stream) const {
   size_t n = 0;
   n += stream.print(mBaseComponent.getName());
   n += stream.print(": ");

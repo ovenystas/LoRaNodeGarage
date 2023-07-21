@@ -23,28 +23,29 @@ class GarageCover : public IComponent {
 
   void callService(uint8_t service) final;
 
-  uint8_t getConfigItemValuesMsg(uint8_t* buffer) final {
-    (void)buffer;
+  uint8_t getConfigItemValues(ConfigItemValueT* items,
+                              uint8_t length) const final {
     return 0;
   }
 
-  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+  void getDiscoveryItem(DiscoveryItemT* item) const final;
 
   uint8_t getEntityId() const final { return mCover.getEntityId(); }
 
-  uint8_t getValueMsg(uint8_t* buffer) final {
-    return mCover.getValueMsg(buffer);
+  void getValueItem(ValueItemT* item) const final {
+    return mCover.getValueItem(item);
   }
 
-  size_t print(Stream& stream) final { return mCover.print(stream); };
+  size_t print(Stream& stream) const final { return mCover.print(stream); };
 
-  size_t print(Stream& stream, uint8_t service) final {
+  size_t print(Stream& stream, uint8_t service) const final {
     return mCover.print(stream, service);
   };
 
-  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final {
-    (void)numberOfConfigs;
-    (void)buffer;
+  bool setConfigItemValues(const ConfigItemValueT* items,
+                           uint8_t length) final {
+    (void)items;
+    (void)length;
     return false;
   }
 

@@ -6,6 +6,7 @@
 #include "PresenceBinarySensor.h"
 
 #include <Arduino.h>
+#include <assert.h>
 
 #include "Util.h"
 
@@ -40,52 +41,49 @@ bool PresenceBinarySensor::update() {
   return (enteredNewStableState || reportIsDue);
 }
 
-uint8_t PresenceBinarySensor::getDiscoveryMsg(uint8_t* buffer) {
-  uint8_t* p = buffer;
-  p += mBinarySensor.getDiscoveryMsg(p);
-  *p++ = mConfig.numberOfConfigItems;
+uint8_t PresenceBinarySensor::getConfigItemValues(ConfigItemValueT* items,
+                                                  uint8_t length) const {
+  assert(mConfig.numberOfConfigItems <= length);
 
-  p += mConfig.lowLimit.writeDiscoveryItem(p);
-  p += mConfig.highLimit.writeDiscoveryItem(p);
-  p += mConfig.minStableTime.writeDiscoveryItem(p);
-  p += mConfig.reportInterval.writeDiscoveryItem(p);
+  mConfig.lowLimit.getConfigItemValue(&items[0]);
+  mConfig.highLimit.getConfigItemValue(&items[1]);
+  mConfig.minStableTime.getConfigItemValue(&items[2]);
+  mConfig.reportInterval.getConfigItemValue(&items[3]);
 
-  return p - buffer;
+  return mConfig.numberOfConfigItems;
 }
 
-uint8_t PresenceBinarySensor::getConfigItemValuesMsg(uint8_t* buffer) {
-  uint8_t* p = buffer;
-  *p++ = mBinarySensor.getEntityId();
-  *p++ = mConfig.numberOfConfigItems;
+void PresenceBinarySensor::getDiscoveryItem(DiscoveryItemT* item) const {
+  assert(mConfig.numberOfConfigItems <=
+         sizeof(item->configItems) / sizeof(item->configItems[0]));
 
-  p += mConfig.lowLimit.writeConfigItemValue(p);
-  p += mConfig.highLimit.writeConfigItemValue(p);
-  p += mConfig.minStableTime.writeConfigItemValue(p);
-  p += mConfig.reportInterval.writeConfigItemValue(p);
-
-  return p - buffer;
+  mBinarySensor.getDiscoveryEntityItem(&item->entity);
+  item->numberOfConfigItems = mConfig.numberOfConfigItems;
+  mConfig.lowLimit.getDiscoveryConfigItem(&item->configItems[0]);
+  mConfig.highLimit.getDiscoveryConfigItem(&item->configItems[1]);
+  mConfig.minStableTime.getDiscoveryConfigItem(&item->configItems[2]);
+  mConfig.reportInterval.getDiscoveryConfigItem(&item->configItems[3]);
 }
 
-bool PresenceBinarySensor::setConfigs(uint8_t numberOfConfigs,
-                                      const uint8_t* buffer) {
-  if (numberOfConfigs > mConfig.numberOfConfigItems) {
+bool PresenceBinarySensor::setConfigItemValues(const ConfigItemValueT* items,
+                                               uint8_t length) {
+  if (length > mConfig.numberOfConfigItems) {
     return false;
   }
 
-  const uint8_t* p = buffer;
-  while (numberOfConfigs-- > 0) {
-    switch (*p) {
+  for (uint8_t i = 0; i < length; i++) {
+    switch (items[i].configId) {
       case 0:
-        p += mConfig.lowLimit.setConfigValue(p[0], &p[1]);
+        (void)mConfig.lowLimit.setConfigItemValue(&items[i]);
         break;
       case 1:
-        p += mConfig.highLimit.setConfigValue(p[0], &p[1]);
+        (void)mConfig.highLimit.setConfigItemValue(&items[i]);
         break;
       case 2:
-        p += mConfig.minStableTime.setConfigValue(p[0], &p[1]);
+        (void)mConfig.minStableTime.setConfigItemValue(&items[i]);
         break;
       case 3:
-        p += mConfig.reportInterval.setConfigValue(p[0], &p[1]);
+        (void)mConfig.reportInterval.setConfigItemValue(&items[i]);
         break;
       default:
         return false;

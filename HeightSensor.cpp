@@ -6,6 +6,7 @@
 #include "HeightSensor.h"
 
 #include <Arduino.h>
+#include <assert.h>
 
 #include "Sensor.h"
 #include "Util.h"
@@ -28,51 +29,49 @@ bool HeightSensor::update() {
   return (largeChange || reportIsDue);
 }
 
-uint8_t HeightSensor::getDiscoveryMsg(uint8_t* buffer) {
-  uint8_t* p = buffer;
-  p += mSensor.getDiscoveryMsg(p);
-  *p++ = mConfig.numberOfConfigItems;
+void HeightSensor::getDiscoveryItem(DiscoveryItemT* item) const {
+  assert(mConfig.numberOfConfigItems <=
+         sizeof(item->configItems) / sizeof(item->configItems[0]));
 
-  p += mConfig.reportHysteresis.writeDiscoveryItem(p);
-  p += mConfig.reportInterval.writeDiscoveryItem(p);
-  p += mConfig.stableTime.writeDiscoveryItem(p);
-  p += mConfig.zeroValue.writeDiscoveryItem(p);
-
-  return p - buffer;
+  mSensor.getDiscoveryEntityItem(&item->entity);
+  item->numberOfConfigItems = mConfig.numberOfConfigItems;
+  mConfig.reportHysteresis.getDiscoveryConfigItem(&item->configItems[0]);
+  mConfig.reportInterval.getDiscoveryConfigItem(&item->configItems[1]);
+  mConfig.stableTime.getDiscoveryConfigItem(&item->configItems[2]);
+  mConfig.zeroValue.getDiscoveryConfigItem(&item->configItems[3]);
 }
 
-uint8_t HeightSensor::getConfigItemValuesMsg(uint8_t* buffer) {
-  uint8_t* p = buffer;
-  *p++ = mSensor.getEntityId();
-  *p++ = mConfig.numberOfConfigItems;
+uint8_t HeightSensor::getConfigItemValues(ConfigItemValueT* items,
+                                          uint8_t length) const {
+  assert(mConfig.numberOfConfigItems <= length);
 
-  p += mConfig.reportHysteresis.writeConfigItemValue(p);
-  p += mConfig.reportInterval.writeConfigItemValue(p);
-  p += mConfig.stableTime.writeConfigItemValue(p);
-  p += mConfig.zeroValue.writeConfigItemValue(p);
+  mConfig.reportHysteresis.getConfigItemValue(&items[0]);
+  mConfig.reportInterval.getConfigItemValue(&items[1]);
+  mConfig.stableTime.getConfigItemValue(&items[2]);
+  mConfig.zeroValue.getConfigItemValue(&items[3]);
 
-  return p - buffer;
+  return mConfig.numberOfConfigItems;
 }
 
-bool HeightSensor::setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
-  if (numberOfConfigs > mConfig.numberOfConfigItems) {
+bool HeightSensor::setConfigItemValues(const ConfigItemValueT* items,
+                                       uint8_t length) {
+  if (length > mConfig.numberOfConfigItems) {
     return false;
   }
 
-  const uint8_t* p = buffer;
-  while (numberOfConfigs-- > 0) {
-    switch (*p) {
+  for (uint8_t i = 0; i < length; i++) {
+    switch (items[i].configId) {
       case 0:
-        p += mConfig.reportHysteresis.setConfigValue(p[0], &p[1]);
+        (void)mConfig.reportHysteresis.setConfigItemValue(&items[i]);
         break;
       case 1:
-        p += mConfig.reportInterval.setConfigValue(p[0], &p[1]);
+        (void)mConfig.reportInterval.setConfigItemValue(&items[i]);
         break;
       case 2:
-        p += mConfig.stableTime.setConfigValue(p[0], &p[1]);
+        (void)mConfig.stableTime.setConfigItemValue(&items[i]);
         break;
       case 3:
-        p += mConfig.zeroValue.setConfigValue(p[0], &p[1]);
+        (void)mConfig.zeroValue.setConfigItemValue(&items[i]);
         break;
       default:
         return false;

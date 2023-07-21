@@ -141,6 +141,11 @@ target_link_libraries(TemperatureSensor_test GTest::gtest_main
                       GTest::gmock_main)
 gtest_discover_tests(TemperatureSensor_test)
 
+add_executable(Types_test EXCLUDE_FROM_ALL Types_test.cpp ../Util.cpp
+                                           mocks/Arduino.cpp mocks/Print.cpp)
+target_link_libraries(Types_test GTest::gtest_main GTest::gmock_main)
+gtest_discover_tests(Types_test)
+
 add_executable(Unit_test EXCLUDE_FROM_ALL Unit_test.cpp)
 target_link_libraries(Unit_test GTest::gtest_main)
 gtest_discover_tests(Unit_test)
@@ -154,16 +159,19 @@ gtest_discover_tests(Util_test)
 add_custom_target(
   test_all
   COMMENT "Target to build all unit tests"
-  DEPENDS Unit_test
-          Util_test
-          ConfigItem_test
-          BaseComponent_test
+  DEPENDS BaseComponent_test
           BinarySensor_test
+          ConfigItem_test
           Cover_test
-          Sensor_test
-          GarageCover_test
           DistanceSensor_test
+          GarageCover_test
           HeightSensor_test
           HumiditySensor_test
+          LoRaHandler_test
+          Node_test
           PresenceBinarySensor_test
-          TemperatureSensor_test)
+          Sensor_test
+          TemperatureSensor_test
+          Types_test
+          Unit_test
+          Util_test)

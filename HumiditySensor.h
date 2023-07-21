@@ -23,25 +23,26 @@ class HumiditySensor : public IComponent {
 
   void callService(uint8_t service) final { (void)service; }
 
-  uint8_t getDiscoveryMsg(uint8_t* buffer) final;
+  uint8_t getConfigItemValues(ConfigItemValueT* items,
+                              uint8_t length) const final;
+
+  void getDiscoveryItem(DiscoveryItemT* item) const final;
 
   uint8_t getEntityId() const final { return mSensor.getEntityId(); }
 
-  uint8_t getConfigItemValuesMsg(uint8_t* buffer) final;
-
-  uint8_t getValueMsg(uint8_t* buffer) final {
-    return mSensor.getValueMsg(buffer);
+  void getValueItem(ValueItemT* item) const final {
+    return mSensor.getValueItem(item);
   }
 
-  size_t print(Stream& stream) final { return mSensor.print(stream); };
+  size_t print(Stream& stream) const final { return mSensor.print(stream); };
 
-  size_t print(Stream& stream, uint8_t service) final {
+  size_t print(Stream& stream, uint8_t service) const final {
     (void)stream;
     (void)service;
     return 0;
   };
 
-  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) final;
+  bool setConfigItemValues(const ConfigItemValueT* items, uint8_t length) final;
 
   void setReported() final { mSensor.setReported(); }
 

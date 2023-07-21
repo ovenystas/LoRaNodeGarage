@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 
+#include "Types.h"
 #include "Unit.h"
 #include "Util.h"
 
@@ -35,30 +36,28 @@ class ConfigItem {
 
   inline uint8_t getConfigId() const { return mConfigId; }
 
-  uint8_t writeDiscoveryItem(uint8_t* buffer) {
-    buffer[0] = mConfigId;
-    buffer[1] = static_cast<uint8_t>(mUnit.getType());
-    buffer[2] = (sizeof(T) << 4) | mPrecision;
-    return 3;
+  void getDiscoveryConfigItem(DiscoveryConfigItemT* item) const {
+    item->configId = mConfigId;
+    item->unit = static_cast<uint8_t>(mUnit.getType());
+    item->size = sizeof(T);
+    item->precision = mPrecision;
   }
 
-  uint8_t writeConfigItemValue(uint8_t* buffer) {
-    buffer[0] = mConfigId;
-    T* p = reinterpret_cast<T*>(&buffer[1]);
-    *p = hton(mValue);
-    return 1 + sizeof(T);
+  void getConfigItemValue(ConfigItemValueT* item) const {
+    item->configId = mConfigId;
+    item->value = static_cast<uint32_t>(mValue);
   }
 
-  uint8_t setConfigValue(uint8_t configId, const uint8_t* value) {
-    if (configId == mConfigId) {
-      mValue = ntoh(*(reinterpret_cast<const T*>(value)));
-      return 1 + static_cast<uint8_t>(sizeof(T));
+  uint8_t setConfigItemValue(const ConfigItemValueT* item) {
+    if (item->configId == mConfigId) {
+      mValue = static_cast<const T>(item->value);
+      return 1;
     }
     return 0;
   }
 
  private:
-  int16_t factors[4] = {1, 10, 100, 1000};
+  const int16_t factors[4] = {1, 10, 100, 1000};  // TODO: Move out of class
 
   const uint8_t mConfigId;
   T mValue;

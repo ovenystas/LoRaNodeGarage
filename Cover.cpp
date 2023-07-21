@@ -13,13 +13,13 @@ const char* Cover::getServiceName(CoverService service) const {
   return CoverServiceName[static_cast<uint8_t>(service)];
 }
 
-uint8_t Cover::getDiscoveryMsg(uint8_t* buffer) {
-  buffer[0] = mBaseComponent.getEntityId();
-  buffer[1] = static_cast<uint8_t>(getComponentType());
-  buffer[2] = static_cast<uint8_t>(getDeviceClass());
-  buffer[3] = static_cast<uint8_t>(Unit::Type::none);
-  buffer[4] = (1 << 4) | 0;
-  return 5;
+void Cover::getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
+  item->entityId = mBaseComponent.getEntityId();
+  item->componentType = static_cast<uint8_t>(getComponentType());
+  item->deviceClass = static_cast<uint8_t>(getDeviceClass());
+  item->unit = static_cast<uint8_t>(Unit::Type::none);
+  item->size = 1;
+  item->precision = 0;
 }
 
 const char* Cover::getStateName() const {
@@ -30,15 +30,12 @@ const char* Cover::getStateName(CoverState state) const {
   return CoverStateName[static_cast<uint8_t>(state)];
 }
 
-uint8_t Cover::getValueMsg(uint8_t* buffer) {
-  uint8_t* p = buffer;
-  *p++ = mBaseComponent.getEntityId();
-  *p++ = static_cast<uint8_t>(getState());
-
-  return p - buffer;
+void Cover::getValueItem(ValueItemT* item) const {
+  item->entityId = mBaseComponent.getEntityId();
+  item->value = static_cast<uint32_t>(mState);
 }
 
-size_t Cover::print(Stream& stream) {
+size_t Cover::print(Stream& stream) const {
   size_t n = 0;
   n += stream.print(mBaseComponent.getName());
   n += stream.print(": ");
@@ -46,7 +43,7 @@ size_t Cover::print(Stream& stream) {
   return n;
 }
 
-size_t Cover::print(Stream& stream, uint8_t service) {
+size_t Cover::print(Stream& stream, uint8_t service) const {
   size_t n = 0;
   n += stream.print(mBaseComponent.getName());
   n += stream.print(F(": Service "));
@@ -56,7 +53,7 @@ size_t Cover::print(Stream& stream, uint8_t service) {
   return n;
 }
 
-CoverService Cover::serviceDecode(uint8_t service) {
+CoverService Cover::serviceDecode(uint8_t service) const {
   switch (service) {
     case 0:
       return CoverService::open;

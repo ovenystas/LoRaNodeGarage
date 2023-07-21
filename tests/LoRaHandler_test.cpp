@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include "Types.h"
 #include "mocks/Arduino.h"
 #include "mocks/BufferSerial.h"
 #include "mocks/LoRa.h"
@@ -12,8 +13,10 @@
 
 using ::testing::_;
 using ::testing::DoAll;
+using ::testing::EndsWith;
 using ::testing::HasSubstr;
 using ::testing::Invoke;
+using ::testing::IsSupersetOf;
 using ::testing::Return;
 using ::testing::SaveArg;
 
@@ -31,11 +34,11 @@ void FakeCallbackFunc(uint8_t entityId) {
   FakeCallbackFunc_entityId = entityId;
 }
 
-LoRaConfigValuePayloadT FakeCallbackFunc_config;
+ConfigValuePayloadT FakeCallbackFunc_config;
 
-void FakeConfigCallbackFunc(const LoRaConfigValuePayloadT& payload) {
+void FakeConfigCallbackFunc(const ConfigValuePayloadT& item) {
   FakeCallbackFunc_called = true;
-  memcpy(&FakeCallbackFunc_config, &payload, sizeof(FakeCallbackFunc_config));
+  memcpy(&FakeCallbackFunc_config, &item, sizeof(FakeCallbackFunc_config));
 }
 
 LoRaServiceItemT FakeCallbackFunc_service;
@@ -87,6 +90,20 @@ class LoRaHandler_test : public ::testing::Test {
   LoRaMock* pLoRaMock;
 };
 
+TEST(LoRaHandler_LoRaServiceItemT_test, fromByteArray) {
+  const uint8_t buf[] = {1, 2};
+  LoRaServiceItemT item;
+
+  EXPECT_EQ(item.fromByteArray(buf, sizeof(buf)), 1);
+}
+
+TEST(LoRaHandler_LoRaServiceItemT_test, fromByteArray_invalid_length) {
+  const uint8_t buf[] = {1, 2};
+  LoRaServiceItemT item;
+
+  EXPECT_EQ(item.fromByteArray(buf, sizeof(buf) - 1), 0);
+}
+
 TEST_F(LoRaHandler_test, begin) {
   EXPECT_CALL(*pLoRaMock, begin(868e6)).WillOnce(Return(1));
 
@@ -94,12 +111,14 @@ TEST_F(LoRaHandler_test, begin) {
 }
 
 TEST_F(LoRaHandler_test, configsValueMsg) {
-  const LoRaConfigItemValueT<int8_t> expectedItem1 = {123, 0x01};
-  const LoRaConfigItemValueT<int32_t> expectedItem2 = {124, 0x10111213};
-  const size_t payloadSize = sizeof(LoRaConfigValuePayloadT::entityId) +
-                             sizeof(LoRaConfigValuePayloadT::numberOfConfigs) +
-                             sizeof(expectedItem1) + sizeof(expectedItem2);
+  const uint8_t entityId = 55;
+  const ConfigItemValueT items[2] = {{1, 0x11}, {2, 0x11223344}};
+  const size_t payloadSize = sizeof(ConfigValuePayloadT::entityId) +
+                             sizeof(ConfigValuePayloadT::numberOfConfigs) +
+                             sizeof(items);
   const size_t expectedMsgSize = LORA_HEADER_LENGTH + payloadSize;
+  const uint8_t expectedPayload[] = {55,   2, 1,    0x00, 0x00, 0x00,
+                                     0x11, 2, 0x11, 0x22, 0x33, 0x44};
   size_t writeSize;
   EXPECT_CALL(*pLoRaMock, beginPacket(false)).WillOnce(Return(1));
   EXPECT_CALL(*pLoRaMock, write(_, expectedMsgSize))
@@ -108,17 +127,15 @@ TEST_F(LoRaHandler_test, configsValueMsg) {
   EXPECT_CALL(*pLoRaMock, endPacket(false)).WillOnce(Return(1));
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(61500));
 
-  pLH->beginConfigsValueMsg(55);
-  pLH->addConfigItemValues(reinterpret_cast<const uint8_t*>(&expectedItem1),
-                           sizeof(expectedItem1));
-  pLH->addConfigItemValues(reinterpret_cast<const uint8_t*>(&expectedItem2),
-                           sizeof(expectedItem2));
+  pLH->beginConfigsValueMsg(entityId);
+  pLH->addConfigItemValues(items, 2);
   pLH->endMsg();
 
   bufSerReadStr();
-  EXPECT_STREQ(
-      strBuf,
-      "[61500] LoRaTx: H: 01 02 00 47 09 P: 37 02 7B 01 7C 10 11 12 13\r\n");
+  // clang-format off
+  EXPECT_STREQ(strBuf,
+    "[61500] LoRaTx: H: 01 02 00 47 0C P: 37 02 01 00 00 00 11 02 11 22 33 44\r\n");
+  // clang-format on
 
   EXPECT_EQ(writeSize, expectedMsgSize);
 
@@ -130,28 +147,15 @@ TEST_F(LoRaHandler_test, configsValueMsg) {
       FLAGS_REQ_ACK | static_cast<uint8_t>(LoRaHandler::MsgType::config_msg));
   EXPECT_EQ(loraTxMsg.header.len, payloadSize);
 
-  const LoRaConfigValuePayloadT* pCvp =
-      reinterpret_cast<LoRaConfigValuePayloadT*>(&loraTxMsg.payload);
-  EXPECT_EQ(pCvp->entityId, 55);
-  EXPECT_EQ(pCvp->numberOfConfigs, 2);
-
-  const LoRaConfigItemValueT<int8_t>* pItem1 =
-      reinterpret_cast<const LoRaConfigItemValueT<int8_t>*>(
-          &pCvp->subPayload[0]);
-  EXPECT_EQ(*pItem1, expectedItem1);
-
-  const LoRaConfigItemValueT<int32_t>* pItem2 =
-      reinterpret_cast<const LoRaConfigItemValueT<int32_t>*>(
-          &pCvp->subPayload[sizeof(expectedItem1)]);
-  EXPECT_EQ(*pItem2, expectedItem2);
+  EXPECT_THAT(loraTxMsg.payload, IsSupersetOf(expectedPayload));
 }
 
 TEST_F(LoRaHandler_test, discoveryMsg) {
-  const LoRaDiscoveryPayloadT payload = {{123, 1, 2, 3, 4, 2},
-                                         {2, {{6, 16, 4, 0}, {7, 17, 2, 1}}}};
+  const DiscoveryItemT item = {
+      {123, 1, 2, 3, 2, 4}, 2, {{6, 16, 0, 4}, {7, 17, 1, 2}}};
   const size_t payloadSize =
-      sizeof(payload.entity) + sizeof(payload.config.numberOfConfigs) +
-      payload.config.numberOfConfigs * sizeof(payload.config.configItems[0]);
+      sizeof(item.entity) + sizeof(item.numberOfConfigItems) +
+      item.numberOfConfigItems * sizeof(item.configItems[0]);
   const size_t expectedMsgSize = LORA_HEADER_LENGTH + payloadSize;
   size_t writeSize;
   EXPECT_CALL(*pLoRaMock, beginPacket(false)).WillOnce(Return(1));
@@ -159,11 +163,17 @@ TEST_F(LoRaHandler_test, discoveryMsg) {
       .WillOnce(DoAll(SaveArg<1>(&writeSize), Invoke(loraReadBuf),
                       Return(expectedMsgSize)));
   EXPECT_CALL(*pLoRaMock, endPacket(false)).WillOnce(Return(1));
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(100));
 
   pLH->beginDiscoveryMsg();
-  pLH->addDiscoveryItem(reinterpret_cast<const uint8_t*>(&payload),
-                        payloadSize);
+  pLH->addDiscoveryItem((&item));
   pLH->endMsg();
+
+  bufSerReadStr();
+  // clang-format off
+  EXPECT_STREQ(strBuf,
+    "[100] LoRaTx: H: 01 02 00 43 0C P: 7B 01 02 03 42 02 06 10 40 07 11 21\r\n");
+  // clang-format on
 
   EXPECT_EQ(writeSize, expectedMsgSize);
 
@@ -175,44 +185,12 @@ TEST_F(LoRaHandler_test, discoveryMsg) {
                 static_cast<uint8_t>(LoRaHandler::MsgType::discovery_msg));
   EXPECT_EQ(loraTxMsg.header.len, payloadSize);
 
-  const LoRaDiscoveryPayloadT* pDp =
-      reinterpret_cast<LoRaDiscoveryPayloadT*>(&loraTxMsg.payload);
-  EXPECT_EQ(*pDp, payload);
-}
-
-TEST_F(LoRaHandler_test, LoRaConfigPayloadT_equal) {
-  const LoRaConfigPayloadT expected = {1, {10, 11, 1, 2}};
-  LoRaConfigPayloadT actual;
-  memcpy(&actual, &expected, sizeof(actual));
-
-  EXPECT_EQ(actual, expected);
-}
-
-TEST_F(LoRaHandler_test, LoRaConfigPayloadT_numberOfConfigs_not_equal) {
-  const LoRaConfigPayloadT expected = {1, {10, 11, 1, 2}};
-  LoRaConfigPayloadT actual;
-  memcpy(&actual, &expected, sizeof(actual));
-  actual.numberOfConfigs++;
-
-  EXPECT_NE(actual, expected);
-}
-
-TEST_F(LoRaHandler_test, LoRaConfigPayloadT_too_many_configs) {
-  const LoRaConfigPayloadT expected = {LORA_CONFIG_ITEMS_MAX + 1,
-                                       {10, 11, 1, 2}};
-  LoRaConfigPayloadT actual;
-  memcpy(&actual, &expected, sizeof(actual));
-
-  EXPECT_NE(actual, expected);
-}
-
-TEST_F(LoRaHandler_test, LoRaConfigPayloadT_configItem_not_equal) {
-  const LoRaConfigPayloadT expected = {1, {10, 11, 1, 2}};
-  LoRaConfigPayloadT actual;
-  memcpy(&actual, &expected, sizeof(actual));
-  actual.configItems[0].configId++;
-
-  EXPECT_NE(actual, expected);
+  const DiscoveryItemT* pDi =
+      reinterpret_cast<DiscoveryItemT*>(&loraTxMsg.payload);
+  EXPECT_EQ(pDi->entity, item.entity);
+  EXPECT_EQ(pDi->numberOfConfigItems, item.numberOfConfigItems);
+  EXPECT_EQ(pDi->configItems[0], item.configItems[0]);
+  EXPECT_EQ(pDi->configItems[1], item.configItems[1]);
 }
 
 TEST_F(LoRaHandler_test, loraRx_no_packet_shall_do_nothing) {
@@ -277,9 +255,13 @@ TEST_F(LoRaHandler_test, loraRx_ping_req_no_ack_shall_send_ping_msg) {
   EXPECT_CALL(*pLoRaMock, write(_, expectedMsgSize))
       .WillOnce(DoAll(Invoke(loraReadBuf), Return(expectedMsgSize)));
   EXPECT_CALL(*pLoRaMock, endPacket(false)).WillOnce(Return(1));
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(100));
 
   // Recieve msg
   EXPECT_EQ(pLH->loraRx(), LORA_HEADER_LENGTH);
+
+  bufSerReadStr();
+  EXPECT_THAT(strBuf, EndsWith("[100] LoRaTx: H: 01 02 00 41 01 P: 91\r\n"));
 
   // Check TX header
   EXPECT_EQ(loraTxMsg.header.dst, LORA_GATEWAY);
@@ -290,7 +272,7 @@ TEST_F(LoRaHandler_test, loraRx_ping_req_no_ack_shall_send_ping_msg) {
       FLAGS_REQ_ACK | static_cast<uint8_t>(LoRaHandler::MsgType::ping_msg));
   EXPECT_EQ(loraTxMsg.header.len, expectedPayloadSize);
 
-  // Check TX payload
+  // Check TX item
   EXPECT_EQ(static_cast<int8_t>(loraTxMsg.payload[0]), rssi);
 }
 
@@ -362,10 +344,14 @@ TEST_F(
   EXPECT_CALL(*pLoRaMock, write(_, expectedMsgSize))
       .WillOnce(DoAll(Invoke(loraReadBuf), Return(expectedMsgSize)));
   EXPECT_CALL(*pLoRaMock, endPacket(false)).WillOnce(Return(1));
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(100));
 
   // Begin and recieve msg
   pLH->begin(FakeCallbackFunc, nullptr, nullptr, nullptr, nullptr);
   EXPECT_EQ(pLH->loraRx(), rxMsgSize);
+
+  bufSerReadStr();
+  EXPECT_THAT(strBuf, EndsWith("[100] LoRaTx: H: 01 02 00 82 00 P: --\r\n"));
 
   // Check TX header
   EXPECT_EQ(loraTxMsg.header.dst, LORA_GATEWAY);
@@ -415,7 +401,7 @@ TEST_F(LoRaHandler_test, loraRx_value_req_no_ack_shall_call_OnValueReqMsgFunc) {
 }
 
 TEST_F(LoRaHandler_test,
-       loraRx_value_req_no_ack_shall_call_OnConfigReqMsgFunc) {
+       loraRx_config_req_no_ack_shall_call_OnConfigReqMsgFunc) {
   const uint8_t rxMsgSize = LORA_HEADER_LENGTH + 1;
   const int8_t rssi = -111;
   const uint8_t entityId = 56;
@@ -449,8 +435,8 @@ TEST_F(LoRaHandler_test,
 }
 
 TEST_F(LoRaHandler_test,
-       loraRx_value_req_no_ack_shall_call_OnConfigSetReqMsgFunc) {
-  const LoRaConfigValuePayloadT payload = {56, 1, {2, 3, 4, 5, 6}};
+       loraRx_configSet_req_no_ack_shall_call_OnConfigSetReqMsgFunc) {
+  const ConfigValuePayloadT item = {56, 1, {{2, 0x11223344}}};
   const uint8_t rxMsgSize = LORA_HEADER_LENGTH + 7;
   const int8_t rssi = -111;
 
@@ -468,13 +454,13 @@ TEST_F(LoRaHandler_test,
           static_cast<uint8_t>(LoRaHandler::MsgType::configSet_req)))  // flags
       .WillOnce(Return(7))                                             // len
       // Payload
-      .WillOnce(Return(payload.entityId))
-      .WillOnce(Return(payload.numberOfConfigs))
-      .WillOnce(Return(payload.subPayload[0]))
-      .WillOnce(Return(payload.subPayload[1]))
-      .WillOnce(Return(payload.subPayload[2]))
-      .WillOnce(Return(payload.subPayload[3]))
-      .WillOnce(Return(payload.subPayload[4]));
+      .WillOnce(Return(item.entityId))
+      .WillOnce(Return(item.numberOfConfigs))
+      .WillOnce(Return(item.configValues[0].configId))
+      .WillOnce(Return(0x11))
+      .WillOnce(Return(0x22))
+      .WillOnce(Return(0x33))
+      .WillOnce(Return(0x44));
   EXPECT_CALL(*pLoRaMock, available())
       .WillOnce(Return(1))
       .WillOnce(Return(1))
@@ -493,19 +479,18 @@ TEST_F(LoRaHandler_test,
 
   // Check callback function
   EXPECT_TRUE(FakeCallbackFunc_called);
-  EXPECT_EQ(FakeCallbackFunc_config.entityId, payload.entityId);
-  EXPECT_EQ(FakeCallbackFunc_config.numberOfConfigs, payload.numberOfConfigs);
-  EXPECT_EQ(FakeCallbackFunc_config.subPayload[0], payload.subPayload[0]);
-  EXPECT_EQ(FakeCallbackFunc_config.subPayload[1], payload.subPayload[1]);
-  EXPECT_EQ(FakeCallbackFunc_config.subPayload[2], payload.subPayload[2]);
-  EXPECT_EQ(FakeCallbackFunc_config.subPayload[3], payload.subPayload[3]);
-  EXPECT_EQ(FakeCallbackFunc_config.subPayload[4], payload.subPayload[4]);
+  EXPECT_EQ(FakeCallbackFunc_config.entityId, item.entityId);
+  EXPECT_EQ(FakeCallbackFunc_config.numberOfConfigs, item.numberOfConfigs);
+  EXPECT_EQ(FakeCallbackFunc_config.configValues[0].configId,
+            item.configValues[0].configId);
+  EXPECT_EQ(FakeCallbackFunc_config.configValues[0].value,
+            item.configValues[0].value);
 }
 
 TEST_F(LoRaHandler_test,
-       loraRx_value_req_no_ack_shall_call_OnServiceReqMsgFunc) {
-  const LoRaServiceItemT payload = {56, 1};
-  const uint8_t rxMsgSize = LORA_HEADER_LENGTH + sizeof(payload);
+       loraRx_service_req_no_ack_shall_call_OnServiceReqMsgFunc) {
+  const LoRaServiceItemT item = {56, 1};
+  const uint8_t rxMsgSize = LORA_HEADER_LENGTH + sizeof(item);
   const int8_t rssi = -111;
 
   // Begin
@@ -520,10 +505,10 @@ TEST_F(LoRaHandler_test,
       .WillOnce(Return(0))                // id
       .WillOnce(Return(
           static_cast<uint8_t>(LoRaHandler::MsgType::service_req)))  // flags
-      .WillOnce(Return(sizeof(payload)))                             // len
+      .WillOnce(Return(sizeof(item)))                                // len
       // Payload
-      .WillOnce(Return(payload.entityId))
-      .WillOnce(Return(payload.service));
+      .WillOnce(Return(item.entityId))
+      .WillOnce(Return(item.service));
   EXPECT_CALL(*pLoRaMock, available())
       .WillOnce(Return(1))
       .WillOnce(Return(1))
@@ -537,8 +522,8 @@ TEST_F(LoRaHandler_test,
 
   // Check callback function
   EXPECT_TRUE(FakeCallbackFunc_called);
-  EXPECT_EQ(FakeCallbackFunc_service.entityId, payload.entityId);
-  EXPECT_EQ(FakeCallbackFunc_service.service, payload.service);
+  EXPECT_EQ(FakeCallbackFunc_service.entityId, item.entityId);
+  EXPECT_EQ(FakeCallbackFunc_service.service, item.service);
 }
 
 // TODO: More Examples of real packets
@@ -557,10 +542,12 @@ TEST_F(LoRaHandler_test, setDefaultHeader) {
 
 // TODO: Not according to protocol, Only one or more values in one message?
 TEST_F(LoRaHandler_test, valueMsg) {
-  const LoRaValueItemT<int8_t> expectedItem1 = {123, 0x01};
-  const LoRaValueItemT<int32_t> expectedItem2 = {124, 0x10111213};
+  const ValueItemT item1 = {123, 0x01};
+  const ValueItemT item2 = {124, 0x11223344};
   const size_t payloadSize = sizeof(LoRaValuePayloadT::numberOfEntities) +
-                             sizeof(expectedItem1) + sizeof(expectedItem2);
+                             sizeof(item1) + sizeof(item2);
+  const uint8_t expectedPayload[] = {2,   123,  0x00, 0x00, 0x00, 0x01,
+                                     124, 0x11, 0x22, 0x33, 0x44};
   const size_t expectedMsgSize = LORA_HEADER_LENGTH + payloadSize;
   size_t writeSize;
   EXPECT_CALL(*pLoRaMock, beginPacket(false)).WillOnce(Return(1));
@@ -571,16 +558,16 @@ TEST_F(LoRaHandler_test, valueMsg) {
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(61500));
 
   pLH->beginValueMsg();
-  pLH->addValueItem(reinterpret_cast<const uint8_t*>(&expectedItem1),
-                    sizeof(expectedItem1));
-  pLH->addValueItem(reinterpret_cast<const uint8_t*>(&expectedItem2),
-                    sizeof(expectedItem2));
+  pLH->addValueItem(&item1);
+  pLH->addValueItem(&item2);
   pLH->endMsg();
 
   bufSerReadStr();
+  // clang-format off
   EXPECT_STREQ(
       strBuf,
-      "[61500] LoRaTx: H: 01 02 00 45 08 P: 02 7B 01 7C 13 12 11 10\r\n");
+      "[61500] LoRaTx: H: 01 02 00 45 0B P: 02 7B 00 00 00 01 7C 11 22 33 44\r\n");
+  // clang-format off
 
   EXPECT_EQ(writeSize, expectedMsgSize);
 
@@ -592,16 +579,5 @@ TEST_F(LoRaHandler_test, valueMsg) {
       FLAGS_REQ_ACK | static_cast<uint8_t>(LoRaHandler::MsgType::value_msg));
   EXPECT_EQ(loraTxMsg.header.len, payloadSize);
 
-  const LoRaValuePayloadT* pVp =
-      reinterpret_cast<LoRaValuePayloadT*>(&loraTxMsg.payload);
-  EXPECT_EQ(pVp->numberOfEntities, 2);
-
-  const LoRaValueItemT<int8_t>* pItem1 =
-      reinterpret_cast<const LoRaValueItemT<int8_t>*>(&pVp->subPayload[0]);
-  EXPECT_EQ(*pItem1, expectedItem1);
-
-  const LoRaValueItemT<int32_t>* pItem2 =
-      reinterpret_cast<const LoRaValueItemT<int32_t>*>(
-          &pVp->subPayload[sizeof(expectedItem1)]);
-  EXPECT_EQ(*pItem2, expectedItem2);
+  EXPECT_THAT(loraTxMsg.payload, IsSupersetOf(expectedPayload));
 }

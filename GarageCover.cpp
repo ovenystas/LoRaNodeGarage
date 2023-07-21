@@ -81,12 +81,9 @@ CoverState GarageCover::determineState() {
   return mCover.getState();  // Error condition, both sensors can't be LOW.
 }
 
-uint8_t GarageCover::getDiscoveryMsg(uint8_t* buffer) {
-  uint8_t* p = buffer;
-  p += mCover.getDiscoveryMsg(p);
-  *p++ = 0;  // No config items
-
-  return p - buffer;
+void GarageCover::getDiscoveryItem(DiscoveryItemT* item) const {
+  mCover.getDiscoveryEntityItem(&item->entity);
+  item->numberOfConfigItems = 0;
 }
 
 bool GarageCover::isClosed(bool closedSensor, bool openSensor) {

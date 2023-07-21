@@ -6,7 +6,6 @@
 #include "mocks/Arduino.h"
 #include "mocks/BufferSerial.h"
 
-using ::testing::ElementsAre;
 using ::testing::Return;
 
 class GarageCoverPrint_test : public ::testing::Test {
@@ -176,29 +175,42 @@ TEST_F(GarageCover_test, callService_unknown) {
 
 // No config items
 TEST_F(GarageCover_test, getConfigItemValuesMsg) {
-  EXPECT_EQ(pGc->getConfigItemValuesMsg(nullptr), 0);
+  ConfigItemValueT items[1];
+
+  EXPECT_EQ(pGc->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
+            0);
 }
 
 TEST_F(GarageCover_test, getDeviceClass) {
   EXPECT_EQ(pGc->mCover.getDeviceClass(), CoverDeviceClass::garage);
 }
 
-TEST_F(GarageCover_test, getDiscoveryMsg) {
-  uint8_t buf[6] = {};
-  EXPECT_EQ(pGc->getDiscoveryMsg(buf), 6);
-  EXPECT_THAT(buf,
-              ElementsAre(91, static_cast<uint8_t>(BaseComponent::Type::cover),
-                          static_cast<uint8_t>(CoverDeviceClass::garage),
-                          static_cast<uint8_t>(Unit::Type::none), (1 << 4) | 0,
-                          0));  // No config items
+TEST_F(GarageCover_test, getDiscoveryItem) {
+  DiscoveryItemT item;
+
+  pGc->getDiscoveryItem(&item);
+
+  EXPECT_EQ(item.entity.entityId, 91);
+  EXPECT_EQ(item.entity.componentType,
+            static_cast<uint8_t>(BaseComponent::Type::cover));
+  EXPECT_EQ(item.entity.deviceClass,
+            static_cast<uint8_t>(CoverDeviceClass::garage));
+  EXPECT_EQ(item.entity.unit, static_cast<uint8_t>(Unit::Type::none));
+  EXPECT_EQ(item.entity.size, 1);
+  EXPECT_EQ(item.entity.precision, 0);
+
+  EXPECT_EQ(item.numberOfConfigItems, 0);
 }
 
 TEST_F(GarageCover_test, getEntityId) { EXPECT_EQ(pGc->getEntityId(), 91); }
 
-TEST_F(GarageCover_test, getValueMsg) {
-  uint8_t buf[2];
-  EXPECT_EQ(pGc->getValueMsg(buf), 2);
-  EXPECT_THAT(buf, ElementsAre(91, 0));
+TEST_F(GarageCover_test, getValueItem) {
+  ValueItemT item;
+
+  pGc->getValueItem(&item);
+
+  EXPECT_EQ(item.entityId, 91);
+  EXPECT_EQ(item.value, 0);
 }
 
 TEST_F(GarageCoverPrint_test, print) {
@@ -236,8 +248,8 @@ TEST_F(GarageCoverPrint_test, print_service_open) {
 
 // No config items
 TEST_F(GarageCover_test, setConfigs) {
-  pGc->setConfigs(0, nullptr);
-  SUCCEED();
+  const ConfigItemValueT item = {1, 0xABBACAFE};
+  EXPECT_FALSE(pGc->setConfigItemValues(&item, 1));
 }
 
 TEST_F(GarageCover_test, setReported) {

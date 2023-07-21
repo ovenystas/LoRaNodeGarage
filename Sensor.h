@@ -3,6 +3,7 @@
 #include <Stream.h>
 
 #include "BaseComponent.h"
+#include "Types.h"
 #include "Unit.h"
 #include "Util.h"
 
@@ -79,13 +80,13 @@ class Sensor {
 
   SensorDeviceClass getDeviceClass() const { return mDeviceClass; }
 
-  uint8_t getDiscoveryMsg(uint8_t* buffer) {
-    buffer[0] = mBaseComponent.getEntityId();
-    buffer[1] = static_cast<uint8_t>(getComponentType());
-    buffer[2] = static_cast<uint8_t>(getDeviceClass());
-    buffer[3] = static_cast<uint8_t>(mUnit.getType());
-    buffer[4] = (sizeof(T) << 4) | mPrecision;
-    return 5;
+  void getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
+    item->entityId = mBaseComponent.getEntityId();
+    item->componentType = static_cast<uint8_t>(getComponentType());
+    item->deviceClass = static_cast<uint8_t>(getDeviceClass());
+    item->unit = static_cast<uint8_t>(mUnit.getType());
+    item->size = sizeof(T);
+    item->precision = mPrecision;
   }
 
   uint8_t getEntityId() const { return mBaseComponent.getEntityId(); }
@@ -100,18 +101,12 @@ class Sensor {
 
   T getValue() const { return mValue; }
 
-  uint8_t getValueMsg(uint8_t* buffer) {
-    uint8_t* p = buffer;
-    *p++ = mBaseComponent.getEntityId();
-
-    T* vp = reinterpret_cast<T*>(p);
-    *vp = hton(mValue);
-    p += sizeof(T);
-
-    return p - buffer;
+  void getValueItem(ValueItemT* item) const {
+    item->entityId = mBaseComponent.getEntityId();
+    item->value = static_cast<uint32_t>(mValue);
   }
 
-  size_t print(Stream& stream) {
+  size_t print(Stream& stream) const {
     size_t n = 0;
     n += stream.print(mBaseComponent.getName());
     n += stream.print(": ");

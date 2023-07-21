@@ -87,9 +87,9 @@ HeightSensor heightSensor =
 PresenceBinarySensor carPresenceSensor =
     PresenceBinarySensor(5, "Car", heightSensor.getSensor());
 
-IComponent* const components[6] = {&garageCover,    &temperatureSensor,
-                                   &humiditySensor, &distanceSensor,
-                                   &heightSensor,   &carPresenceSensor};
+IComponent* components[6] = {&garageCover,    &temperatureSensor,
+                             &humiditySensor, &distanceSensor,
+                             &heightSensor,   &carPresenceSensor};
 
 Node node = Node(components, sizeof(components) / sizeof(components[0]));
 
@@ -156,10 +156,10 @@ void onConfigReqMsg(uint8_t entityId) {
   sendConfigValuesForEntity(entityId);
 }
 
-void onConfigSetReqMsg(const LoRaConfigValuePayloadT& payload) {
+void onConfigSetReqMsg(const ConfigValuePayloadT& payload) {
   IComponent* c = node.getComponentByEntityId(payload.entityId);
   if (c) {
-    c->setConfigs(payload.numberOfConfigs, payload.subPayload);
+    c->setConfigItemValues(payload.configValues, payload.numberOfConfigs);
   }
 }
 
@@ -187,23 +187,30 @@ static void sendSensorValue(IComponent* component) {
     return;
   }
 
-  uint8_t buffer[1 + sizeof(uint32_t)];
+  lora.beginValueMsg();
 
-  uint8_t length = component->getValueMsg(buffer);
+  ValueItemT item;
+  component->getValueItem(&item);
+  lora.addValueItem(&item);
+  component->setReported();
 
-  if (length) {
-    lora.beginValueMsg();
-    lora.addValueItem(buffer, length);
-    component->setReported();
-    lora.endMsg();
-  }
+  lora.endMsg();
 }
 
 static void sendSensorValueForAllComponents() {
+  lora.beginValueMsg();
+
   for (uint8_t i = 0; i < node.getSize(); i++) {
     IComponent* c = node.getComponent(i);
-    sendSensorValue(c);
+    if (c != nullptr) {
+      ValueItemT item;
+      c->getValueItem(&item);
+      lora.addValueItem(&item);
+      c->setReported();
+    }
   }
+
+  lora.endMsg();
 }
 
 void sendSensorValueForEntity(uint8_t entityId) {
@@ -216,15 +223,14 @@ static void sendConfigValues(IComponent* component) {
     return;
   }
 
-  uint8_t buffer[LORA_MAX_PAYLOAD_LENGTH];
+  ConfigItemValueT items[13];
+  uint8_t numberOfConfigValues = component->getConfigItemValues(items, 13);
 
-  uint8_t length = component->getConfigItemValuesMsg(buffer);
-
-  if (length) {
-    lora.beginConfigsValueMsg(component->getEntityId());
-    lora.addConfigItemValues(buffer, length);
-    lora.endMsg();
+  lora.beginConfigsValueMsg(component->getEntityId());
+  if (numberOfConfigValues > 0) {
+    lora.addConfigItemValues(items, numberOfConfigValues);
   }
+  lora.endMsg();
 }
 
 static void sendConfigValuesForAllComponents() {
@@ -244,15 +250,12 @@ static void sendDiscoveryMsg(IComponent* component) {
     return;
   }
 
-  uint8_t buffer[LORA_MAX_PAYLOAD_LENGTH];
+  DiscoveryItemT item;
+  component->getDiscoveryItem(&item);
 
-  uint8_t length = component->getDiscoveryMsg(buffer);
-
-  if (length) {
-    lora.beginDiscoveryMsg();
-    lora.addDiscoveryItem(buffer, length);
-    lora.endMsg();
-  }
+  lora.beginDiscoveryMsg();
+  lora.addDiscoveryItem(&item);
+  lora.endMsg();
 }
 
 static void sendDiscoveryMsgForAllComponents() {

@@ -3,12 +3,12 @@
 #include <gtest/gtest.h>
 #include <string.h>
 
+#include "Types.h"
 #include "Unit.h"
 #include "mocks/Arduino.h"
 #include "mocks/BufferSerial.h"
 
 using ::testing::_;
-using ::testing::ElementsAre;
 using ::testing::Invoke;
 using ::testing::Return;
 
@@ -50,13 +50,18 @@ TEST_F(Cover_test, getDeviceClass) {
   EXPECT_EQ(pC->getDeviceClass(), CoverDeviceClass::none);
 }
 
-TEST_F(Cover_test, getDiscoveryMsg) {
-  uint8_t buf[5] = {};
-  EXPECT_EQ(pC->getDiscoveryMsg(buf), 5);
-  EXPECT_THAT(
-      buf, ElementsAre(34, static_cast<uint8_t>(BaseComponent::Type::cover),
-                       static_cast<uint8_t>(CoverDeviceClass::none),
-                       static_cast<uint8_t>(Unit::Type::none), (1 << 4) | 0));
+TEST_F(Cover_test, getDiscoveryEntityItem) {
+  DiscoveryEntityItemT item;
+
+  pC->getDiscoveryEntityItem(&item);
+
+  EXPECT_EQ(item.entityId, 34);
+  EXPECT_EQ(item.componentType,
+            static_cast<uint8_t>(BaseComponent::Type::cover));
+  EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(CoverDeviceClass::none));
+  EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
+  EXPECT_EQ(item.size, 1);
+  EXPECT_EQ(item.precision, 0);
 }
 
 TEST_F(Cover_test, getEntityId) { EXPECT_EQ(pC->getEntityId(), 34); }
@@ -101,22 +106,27 @@ TEST_F(Cover_test, getStateName_of_state_as_arg) {
   EXPECT_STREQ(pC->getStateName(CoverState::closing), "closing");
 }
 
-TEST_F(Cover_test, getValueMsg) {
-  uint8_t buf[2] = {};
-  EXPECT_EQ(pC->getValueMsg(buf), 2);
-  EXPECT_THAT(buf, ElementsAre(34, static_cast<uint8_t>(CoverState::closed)));
+TEST_F(Cover_test, getValueItem) {
+  ValueItemT item;
+  pC->setState(CoverState::closed);
+  pC->getValueItem(&item);
+  EXPECT_EQ(item.entityId, 34);
+  EXPECT_EQ(item.value, static_cast<uint32_t>(CoverState::closed));
 
   pC->setState(CoverState::opening);
-  EXPECT_EQ(pC->getValueMsg(buf), 2);
-  EXPECT_THAT(buf, ElementsAre(34, static_cast<uint8_t>(CoverState::opening)));
+  pC->getValueItem(&item);
+  EXPECT_EQ(item.entityId, 34);
+  EXPECT_EQ(item.value, static_cast<uint32_t>(CoverState::opening));
 
   pC->setState(CoverState::open);
-  EXPECT_EQ(pC->getValueMsg(buf), 2);
-  EXPECT_THAT(buf, ElementsAre(34, static_cast<uint8_t>(CoverState::open)));
+  pC->getValueItem(&item);
+  EXPECT_EQ(item.entityId, 34);
+  EXPECT_EQ(item.value, static_cast<uint32_t>(CoverState::open));
 
   pC->setState(CoverState::closing);
-  EXPECT_EQ(pC->getValueMsg(buf), 2);
-  EXPECT_THAT(buf, ElementsAre(34, static_cast<uint8_t>(CoverState::closing)));
+  pC->getValueItem(&item);
+  EXPECT_EQ(item.entityId, 34);
+  EXPECT_EQ(item.value, static_cast<uint32_t>(CoverState::closing));
 }
 
 TEST_F(Cover_test, setReported_isDiffLastReportedState_timeSinceLastReport) {

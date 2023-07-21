@@ -1,20 +1,25 @@
 /*
- * LoRaHandler.h
- *
- *  Created on: 25 feb. 2021
- *      Author: oveny
- */
-
-/*
  * Header:
  *   Byte 0:  dst - Destination address
  *   Byte 1:  src - Source address
  *   Byte 2:  id  - Message sequence id
- *   Byte 3:  flags - Bit7: Acknowledge response
- *                    Bit6: Acknowledge request
- *                    Bit5: Reserved
- *                    Bit4: Reserved
- *                    Bit3-0: Message type
+ *   Byte 3:  flags
+ *     Bit7: Acknowledge response
+ *     Bit6: Acknowledge request
+ *     Bit5: Reserved
+ *     Bit4: Reserved
+ *     Bit3-0: Message type
+ *       0: ping_req
+ *       1: ping_msg
+ *       2: discovery_req
+ *       3: discovery_msg
+ *       4: value_req
+ *       5: value_msg
+ *       6: config_req
+ *       7: config_msg
+ *       8: configSet_req
+ *       9: service_req
+ *       10-15: Reserved
  *   Byte 4:  len - Length of payload in bytes
  *
  * Payloads:
@@ -33,6 +38,7 @@
  *     Byte 1:    BaseComponent Type (BaseComponent::Type)
  *     Byte 2:    Device Class (One of BinarySensor, Cover or Sensor)
  *     Byte 3:    Unit (Unit::TypeE)
+ *     // TODO: Compact Byte 4 into 4 bits.
  *     Byte 4:    High nibble: Size (1, 2 or 4 bytes)
  *                Low nibble:  Precision (Number of decimals 0-3)
  *     Byte 5:    Number of config items (0-?)
@@ -41,36 +47,42 @@
  *     // TODO: Compact Byte 8 into 4 bits.
  *     Byte 8:    High nibble: Size (1, 2 or 4 bytes)
  *                Low nibble:  Precision (Number of decimals 0-3)
- *     Byte 9-11: Repeat byte 6-8 for second config item
+ *     Byte 9-m:  Repeat byte 6-8 for more config items until payload is full
  *
  *   Value request:
- *     Byte 0:   EntityId (0-254, 255 is request values from all entities)
+ *     Byte 0:    EntityId (0-254, 255 is request values from all entities)
  *
  *   Value message:
- *     Byte 0:       Entity Id (0-254, 255 is reserved for broadcast)
- *     Byte 1-n:     Value in big endian (1, 2 or 4 bytes)
+ *     Byte 0:    Number of entities
+ *     Byte 1:    Entity Id (0-254, 255 is reserved for broadcast)
+ *     Byte 2-5:  Value in big endian (4 bytes)
+ *     Byte 6-m:  Repeat byte 1-5 for more entities until payload is full
  *
  *   Config request:
- *     Byte 0:   EntityId (0-254, 255 is request configs from all entities)
+ *     Byte 0:    EntityId (0-254, 255 is request configs from all entities)
  *
  *   Config message:
- *     Byte 0:       EntityId (0-254, 255 is reserved for broadcast)
- *     Byte 1:       Number of configs (1-?)
- *     Byte 2:       ConfigId
- *     Byte 3-n:     Value
- *     Byte (n+1)-m: Repeat Byte 3-n for second config
+ *     Byte 0:    EntityId (0-254, 255 is reserved for broadcast)
+ *     Byte 1:    Number of configs (1-?)
+ *     Byte 2:    ConfigId
+ *     Byte 3-6:  Value in big endian (4 bytes)
+ *     Byte 7-m:  Repeat Byte 2-6 for more configs until payload is full
+ *
+ *   ConfigSet request:
+ *     Same as Config message.
  *
  *   Service request
- *     Byte 0: EntityId
- *     Byte 1: Service
- *
+ *     Byte 0:    EntityId
+ *     Byte 1:    Service
  */
 #pragma once
 
 #include <Arduino.h>
 #include <LoRa.h>
 #include <Stream.h>
+#include <assert.h>
 
+#include "Types.h"
 #include "Util.h"
 
 #define DEBUG_LORA_MESSAGE
@@ -103,110 +115,25 @@ struct LoRaRxMessageT {
   uint8_t payload[LORA_MAX_PAYLOAD_LENGTH];
 } __attribute__((packed, aligned(1)));
 
-struct LoRaDiscoveryItemT {
-  uint8_t entityId;
-  uint8_t component;
-  uint8_t deviceClass;
-  uint8_t unit;
-  uint8_t size : 4;
-  uint8_t precision : 4;
-
-  bool operator==(const LoRaDiscoveryItemT& rhs) const {
-    return entityId == rhs.entityId && component == rhs.component &&
-           deviceClass == rhs.deviceClass && unit == rhs.unit &&
-           size == rhs.size && precision == rhs.precision;
-  }
-} __attribute__((packed, aligned(1)));
-
-#define LORA_DISCOVERY_ITEM_LENGTH sizeof(LoRaDiscoveryItemT)
-
-struct LoRaConfigItemT {
-  uint8_t configId;
-  uint8_t unit;
-  uint8_t size : 4;
-  uint8_t precision : 4;
-
-  bool operator==(const LoRaConfigItemT& rhs) const {
-    return configId == rhs.configId && unit == rhs.unit && size == rhs.size &&
-           precision == rhs.precision;
-  }
-
-  bool operator!=(const LoRaConfigItemT& rhs) const { return !(*this == rhs); }
-} __attribute__((packed, aligned(1)));
-
-#define LORA_CONFIG_ITEM_LENGTH sizeof(LoRaConfigItemT)
-#define LORA_CONFIG_ITEMS_MAX                                   \
-  ((LORA_MAX_PAYLOAD_LENGTH - LORA_DISCOVERY_ITEM_LENGTH - 1) / \
-   LORA_CONFIG_ITEM_LENGTH)
-
-struct LoRaConfigPayloadT {
-  uint8_t numberOfConfigs;
-  LoRaConfigItemT configItems[LORA_CONFIG_ITEMS_MAX];
-
-  bool operator==(const LoRaConfigPayloadT& rhs) const {
-    if (numberOfConfigs != rhs.numberOfConfigs) {
-      return false;
-    }
-    if (numberOfConfigs > LORA_CONFIG_ITEMS_MAX) {
-      return false;
-    }
-    for (size_t i = 0; i < numberOfConfigs; i++) {
-      if (configItems[i] != rhs.configItems[i]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  bool operator!=(const LoRaConfigPayloadT& rhs) const {
-    return !(*this == rhs);
-  }
-} __attribute__((packed, aligned(1)));
-
-struct LoRaDiscoveryPayloadT {
-  LoRaDiscoveryItemT entity;
-  LoRaConfigPayloadT config;
-
-  bool operator==(const LoRaDiscoveryPayloadT& rhs) const {
-    return entity == rhs.entity && config == rhs.config;
-  }
-} __attribute__((packed, aligned(1)));
-
-template <typename T>
-struct LoRaValueItemT {
-  uint8_t entityId;
-  T value;
-
-  bool operator==(const LoRaValueItemT& rhs) const {
-    return entityId == rhs.entityId && value == rhs.value;
-  }
-} __attribute__((packed, aligned(1)));
-
 struct LoRaValuePayloadT {
   uint8_t numberOfEntities;
-  uint8_t subPayload[LORA_MAX_PAYLOAD_LENGTH - sizeof(numberOfEntities)];
-} __attribute__((packed, aligned(1)));
-
-template <typename T>
-struct LoRaConfigItemValueT {
-  uint8_t configId;
-  T value;
-
-  bool operator==(const LoRaConfigItemValueT& rhs) const {
-    return configId == rhs.configId && value == rhs.value;
-  }
-} __attribute__((packed, aligned(1)));
-
-struct LoRaConfigValuePayloadT {
-  uint8_t entityId;
-  uint8_t numberOfConfigs;
-  uint8_t subPayload[LORA_MAX_PAYLOAD_LENGTH - sizeof(entityId) -
-                     sizeof(numberOfConfigs)];
+  ValueItemT valueItems[(LORA_MAX_PAYLOAD_LENGTH - sizeof(numberOfEntities)) /
+                        sizeof(ValueItemT)];
 } __attribute__((packed, aligned(1)));
 
 struct LoRaServiceItemT {
   uint8_t entityId;
   uint8_t service;
+
+  uint8_t fromByteArray(const uint8_t* buf, size_t length) {
+    if (length != 2) {
+      return 0;
+    }
+
+    entityId = buf[0];
+    service = buf[1];
+    return 1;
+  }
 } __attribute__((packed, aligned(1)));
 
 class LoRaHandler {
@@ -238,7 +165,7 @@ class LoRaHandler {
   using OnDiscoveryReqMsgFunc = void (*)(uint8_t);
   using OnValueReqMsgFunc = void (*)(uint8_t);
   using OnConfigReqMsgFunc = void (*)(uint8_t);
-  using OnConfigSetReqMsgFunc = void (*)(const LoRaConfigValuePayloadT&);
+  using OnConfigSetReqMsgFunc = void (*)(const ConfigValuePayloadT&);
   using OnServiceReqMsgFunc = void (*)(const LoRaServiceItemT&);
 
   int begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc = nullptr,
@@ -251,13 +178,13 @@ class LoRaHandler {
   int loraTx();  // TODO: Unused, Remove?
 
   void beginDiscoveryMsg();
-  void addDiscoveryItem(const uint8_t* buffer, uint8_t length);
+  void addDiscoveryItem(const DiscoveryItemT* item);
 
   void beginValueMsg();
-  void addValueItem(const uint8_t* buffer, uint8_t length);
+  void addValueItem(const ValueItemT* item);
 
   void beginConfigsValueMsg(uint8_t entityId);
-  void addConfigItemValues(const uint8_t* buffer, uint8_t length);
+  void addConfigItemValues(const ConfigItemValueT* items, uint8_t length);
 
   void endMsg();
 
@@ -275,6 +202,7 @@ class LoRaHandler {
   bool isAckRequested(const LoRaHeaderT* rxHeader) const {
     return (rxHeader->flags & FLAGS_REQ_ACK) != 0;
   }
+
   void sendAck(const LoRaHeaderT* rx_header);
   void sendMsg(const LoRaTxMessageT* msg);
   void sendPing(const uint8_t toAddr, int8_t rssi);

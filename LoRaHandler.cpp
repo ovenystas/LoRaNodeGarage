@@ -66,10 +66,11 @@ int LoRaHandler::loraRx() {
   }
 
   if (isAckRequested(&rxMsg.header)) {
+    mStream.println(F(", sending ACK"));
     sendAck(&rxMsg.header);
-    mStream.print(F(", ACK sent"));
+  } else {
+    mStream.println();
   }
-  mStream.println();
 
   if (parseMsg(rxMsg) == -1) {
     mStream.println(F("Error: Failed to parse msg"));
@@ -111,18 +112,18 @@ int8_t LoRaHandler::parseMsg(const LoRaRxMessageT& rxMsg) {
 
     case MsgType::configSet_req:
       if (mOnConfigSetReqMsgFunc) {
-        const LoRaConfigValuePayloadT* payload =
-            reinterpret_cast<const LoRaConfigValuePayloadT*>(rxMsg.payload);
-        mOnConfigSetReqMsgFunc(*payload);
+        ConfigValuePayloadT cfgValPayload;
+        cfgValPayload.fromByteArray(rxMsg.payload, rxMsg.header.len);
+        mOnConfigSetReqMsgFunc(cfgValPayload);
       }
       break;
 
     case MsgType::service_req:
       if (mOnServiceReqMsgFunc) {
         if (rxMsg.header.len == sizeof(LoRaServiceItemT)) {
-          const LoRaServiceItemT* item =
-              reinterpret_cast<const LoRaServiceItemT*>(rxMsg.payload);
-          mOnServiceReqMsgFunc(*item);
+          LoRaServiceItemT serviceItem;
+          serviceItem.fromByteArray(rxMsg.payload, rxMsg.header.len);
+          mOnServiceReqMsgFunc(serviceItem);
         }
       }
       break;
@@ -137,7 +138,11 @@ void LoRaHandler::printMessage(const LoRaTxMessageT* msg) {
   mStream.print(F("H: "));
   printHeader(&msg->header);
   mStream.print(F(" P: "));
-  printPayload(msg->payload, msg->header.len);
+  if (msg->header.len == 0) {
+    mStream.print("--");
+  } else {
+    printPayload(msg->payload, msg->header.len);
+  }
   mStream.println();
 }
 
@@ -212,23 +217,23 @@ void LoRaHandler::beginDiscoveryMsg() {
 
 void LoRaHandler::endMsg() { sendMsg(&mMsgTx); }
 
-void LoRaHandler::addDiscoveryItem(const uint8_t* buffer, uint8_t length) {
-  if (mMsgTx.header.len == 0) {
-    memcpy(mMsgTx.payload, buffer, length);
-    mMsgTx.header.len += length;
-  }
+void LoRaHandler::addDiscoveryItem(const DiscoveryItemT* item) {
+  size_t length = item->toByteArray(&mMsgTx.payload[mMsgTx.header.len],
+                                    sizeof(mMsgTx.payload) - mMsgTx.header.len);
+  mMsgTx.header.len += length;
 }
 
 void LoRaHandler::beginValueMsg() {
   setDefaultHeader(&mMsgTx.header);
   mMsgTx.header.flags |= MsgType::value_msg;
   reinterpret_cast<LoRaValuePayloadT*>(mMsgTx.payload)->numberOfEntities = 0;
-  mMsgTx.header.len++;
+  mMsgTx.header.len = 1;
 }
 
-void LoRaHandler::addValueItem(const uint8_t* buffer, uint8_t length) {
-  if (mMsgTx.header.len + length <= LORA_MAX_PAYLOAD_LENGTH - 1) {
-    memcpy(&mMsgTx.payload[mMsgTx.header.len], buffer, length);
+void LoRaHandler::addValueItem(const ValueItemT* item) {
+  size_t length = item->toByteArray(&mMsgTx.payload[mMsgTx.header.len],
+                                    sizeof(mMsgTx.payload) - mMsgTx.header.len);
+  if (length > 0) {
     mMsgTx.header.len += length;
 
     LoRaValuePayloadT* payload =
@@ -240,20 +245,24 @@ void LoRaHandler::addValueItem(const uint8_t* buffer, uint8_t length) {
 void LoRaHandler::beginConfigsValueMsg(uint8_t entityId) {
   setDefaultHeader(&mMsgTx.header);
   mMsgTx.header.flags |= MsgType::config_msg;
-  LoRaConfigValuePayloadT* payload =
-      reinterpret_cast<LoRaConfigValuePayloadT*>(mMsgTx.payload);
+  ConfigValuePayloadT* payload =
+      reinterpret_cast<ConfigValuePayloadT*>(mMsgTx.payload);
   payload->entityId = entityId;
   payload->numberOfConfigs = 0;
   mMsgTx.header.len += 2;
 }
 
-void LoRaHandler::addConfigItemValues(const uint8_t* buffer, uint8_t length) {
-  if (mMsgTx.header.len + length <= LORA_MAX_PAYLOAD_LENGTH - 1) {
-    memcpy(&mMsgTx.payload[mMsgTx.header.len], buffer, length);
-    mMsgTx.header.len += length;
+void LoRaHandler::addConfigItemValues(const ConfigItemValueT* items,
+                                      uint8_t length) {
+  for (uint8_t i = 0; i < length; i++) {
+    size_t n = items[i].toByteArray(&mMsgTx.payload[mMsgTx.header.len],
+                                    sizeof(mMsgTx.payload) - mMsgTx.header.len);
+    if (n > 0) {
+      mMsgTx.header.len += n;
 
-    LoRaConfigValuePayloadT* payload =
-        reinterpret_cast<LoRaConfigValuePayloadT*>(mMsgTx.payload);
-    payload->numberOfConfigs++;
+      ConfigValuePayloadT* payload =
+          reinterpret_cast<ConfigValuePayloadT*>(mMsgTx.payload);
+      payload->numberOfConfigs++;
+    }
   }
 }

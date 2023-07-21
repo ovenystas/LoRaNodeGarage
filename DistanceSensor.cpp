@@ -6,6 +6,7 @@
 #include "DistanceSensor.h"
 
 #include <Arduino.h>
+#include <assert.h>
 
 #include "Sensor.h"
 #include "Util.h"
@@ -28,51 +29,49 @@ bool DistanceSensor::update() {
   return (largeChange || reportIsDue);
 }
 
-uint8_t DistanceSensor::getDiscoveryMsg(uint8_t* buffer) {
-  uint8_t* p = buffer;
-  p += mSensor.getDiscoveryMsg(p);
+void DistanceSensor::getDiscoveryItem(DiscoveryItemT* item) const {
+  assert(mConfig.numberOfConfigItems <=
+         sizeof(item->configItems) / sizeof(item->configItems[0]));
 
-  *p++ = mConfig.numberOfConfigItems;
-
-  p += mConfig.reportHysteresis.writeDiscoveryItem(p);
-  p += mConfig.measureInterval.writeDiscoveryItem(p);
-  p += mConfig.reportInterval.writeDiscoveryItem(p);
-
-  return p - buffer;
+  mSensor.getDiscoveryEntityItem(&item->entity);
+  item->numberOfConfigItems = mConfig.numberOfConfigItems;
+  mConfig.reportHysteresis.getDiscoveryConfigItem(&item->configItems[0]);
+  mConfig.measureInterval.getDiscoveryConfigItem(&item->configItems[1]);
+  mConfig.reportInterval.getDiscoveryConfigItem(&item->configItems[2]);
 }
 
-uint8_t DistanceSensor::getConfigItemValuesMsg(uint8_t* buffer) {
-  uint8_t* p = buffer;
-  *p++ = mSensor.getEntityId();
-  *p++ = mConfig.numberOfConfigItems;
+uint8_t DistanceSensor::getConfigItemValues(ConfigItemValueT* items,
+                                            uint8_t length) const {
+  assert(mConfig.numberOfConfigItems <= length);
 
-  p += mConfig.reportHysteresis.writeConfigItemValue(p);
-  p += mConfig.measureInterval.writeConfigItemValue(p);
-  p += mConfig.reportInterval.writeConfigItemValue(p);
+  mConfig.reportHysteresis.getConfigItemValue(&items[0]);
+  mConfig.measureInterval.getConfigItemValue(&items[1]);
+  mConfig.reportInterval.getConfigItemValue(&items[2]);
 
-  return p - buffer;
+  return mConfig.numberOfConfigItems;
 }
 
-bool DistanceSensor::setConfigs(uint8_t numberOfConfigs,
-                                const uint8_t* buffer) {
-  if (numberOfConfigs > mConfig.numberOfConfigItems) {
+bool DistanceSensor::setConfigItemValues(const ConfigItemValueT* items,
+                                         uint8_t length) {
+  if (length > mConfig.numberOfConfigItems) {
     return false;
   }
-  const uint8_t* p = buffer;
-  while (numberOfConfigs-- > 0) {
-    switch (*p) {
+
+  for (uint8_t i = 0; i < length; i++) {
+    switch (items[i].configId) {
       case 0:
-        p += mConfig.reportHysteresis.setConfigValue(p[0], &p[1]);
+        (void)mConfig.reportHysteresis.setConfigItemValue(&items[i]);
         break;
       case 1:
-        p += mConfig.measureInterval.setConfigValue(p[0], &p[1]);
+        (void)mConfig.measureInterval.setConfigItemValue(&items[i]);
         break;
       case 2:
-        p += mConfig.reportInterval.setConfigValue(p[0], &p[1]);
+        (void)mConfig.reportInterval.setConfigItemValue(&items[i]);
         break;
       default:
         return false;
     }
   }
+
   return true;
 }

@@ -13,34 +13,29 @@ class ComponentChild : public IComponent {
 
   void callService(uint8_t service) { (void)service; }
 
-  uint8_t getConfigItemValuesMsg(uint8_t* buffer) {
-    (void)buffer;
+  uint8_t getConfigItemValues(ConfigItemValueT* items, uint8_t length) const {
+    (void)items;
+    (void)length;
     return 0;
   }
 
-  uint8_t getDiscoveryMsg(uint8_t* buffer) {
-    (void)buffer;
-    return 0;
-  }
+  void getDiscoveryItem(DiscoveryItemT* item) const { (void)item; }
 
   uint8_t getEntityId() const { return mEntityId; }
 
-  uint8_t getValueMsg(uint8_t* buffer) {
-    (void)buffer;
-    return 0;
-  }
+  void getValueItem(ValueItemT* item) const { (void)item; }
 
-  size_t print(Stream& stream) { return stream.print(mEntityId); }
+  size_t print(Stream& stream) const { return stream.print(mEntityId); }
 
-  size_t print(Stream& stream, uint8_t service) {
+  size_t print(Stream& stream, uint8_t service) const {
     (void)stream;
     (void)service;
     return 0;
   }
 
-  bool setConfigs(uint8_t numberOfConfigs, const uint8_t* buffer) {
-    (void)numberOfConfigs;
-    (void)buffer;
+  bool setConfigItemValues(const ConfigItemValueT* items, uint8_t length) {
+    (void)items;
+    (void)length;
     return false;
   }
 

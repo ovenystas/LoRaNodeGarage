@@ -4,6 +4,7 @@
 #include <WString.h>
 
 #include "BaseComponent.h"
+#include "Types.h"
 #include "Unit.h"
 #include "Util.h"
 
@@ -55,19 +56,19 @@ class BinarySensor {
 
   BinarySensorDeviceClass getDeviceClass() const { return mDeviceClass; }
 
-  uint8_t getDiscoveryMsg(uint8_t* buffer);
+  void getDiscoveryEntityItem(DiscoveryEntityItemT* item) const;
 
   uint8_t getEntityId() const { return mBaseComponent.getEntityId(); }
 
   bool getState() const { return mState; }
 
-  const __FlashStringHelper* getStateName();
+  const __FlashStringHelper* getStateName() const;
 
-  uint8_t getValueMsg(uint8_t* buffer);
+  void getValueItem(ValueItemT* item) const;
 
   bool isDiffLastReportedState() const { return mState != mLastReportedState; }
 
-  size_t print(Stream& stream);
+  size_t print(Stream& stream) const;
 
   void setReported() {
     mBaseComponent.setReported();
