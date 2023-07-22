@@ -38,15 +38,15 @@
  *     Byte 1:    BaseComponent Type (BaseComponent::Type)
  *     Byte 2:    Device Class (One of BinarySensor, Cover or Sensor)
  *     Byte 3:    Unit (Unit::TypeE)
- *     // TODO: Compact Byte 4 into 4 bits.
- *     Byte 4:    High nibble: Size (1, 2 or 4 bytes)
- *                Low nibble:  Precision (Number of decimals 0-3)
+ *     Byte 4:    Bit 4: 0=UnSigned, 1=Signed
+ *                Bit 3-2: Size (0=1 byte, 1=2 bytes or 2=4 bytes)
+ *                Bit 1-0:  Precision (Number of decimals 0-3)
  *     Byte 5:    Number of config items (0-?)
  *     Byte 6:    Config Id (0-254, 255 is reserved for all)
  *     Byte 7:    Unit (Unit::TypeE)
- *     // TODO: Compact Byte 8 into 4 bits.
- *     Byte 8:    High nibble: Size (1, 2 or 4 bytes)
- *                Low nibble:  Precision (Number of decimals 0-3)
+ *     Byte 8:    Bit 4: 0=UnSigned, 1=Signed
+ *                Bit 3-2: Size (0=1 byte, 1=2 bytes or 2=4 bytes)
+ *                Bit 1-0:  Precision (Number of decimals 0-3)
  *     Byte 9-m:  Repeat byte 6-8 for more config items until payload is full
  *
  *   Value request:
@@ -175,7 +175,6 @@ class LoRaHandler {
             OnServiceReqMsgFunc onServiceReqMsgFunc = nullptr);
 
   int loraRx();
-  int loraTx();  // TODO: Unused, Remove?
 
   void beginDiscoveryMsg();
   void addDiscoveryItem(const DiscoveryItemT* item);

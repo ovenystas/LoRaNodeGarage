@@ -8,7 +8,7 @@
 
 using ::testing::Return;
 
-using HumidityT = int8_t;  // cm
+using HumidityT = uint8_t;  // percent
 
 class HumiditySensorPrint_test : public ::testing::Test {
  protected:
@@ -88,7 +88,8 @@ TEST_F(HumiditySensor_test, getDiscoveryItem) {
   EXPECT_EQ(item.entity.deviceClass,
             static_cast<uint8_t>(SensorDeviceClass::humidity));
   EXPECT_EQ(item.entity.unit, static_cast<uint8_t>(Unit::Type::percent));
-  EXPECT_EQ(item.entity.size, sizeof(HumidityT));
+  EXPECT_FALSE(item.entity.isSigned);
+  EXPECT_EQ(item.entity.size, sizeof(HumidityT) / 2);
   EXPECT_EQ(item.entity.precision, 0);
 
   EXPECT_EQ(item.numberOfConfigItems, 4);
@@ -96,23 +97,27 @@ TEST_F(HumiditySensor_test, getDiscoveryItem) {
   EXPECT_EQ(item.configItems[0].configId, 0);
   EXPECT_EQ(item.configItems[0].unit,
             static_cast<uint8_t>(Unit::Type::percent));
-  EXPECT_EQ(item.configItems[0].size, sizeof(HumidityT));
+  EXPECT_FALSE(item.configItems[0].isSigned);
+  EXPECT_EQ(item.configItems[0].size, sizeof(HumidityT) / 2);
   EXPECT_EQ(item.configItems[0].precision, 0);
 
   EXPECT_EQ(item.configItems[1].configId, 1);
   EXPECT_EQ(item.configItems[1].unit, static_cast<uint8_t>(Unit::Type::s));
-  EXPECT_EQ(item.configItems[1].size, sizeof(uint16_t));
+  EXPECT_FALSE(item.configItems[1].isSigned);
+  EXPECT_EQ(item.configItems[1].size, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[1].precision, 0);
 
   EXPECT_EQ(item.configItems[2].configId, 2);
   EXPECT_EQ(item.configItems[2].unit, static_cast<uint8_t>(Unit::Type::s));
-  EXPECT_EQ(item.configItems[2].size, sizeof(uint16_t));
+  EXPECT_FALSE(item.configItems[2].isSigned);
+  EXPECT_EQ(item.configItems[2].size, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[2].precision, 0);
 
   EXPECT_EQ(item.configItems[3].configId, 3);
   EXPECT_EQ(item.configItems[3].unit,
             static_cast<uint8_t>(Unit::Type::percent));
-  EXPECT_EQ(item.configItems[3].size, sizeof(HumidityT));
+  EXPECT_FALSE(item.configItems[3].isSigned);
+  EXPECT_EQ(item.configItems[3].size, sizeof(HumidityT) / 2);
   EXPECT_EQ(item.configItems[3].precision, 0);
 }
 

@@ -248,6 +248,7 @@ TEST_F(BinarySensor_test, getDiscoveryEntityItem) {
   EXPECT_EQ(item.deviceClass,
             static_cast<uint8_t>(BinarySensorDeviceClass::none));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
+  EXPECT_FALSE(item.isSigned);
   EXPECT_EQ(item.size, 1);
   EXPECT_EQ(item.precision, 0);
 }

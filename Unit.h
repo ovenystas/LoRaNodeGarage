@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-static const char UnitName[][3] = {"",   "C",  "F",  "K",  "%", "km", "m",
+static const char UnitName[][4] = {"",   "°C", "°F", "K",  "%", "km", "m",
                                    "dm", "cm", "mm", "um", "s", "ms"};
 
 class Unit {

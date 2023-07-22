@@ -18,6 +18,7 @@ void Cover::getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
   item->componentType = static_cast<uint8_t>(getComponentType());
   item->deviceClass = static_cast<uint8_t>(getDeviceClass());
   item->unit = static_cast<uint8_t>(Unit::Type::none);
+  item->isSigned = false;
   item->size = 1;
   item->precision = 0;
 }

@@ -2,18 +2,23 @@
 
 #include "Util.h"
 
+#define IS_SIGNED_TYPE(type) (type(-1) < type(0))
+
 struct DiscoveryEntityItemT {
   uint8_t entityId;
   uint8_t componentType;
   uint8_t deviceClass;
   uint8_t unit;
-  uint8_t precision : 4;
-  uint8_t size : 4;
+  uint8_t precision : 2;
+  uint8_t size : 2;
+  uint8_t isSigned : 1;
+  uint8_t reserved : 3;
 
   bool operator==(const DiscoveryEntityItemT& rhs) const {
     return entityId == rhs.entityId && componentType == rhs.componentType &&
            deviceClass == rhs.deviceClass && unit == rhs.unit &&
-           size == rhs.size && precision == rhs.precision;
+           isSigned == rhs.isSigned && size == rhs.size &&
+           precision == rhs.precision;
   }
 
   bool operator!=(const DiscoveryEntityItemT& rhs) const {
@@ -28,7 +33,7 @@ struct DiscoveryEntityItemT {
     buf[1] = componentType;
     buf[2] = deviceClass;
     buf[3] = unit;
-    buf[4] = (size << 4) | precision;
+    buf[4] = (isSigned << 4) | (size << 2) | precision;
     return sizeof(*this);
   }
 } __attribute__((packed, aligned(1)));
@@ -36,11 +41,14 @@ struct DiscoveryEntityItemT {
 struct DiscoveryConfigItemT {
   uint8_t configId;
   uint8_t unit;
-  uint8_t precision : 4;
-  uint8_t size : 4;
+  uint8_t precision : 2;
+  uint8_t size : 2;
+  uint8_t isSigned : 1;
+  uint8_t reserved : 3;
 
   bool operator==(const DiscoveryConfigItemT& rhs) const {
-    return configId == rhs.configId && unit == rhs.unit && size == rhs.size &&
+    return configId == rhs.configId && unit == rhs.unit &&
+           isSigned == rhs.isSigned && size == rhs.size &&
            precision == rhs.precision;
   }
 
@@ -54,7 +62,7 @@ struct DiscoveryConfigItemT {
     }
     buf[0] = configId;
     buf[1] = unit;
-    buf[2] = (size << 4) | precision;
+    buf[2] = (isSigned << 4) | (size << 2) | precision;
     return sizeof(*this);
   }
 } __attribute__((packed, aligned(1)));

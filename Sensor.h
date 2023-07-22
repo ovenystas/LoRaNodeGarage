@@ -85,7 +85,8 @@ class Sensor {
     item->componentType = static_cast<uint8_t>(getComponentType());
     item->deviceClass = static_cast<uint8_t>(getDeviceClass());
     item->unit = static_cast<uint8_t>(mUnit.getType());
-    item->size = sizeof(T);
+    item->isSigned = IS_SIGNED_TYPE(T);
+    item->size = sizeof(T) / 2;
     item->precision = mPrecision;
   }
 
@@ -114,9 +115,12 @@ class Sensor {
     if (mScaleFactor == 1) {
       n += stream.print(mValue);
     } else {
-      if (mValue < 0) {
+      // cppcheck-suppress unsignedLessThanZero
+      // cppcheck-suppress unmatchedSuppression
+      if (IS_SIGNED_TYPE(T) && mValue < 0) {
         n += stream.print('-');
       }
+
       uint32_t integer = abs(mValue / mScaleFactor);
       n += stream.print(integer);
 

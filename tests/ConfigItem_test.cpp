@@ -43,20 +43,35 @@ TEST(ConfigItem_test, getDiscoveryConfigItem_default) {
 
   EXPECT_EQ(item.configId, 99);
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
-  EXPECT_EQ(item.size, sizeof(int32_t));
+  EXPECT_TRUE(item.isSigned);
+  EXPECT_EQ(item.size, sizeof(int32_t) / 2);
   EXPECT_EQ(item.precision, 0);
 }
 
 TEST(ConfigItem_test, getDiscoveryConfigItem_Type_km_precision_3) {
-  ConfigItem<int16_t> cfgItm = ConfigItem<int16_t>(78, 0, Unit::Type::km, 3);
+  ConfigItem<uint16_t> cfgItm = ConfigItem<uint16_t>(78, 0, Unit::Type::km, 3);
   DiscoveryConfigItemT item;
 
   cfgItm.getDiscoveryConfigItem(&item);
 
   EXPECT_EQ(item.configId, 78);
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::km));
-  EXPECT_EQ(item.size, sizeof(int16_t));
+  EXPECT_FALSE(item.isSigned);
+  EXPECT_EQ(item.size, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.precision, 3);
+}
+
+TEST(ConfigItem_test, getDiscoveryConfigItem_Type_C_precision_1) {
+  ConfigItem<int16_t> cfgItm = ConfigItem<int16_t>(79, 0, Unit::Type::C, 1);
+  DiscoveryConfigItemT item;
+
+  cfgItm.getDiscoveryConfigItem(&item);
+
+  EXPECT_EQ(item.configId, 79);
+  EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::C));
+  EXPECT_TRUE(item.isSigned);
+  EXPECT_EQ(item.size, sizeof(int16_t) / 2);
+  EXPECT_EQ(item.precision, 1);
 }
 
 TEST(ConfigItem_test, getConfigItemValue_default) {

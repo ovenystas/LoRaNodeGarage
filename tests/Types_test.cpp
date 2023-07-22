@@ -5,14 +5,14 @@
 using ::testing::ElementsAre;
 
 TEST(Type_test, DiscoveryEntityItemT_equal) {
-  const DiscoveryEntityItemT item1 = {1, 2, 3, 4, 5, 6};
+  const DiscoveryEntityItemT item1 = {1, 2, 3, 4, 3, 2, 1, 0};
   const DiscoveryEntityItemT item2 = item1;
 
   EXPECT_EQ(item1, item2);
 }
 
 TEST(Type_test, DiscoveryEntityItemT_not_equal) {
-  const DiscoveryEntityItemT item1 = {1, 2, 3, 4, 5, 6};
+  const DiscoveryEntityItemT item1 = {1, 2, 3, 4, 3, 2, 1, 0};
   DiscoveryEntityItemT item2 = item1;
   item2.precision++;
 
@@ -20,16 +20,16 @@ TEST(Type_test, DiscoveryEntityItemT_not_equal) {
 }
 
 TEST(Type_test, DiscoveryEntityItemT_toByteArray) {
-  const DiscoveryEntityItemT item1 = {1, 2, 3, 4, 5, 6};
+  const DiscoveryEntityItemT item1 = {1, 2, 3, 4, 3, 2, 1, 0};
   uint8_t actual[5]{};
 
   EXPECT_EQ(item1.toByteArray(actual, sizeof(actual)), 5);
 
-  EXPECT_THAT(actual, ElementsAre(1, 2, 3, 4, 0x65));
+  EXPECT_THAT(actual, ElementsAre(1, 2, 3, 4, 0x1B));
 }
 
 TEST(Type_test, DiscoveryEntityItemT_toByteArray_tooSmallBuf) {
-  const DiscoveryEntityItemT item1 = {1, 2, 3, 4, 5, 6};
+  const DiscoveryEntityItemT item1 = {1, 2, 3, 4, 3, 2, 1, 0};
   uint8_t actual[5]{};
 
   EXPECT_EQ(item1.toByteArray(actual, sizeof(actual) - 1), 0);
@@ -38,14 +38,14 @@ TEST(Type_test, DiscoveryEntityItemT_toByteArray_tooSmallBuf) {
 }
 
 TEST(Type_test, DiscoveryConfigItemT_equal) {
-  const DiscoveryConfigItemT item1 = {1, 2, 3, 4};
+  const DiscoveryConfigItemT item1 = {1, 2, 3, 2, 1, 0};
   const DiscoveryConfigItemT item2 = item1;
 
   EXPECT_EQ(item1, item2);
 }
 
 TEST(Type_test, DiscoveryConfigItemT_not_equal) {
-  const DiscoveryConfigItemT item1 = {1, 2, 3, 4};
+  const DiscoveryConfigItemT item1 = {1, 2, 3, 2, 1, 0};
   DiscoveryConfigItemT item2 = item1;
   item2.precision++;
 
@@ -53,16 +53,16 @@ TEST(Type_test, DiscoveryConfigItemT_not_equal) {
 }
 
 TEST(Type_test, DiscoveryConfigItemT_toByteArray) {
-  const DiscoveryConfigItemT item1 = {1, 2, 3, 4};
+  const DiscoveryConfigItemT item1 = {1, 2, 3, 2, 1, 0};
   uint8_t actual[3]{};
 
   EXPECT_EQ(item1.toByteArray(actual, sizeof(actual)), 3);
 
-  EXPECT_THAT(actual, ElementsAre(1, 2, 0x43));
+  EXPECT_THAT(actual, ElementsAre(1, 2, 0x1B));
 }
 
 TEST(Type_test, DiscoveryConfigItemT_toByteArray_tooSmallBuf) {
-  const DiscoveryConfigItemT item1 = {1, 2, 3, 4};
+  const DiscoveryConfigItemT item1 = {1, 2, 3, 2, 1, 0};
   uint8_t actual[3]{};
 
   EXPECT_EQ(item1.toByteArray(actual, sizeof(actual) - 1), 0);
@@ -71,16 +71,16 @@ TEST(Type_test, DiscoveryConfigItemT_toByteArray_tooSmallBuf) {
 }
 
 TEST(Type_test, DiscoveryItemT_equal) {
-  const DiscoveryItemT item1 = {1, 2, 3, 4,
-                                5, 6, 2, {{0, 1, 2, 3}, {1, 4, 5, 6}}};
+  const DiscoveryItemT item1 = {
+      1, 2, 3, 4, 3, 2, 1, 0, 2, {{0, 1, 3, 2, 1, 0}, {1, 4, 3, 2, 1, 0}}};
   const DiscoveryItemT item2 = item1;
 
   EXPECT_EQ(item1, item2);
 }
 
 TEST(Type_test, DiscoveryItemT_equal_ignore_configItems_outOfRange) {
-  const DiscoveryItemT item1 = {1, 2, 3, 4,
-                                5, 6, 1, {{0, 1, 2, 3}, {1, 4, 5, 6}}};
+  const DiscoveryItemT item1 = {
+      1, 2, 3, 4, 3, 2, 1, 0, 1, {{0, 1, 3, 2, 1, 0}, {1, 4, 3, 2, 1, 0}}};
   DiscoveryItemT item2 = item1;
   item2.configItems[1].precision++;
 
@@ -88,8 +88,8 @@ TEST(Type_test, DiscoveryItemT_equal_ignore_configItems_outOfRange) {
 }
 
 TEST(Type_test, DiscoveryItemT_entity_not_equal) {
-  const DiscoveryItemT item1 = {1, 2, 3, 4,
-                                5, 6, 1, {{0, 1, 2, 3}, {1, 4, 5, 6}}};
+  const DiscoveryItemT item1 = {
+      1, 2, 3, 4, 3, 2, 1, 0, 2, {{0, 1, 3, 2, 1, 0}, {1, 4, 3, 2, 1, 0}}};
   DiscoveryItemT item2 = item1;
   item2.entity.size++;
 
@@ -97,8 +97,8 @@ TEST(Type_test, DiscoveryItemT_entity_not_equal) {
 }
 
 TEST(Type_test, DiscoveryItemT_numberOfConfigItems_not_equal) {
-  const DiscoveryItemT item1 = {1, 2, 3, 4,
-                                5, 6, 1, {{0, 1, 2, 3}, {1, 4, 5, 6}}};
+  const DiscoveryItemT item1 = {
+      1, 2, 3, 4, 3, 2, 1, 0, 2, {{0, 1, 3, 2, 1, 0}, {1, 4, 3, 2, 1, 0}}};
   DiscoveryItemT item2 = item1;
   item2.numberOfConfigItems++;
 
@@ -106,16 +106,16 @@ TEST(Type_test, DiscoveryItemT_numberOfConfigItems_not_equal) {
 }
 
 TEST(Type_test, DiscoveryItemT_numberOfConfigItems_tooLarge) {
-  const DiscoveryItemT item1 = {1, 2, 3,  4,
-                                5, 6, 14, {{0, 1, 2, 3}, {1, 4, 5, 6}}};
+  const DiscoveryItemT item1 = {
+      1, 2, 3, 4, 3, 2, 1, 0, 14, {{0, 1, 3, 2, 1, 0}, {1, 4, 3, 2, 1, 0}}};
   DiscoveryItemT item2 = item1;
 
   EXPECT_NE(item1, item2);
 }
 
 TEST(Type_test, DiscoveryItemT_configItems_not_equal) {
-  const DiscoveryItemT item1 = {1, 2, 3,  4,
-                                5, 6, 13, {{0, 1, 2, 3}, {1, 4, 5, 6}}};
+  const DiscoveryItemT item1 = {
+      1, 2, 3, 4, 3, 2, 1, 0, 13, {{0, 1, 3, 2, 1, 0}, {1, 4, 3, 2, 1, 0}}};
   DiscoveryItemT item2 = item1;
   item2.configItems[12].size++;
 
@@ -123,18 +123,18 @@ TEST(Type_test, DiscoveryItemT_configItems_not_equal) {
 }
 
 TEST(Type_test, DiscoveryItemT_toByteArray) {
-  const DiscoveryItemT item1 = {1, 2, 3, 4,
-                                5, 6, 2, {{0, 1, 2, 3}, {1, 4, 5, 6}}};
+  const DiscoveryItemT item1 = {
+      1, 2, 3, 4, 3, 2, 1, 0, 2, {{0, 1, 3, 2, 1, 0}, {1, 4, 3, 2, 1, 0}}};
   uint8_t actual[12]{};
 
   EXPECT_EQ(item1.toByteArray(actual, sizeof(actual)), 12);
 
-  EXPECT_THAT(actual, ElementsAre(1, 2, 3, 4, 0x65, 2, 0, 1, 0x32, 1, 4, 0x65));
+  EXPECT_THAT(actual, ElementsAre(1, 2, 3, 4, 0x1B, 2, 0, 1, 0x1B, 1, 4, 0x1B));
 }
 
 TEST(Type_test, DiscoveryItemT_toByteArray_tooSmallBuf) {
-  const DiscoveryItemT item1 = {1, 2, 3, 4,
-                                5, 6, 2, {{0, 1, 2, 3}, {1, 4, 5, 6}}};
+  const DiscoveryItemT item1 = {
+      1, 2, 3, 4, 3, 2, 1, 0, 2, {{0, 1, 3, 2, 1, 0}, {1, 4, 3, 2, 1, 0}}};
   uint8_t actual[12]{};
 
   EXPECT_EQ(item1.toByteArray(actual, sizeof(actual) - 1), 0);

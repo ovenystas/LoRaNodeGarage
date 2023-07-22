@@ -39,9 +39,9 @@ class SensorInt8_test : public ::testing::Test {
   Sensor<int8_t> sc = Sensor<int8_t>(108, "Sensor8");
 };
 
-class SensorInt16_test : public ::testing::Test {
+class SensorUInt16_test : public ::testing::Test {
  protected:
-  Sensor<int16_t> sc = Sensor<int16_t>(116, "Sensor16");
+  Sensor<uint16_t> sc = Sensor<uint16_t>(116, "Sensor16");
 };
 
 class SensorInt32_test : public ::testing::Test {
@@ -49,22 +49,22 @@ class SensorInt32_test : public ::testing::Test {
   Sensor<int32_t> sc = Sensor<int32_t>(132, "Sensor32");
 };
 
-class SensorInt8BatteryCm_test : public ::testing::Test {
+class SensorInt8BatteryPercent_test : public ::testing::Test {
  protected:
   Sensor<int8_t> sc = Sensor<int8_t>(108, "Sensor8", SensorDeviceClass::battery,
-                                     Unit::Type::cm);
+                                     Unit::Type::percent);
 };
 
-class SensorInt16BatteryCm_test : public ::testing::Test {
+class SensorUInt16BatteryPercent_test : public ::testing::Test {
  protected:
-  Sensor<int16_t> sc = Sensor<int16_t>(
-      116, "Sensor16", SensorDeviceClass::battery, Unit::Type::cm);
+  Sensor<uint16_t> sc = Sensor<uint16_t>(
+      116, "Sensor16", SensorDeviceClass::battery, Unit::Type::percent);
 };
 
-class SensorInt32BatteryCm_test : public ::testing::Test {
+class SensorInt32BatteryPercent_test : public ::testing::Test {
  protected:
   Sensor<int32_t> sc = Sensor<int32_t>(
-      132, "Sensor32", SensorDeviceClass::battery, Unit::Type::cm);
+      132, "Sensor32", SensorDeviceClass::battery, Unit::Type::percent);
 };
 
 TEST_F(SensorInt8_test, getValue) {
@@ -73,10 +73,10 @@ TEST_F(SensorInt8_test, getValue) {
   EXPECT_EQ(sc.getValue(), INT8_MIN);
 }
 
-TEST_F(SensorInt16_test, getValue) {
+TEST_F(SensorUInt16_test, getValue) {
   EXPECT_EQ(sc.getValue(), 0);
-  sc.setValue(INT16_MIN);
-  EXPECT_EQ(sc.getValue(), INT16_MIN);
+  sc.setValue(1);
+  EXPECT_EQ(sc.getValue(), 1);
 }
 
 TEST_F(SensorInt32_test, getValue) {
@@ -89,7 +89,7 @@ TEST_F(SensorInt8_test, getComponentType) {
   EXPECT_EQ(sc.getComponentType(), BaseComponent::Type::sensor);
 }
 
-TEST_F(SensorInt16_test, getComponentType) {
+TEST_F(SensorUInt16_test, getComponentType) {
   EXPECT_EQ(sc.getComponentType(), BaseComponent::Type::sensor);
 }
 
@@ -101,7 +101,7 @@ TEST_F(SensorInt8_test, getDeviceClass) {
   EXPECT_EQ(sc.getDeviceClass(), SensorDeviceClass::none);
 }
 
-TEST_F(SensorInt16_test, getDeviceClass) {
+TEST_F(SensorUInt16_test, getDeviceClass) {
   EXPECT_EQ(sc.getDeviceClass(), SensorDeviceClass::none);
 }
 
@@ -113,7 +113,7 @@ TEST_F(SensorInt8_test, getUnitType_default) {
   EXPECT_EQ(sc.getUnitType(), Unit::Type::none);
 }
 
-TEST_F(SensorInt16_test, getUnitType_default) {
+TEST_F(SensorUInt16_test, getUnitType_default) {
   EXPECT_EQ(sc.getUnitType(), Unit::Type::none);
 }
 
@@ -121,23 +121,23 @@ TEST_F(SensorInt32_test, getUnitType_default) {
   EXPECT_EQ(sc.getUnitType(), Unit::Type::none);
 }
 
-TEST_F(SensorInt8BatteryCm_test, getUnitType_cm) {
-  EXPECT_EQ(sc.getUnitType(), Unit::Type::cm);
+TEST_F(SensorInt8BatteryPercent_test, getUnitType_percent) {
+  EXPECT_EQ(sc.getUnitType(), Unit::Type::percent);
 }
 
-TEST_F(SensorInt16BatteryCm_test, getUnitType_cm) {
-  EXPECT_EQ(sc.getUnitType(), Unit::Type::cm);
+TEST_F(SensorUInt16BatteryPercent_test, getUnitType_percent) {
+  EXPECT_EQ(sc.getUnitType(), Unit::Type::percent);
 }
 
-TEST_F(SensorInt32BatteryCm_test, getUnitType_cm) {
-  EXPECT_EQ(sc.getUnitType(), Unit::Type::cm);
+TEST_F(SensorInt32BatteryPercent_test, getUnitType_percent) {
+  EXPECT_EQ(sc.getUnitType(), Unit::Type::percent);
 }
 
 TEST_F(SensorInt8_test, getUnitName_default) {
   EXPECT_STREQ(sc.getUnitName(), "");
 }
 
-TEST_F(SensorInt16_test, getUnitName_default) {
+TEST_F(SensorUInt16_test, getUnitName_default) {
   EXPECT_STREQ(sc.getUnitName(), "");
 }
 
@@ -145,16 +145,16 @@ TEST_F(SensorInt32_test, getUnitName_default) {
   EXPECT_STREQ(sc.getUnitName(), "");
 }
 
-TEST_F(SensorInt8BatteryCm_test, getUnitName_cm) {
-  EXPECT_STREQ(sc.getUnitName(), "cm");
+TEST_F(SensorInt8BatteryPercent_test, getUnitName_percent) {
+  EXPECT_STREQ(sc.getUnitName(), "%");
 }
 
-TEST_F(SensorInt16BatteryCm_test, getUnitName_cm) {
-  EXPECT_STREQ(sc.getUnitName(), "cm");
+TEST_F(SensorUInt16BatteryPercent_test, getUnitName_percent) {
+  EXPECT_STREQ(sc.getUnitName(), "%");
 }
 
-TEST_F(SensorInt32BatteryCm_test, getUnitName_cm) {
-  EXPECT_STREQ(sc.getUnitName(), "cm");
+TEST_F(SensorInt32BatteryPercent_test, getUnitName_percent) {
+  EXPECT_STREQ(sc.getUnitName(), "%");
 }
 
 TEST_F(SensorInt8_test, getDiscoveryEntityItem) {
@@ -167,11 +167,12 @@ TEST_F(SensorInt8_test, getDiscoveryEntityItem) {
             static_cast<uint8_t>(BaseComponent::Type::sensor));
   EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::none));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
-  EXPECT_EQ(item.size, sizeof(int8_t));
+  EXPECT_TRUE(item.isSigned);
+  EXPECT_EQ(item.size, 0);
   EXPECT_EQ(item.precision, 0);
 }
 
-TEST_F(SensorInt16_test, getDiscoveryEntityItem) {
+TEST_F(SensorUInt16_test, getDiscoveryEntityItem) {
   DiscoveryEntityItemT item;
 
   sc.getDiscoveryEntityItem(&item);
@@ -181,7 +182,8 @@ TEST_F(SensorInt16_test, getDiscoveryEntityItem) {
             static_cast<uint8_t>(BaseComponent::Type::sensor));
   EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::none));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
-  EXPECT_EQ(item.size, sizeof(int16_t));
+  EXPECT_FALSE(item.isSigned);
+  EXPECT_EQ(item.size, 1);
   EXPECT_EQ(item.precision, 0);
 }
 
@@ -195,7 +197,8 @@ TEST_F(SensorInt32_test, getDiscoveryEntityItem) {
             static_cast<uint8_t>(BaseComponent::Type::sensor));
   EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::none));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
-  EXPECT_EQ(item.size, sizeof(int32_t));
+  EXPECT_TRUE(item.isSigned);
+  EXPECT_EQ(item.size, 2);
   EXPECT_EQ(item.precision, 0);
 }
 
@@ -211,7 +214,8 @@ TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision0) {
             static_cast<uint8_t>(BaseComponent::Type::sensor));
   EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::battery));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
-  EXPECT_EQ(item.size, sizeof(int32_t));
+  EXPECT_TRUE(item.isSigned);
+  EXPECT_EQ(item.size, 2);
   EXPECT_EQ(item.precision, 0);
 }
 
@@ -227,7 +231,8 @@ TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision1) {
             static_cast<uint8_t>(BaseComponent::Type::sensor));
   EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::battery));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
-  EXPECT_EQ(item.size, sizeof(int32_t));
+  EXPECT_TRUE(item.isSigned);
+  EXPECT_EQ(item.size, 2);
   EXPECT_EQ(item.precision, 1);
 }
 
@@ -243,7 +248,8 @@ TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision2) {
             static_cast<uint8_t>(BaseComponent::Type::sensor));
   EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::battery));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
-  EXPECT_EQ(item.size, sizeof(int32_t));
+  EXPECT_TRUE(item.isSigned);
+  EXPECT_EQ(item.size, 2);
   EXPECT_EQ(item.precision, 2);
 }
 
@@ -259,7 +265,8 @@ TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision3) {
             static_cast<uint8_t>(BaseComponent::Type::sensor));
   EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::battery));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
-  EXPECT_EQ(item.size, sizeof(int32_t));
+  EXPECT_TRUE(item.isSigned);
+  EXPECT_EQ(item.size, 2);
   EXPECT_EQ(item.precision, 3);
 }
 
@@ -279,14 +286,14 @@ TEST_F(SensorInt8_test, getValueItem) {
   EXPECT_EQ(item.value, uint32_t(-15));
 }
 
-TEST_F(SensorInt16_test, getValueItem) {
-  sc.setValue(-1555);
+TEST_F(SensorUInt16_test, getValueItem) {
+  sc.setValue(1555);
   ValueItemT item;
 
   sc.getValueItem(&item);
 
   EXPECT_EQ(item.entityId, 116);
-  EXPECT_EQ(item.value, uint32_t(-1555));
+  EXPECT_EQ(item.value, 1555);
 }
 
 TEST_F(SensorInt32_test, getValueItem) {
@@ -353,10 +360,10 @@ TEST_F(SensorPrint_test, print_positive_value_scalefactor_1000_unit_percent) {
 }
 
 TEST_F(SensorPrint_test, print_negative_value_scalefactor_10_unit_mm) {
-  const char* expectStr = "Sensor16: -1234.5 mm";
-  Sensor<int16_t> sc = Sensor<int16_t>(
+  const char* expectStr = "Sensor16: 1234.5 mm";
+  Sensor<uint16_t> sc = Sensor<uint16_t>(
       116, "Sensor16", SensorDeviceClass::distance, Unit::Type::mm, 1);
-  sc.setValue(-12345);
+  sc.setValue(12345);
 
   size_t printedChars = sc.print(*pSerial);
 

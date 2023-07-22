@@ -151,8 +151,9 @@ TEST_F(LoRaHandler_test, configsValueMsg) {
 }
 
 TEST_F(LoRaHandler_test, discoveryMsg) {
-  const DiscoveryItemT item = {
-      {123, 1, 2, 3, 2, 4}, 2, {{6, 16, 0, 4}, {7, 17, 1, 2}}};
+  const DiscoveryItemT item = {{123, 1, 2, 3, 3, 2, 1, 0},
+                               2,
+                               {{6, 16, 3, 2, 1, 0}, {7, 17, 2, 1, 0, 0}}};
   const size_t payloadSize =
       sizeof(item.entity) + sizeof(item.numberOfConfigItems) +
       item.numberOfConfigItems * sizeof(item.configItems[0]);
@@ -172,7 +173,7 @@ TEST_F(LoRaHandler_test, discoveryMsg) {
   bufSerReadStr();
   // clang-format off
   EXPECT_STREQ(strBuf,
-    "[100] LoRaTx: H: 01 02 00 43 0C P: 7B 01 02 03 42 02 06 10 40 07 11 21\r\n");
+    "[100] LoRaTx: H: 01 02 00 43 0C P: 7B 01 02 03 1B 02 06 10 1B 07 11 06\r\n");
   // clang-format on
 
   EXPECT_EQ(writeSize, expectedMsgSize);

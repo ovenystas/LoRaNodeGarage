@@ -39,7 +39,8 @@ class ConfigItem {
   void getDiscoveryConfigItem(DiscoveryConfigItemT* item) const {
     item->configId = mConfigId;
     item->unit = static_cast<uint8_t>(mUnit.getType());
-    item->size = sizeof(T);
+    item->isSigned = IS_SIGNED_TYPE(T);
+    item->size = sizeof(T) / 2;
     item->precision = mPrecision;
   }
 

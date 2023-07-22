@@ -8,7 +8,7 @@
 #include "Sensor.h"
 #include "Util.h"
 
-using HumidityT = int8_t;  // %
+using HumidityT = uint8_t;  // %
 
 class HumiditySensor : public IComponent {
  public:
