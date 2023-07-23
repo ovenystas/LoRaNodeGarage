@@ -72,6 +72,8 @@
 #define LORA_MY_ADDRESS 1
 #define LORA_GATEWAY_ADDRESS 0
 
+#define NUMBER_OF_COMPONENTS 6
+
 DHT dht(DHTPIN, DHTTYPE);
 NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 
@@ -85,11 +87,11 @@ DistanceSensor distanceSensor = DistanceSensor(3, "Distance", sonar);
 HeightSensor heightSensor =
     HeightSensor(4, "Height", distanceSensor.getSensor());
 PresenceBinarySensor carPresenceSensor =
-    PresenceBinarySensor(5, "Car", heightSensor.getSensor());
+    PresenceBinarySensor(5, "CarPresence", heightSensor.getSensor());
 
-IComponent* components[6] = {&garageCover,    &temperatureSensor,
-                             &humiditySensor, &distanceSensor,
-                             &heightSensor,   &carPresenceSensor};
+IComponent* components[NUMBER_OF_COMPONENTS] = {
+    &garageCover,    &temperatureSensor, &humiditySensor,
+    &distanceSensor, &heightSensor,      &carPresenceSensor};
 
 Node node = Node(components, sizeof(components) / sizeof(components[0]));
 
@@ -117,19 +119,20 @@ void setup() {
 }
 
 void loop() {
-  (void)lora.loraRx();
-
   auto curMillis = millis();
   if (curMillis >= nextRunTime) {
     nextRunTime += UPDATE_SENSORS_INTERVAL;
 
     updateSensors();
+    // sendSensorValueForComponentsWhereReportIsDue();
 
 #ifdef DEBUG_SENSOR_VALUES
-    printUptime(Serial);
+    printMillis(Serial);
     printAllSensors(Serial);
 #endif
   }
+
+  (void)lora.loraRx();
 }
 
 void onDiscoveryReqMsg(uint8_t entityId) {
@@ -177,7 +180,7 @@ static void updateSensors() {
 
     if (c->update()) {
       LOG_SENSOR(c);
-      sendSensorValue(c);
+      c->setReported();  // Tmp: Fake
     }
   }
 }
@@ -211,6 +214,26 @@ static void sendSensorValueForAllComponents() {
   }
 
   lora.endMsg();
+}
+
+static void sendSensorValueForComponentsWhereReportIsDue() {
+  lora.beginValueMsg();
+
+  uint8_t itemsAdded = 0;
+  for (uint8_t i = 0; i < node.getSize(); i++) {
+    IComponent* c = node.getComponent(i);
+    if (c != nullptr && c->isReportDue()) {
+      ValueItemT item;
+      c->getValueItem(&item);
+      lora.addValueItem(&item);
+      itemsAdded++;
+      c->setReported();
+    }
+  }
+
+  if (itemsAdded > 0) {
+    lora.endMsg();
+  }
 }
 
 void sendSensorValueForEntity(uint8_t entityId) {
@@ -273,9 +296,9 @@ void sendDiscoveryMsgForEntity(uint8_t entityId) {
 void printWelcomeMsg() {
   Serial.print(F("LoRa Garage Node v"));
   printVersion(Serial, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-  Serial.print(F(", address="));
+  Serial.print(F(", Address="));
   Serial.print(LORA_MY_ADDRESS);
-  Serial.print(F(", gateway="));
+  Serial.print(F(", Gateway="));
   Serial.println(LORA_GATEWAY_ADDRESS);
 }
 

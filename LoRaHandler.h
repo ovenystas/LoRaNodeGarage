@@ -1,3 +1,4 @@
+// clang-format off
 /*
  * Header:
  *   Byte 0:  dst - Destination address
@@ -35,8 +36,8 @@
  *
  *   Discovery message:
  *     Byte 0:    Entity Id (0-254, 255 is reserved for broadcast)
- *     Byte 1:    BaseComponent Type (BaseComponent::Type)
- *     Byte 2:    Device Class (One of BinarySensor, Cover or Sensor)
+ *     Byte 1:    BaseComponent Type - 0=BinarySensor, 1=Sensor, 2=Cover)
+ *     Byte 2:    Device Class - BinarySensorDeviceClass, SensorDeviceClass or CoverDeviceClass
  *     Byte 3:    Unit (Unit::TypeE)
  *     Byte 4:    Bit 4: 0=UnSigned, 1=Signed
  *                Bit 3-2: Size (0=1 byte, 1=2 bytes or 2=4 bytes)
@@ -75,6 +76,7 @@
  *     Byte 0:    EntityId
  *     Byte 1:    Service
  */
+// clang-format on
 #pragma once
 
 #include <Arduino.h>

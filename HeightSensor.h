@@ -38,6 +38,8 @@ class HeightSensor : public IComponent {
     return mSensor.getValueItem(item);
   }
 
+  bool isReportDue() const final { return mSensor.isReportDue(); }
+
   size_t print(Stream& stream) const final { return mSensor.print(stream); };
 
   size_t print(Stream& stream, uint8_t service) const final {

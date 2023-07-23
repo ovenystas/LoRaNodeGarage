@@ -56,11 +56,15 @@ class Cover {
 
   bool isDiffLastReportedState() const { return mState != mLastReportedState; }
 
+  bool isReportDue() const { return mBaseComponent.isReportDue(); }
+
   size_t print(Stream& stream) const;
 
   size_t print(Stream& stream, uint8_t service) const;
 
   CoverService serviceDecode(uint8_t service) const;
+
+  void setIsReportDue(bool isDue) { mBaseComponent.setIsReportDue(isDue); }
 
   void setReported() {
     mBaseComponent.setReported();
@@ -75,7 +79,7 @@ class Cover {
 
  private:
   BaseComponent mBaseComponent;
-  const CoverDeviceClass mDeviceClass = {CoverDeviceClass::none};
-  CoverState mState = {CoverState::closed};
-  CoverState mLastReportedState = {CoverState::closed};
+  const CoverDeviceClass mDeviceClass;
+  CoverState mState{CoverState::closed};
+  CoverState mLastReportedState{CoverState::closed};
 };

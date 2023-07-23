@@ -112,5 +112,8 @@ bool GarageCover::update() {
 
   mCover.setState(newState);
 
-  return hasChanged;
+  bool isReportDue = hasChanged;
+  mCover.setIsReportDue(isReportDue);
+
+  return isReportDue;
 }

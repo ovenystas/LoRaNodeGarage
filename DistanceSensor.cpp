@@ -21,12 +21,15 @@ bool DistanceSensor::update() {
                                mConfig.reportHysteresis.getValue()
                          : false;
 
-  bool reportIsDue =
+  bool timeToReport =
       mConfig.reportInterval.getValue() > 0
           ? mSensor.timeSinceLastReport() >= mConfig.reportInterval.getValue()
           : false;
 
-  return (largeChange || reportIsDue);
+  bool isReportDue = largeChange || timeToReport;
+  mSensor.setIsReportDue(isReportDue);
+
+  return isReportDue;
 }
 
 void DistanceSensor::getDiscoveryItem(DiscoveryItemT* item) const {

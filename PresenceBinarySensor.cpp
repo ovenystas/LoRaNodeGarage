@@ -33,12 +33,15 @@ bool PresenceBinarySensor::update() {
     mStableState = true;
   }
 
-  bool reportIsDue = mConfig.reportInterval.getValue() > 0
-                         ? mBinarySensor.timeSinceLastReport() >=
-                               mConfig.reportInterval.getValue()
-                         : false;
+  bool timeToReport = mConfig.reportInterval.getValue() > 0
+                          ? mBinarySensor.timeSinceLastReport() >=
+                                mConfig.reportInterval.getValue()
+                          : false;
 
-  return (enteredNewStableState || reportIsDue);
+  bool isReportDue = enteredNewStableState || timeToReport;
+  mBinarySensor.setIsReportDue(isReportDue);
+
+  return isReportDue;
 }
 
 uint8_t PresenceBinarySensor::getConfigItemValues(ConfigItemValueT* items,

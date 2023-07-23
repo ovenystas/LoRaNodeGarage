@@ -8,22 +8,30 @@
 #include "Util.h"
 
 bool TemperatureSensor::update() {
-  TemperatureT newValue =
-      round(mDht.readTemperature() * 10) + mConfig.compensation.getValue();
+  if (mDht.read()) {
+    TemperatureT newValue =
+        round(mDht.readTemperature() * 10) + mConfig.compensation.getValue();
 
-  mSensor.setValue(newValue);
+    mSensor.setValue(newValue);
+  } else {
+    printMillis(Serial);
+    Serial.println(F("WARN: DHT checksum fail"));
+  }
 
   bool largeChange = mConfig.reportHysteresis.getValue() > 0
                          ? mSensor.absDiffLastReportedValue() >=
                                mConfig.reportHysteresis.getValue()
                          : false;
 
-  bool reportIsDue =
+  bool timeToReport =
       mConfig.reportInterval.getValue() > 0
           ? mSensor.timeSinceLastReport() >= mConfig.reportInterval.getValue()
           : false;
 
-  return (largeChange || reportIsDue);
+  bool isReportDue = largeChange || timeToReport;
+  mSensor.setIsReportDue(isReportDue);
+
+  return isReportDue;
 }
 
 void TemperatureSensor::getDiscoveryItem(DiscoveryItemT *item) const {

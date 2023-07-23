@@ -15,7 +15,14 @@ class BaseComponent {
   BaseComponent(uint8_t entityId, const char* name)
       : mEntityId{entityId}, mName{name} {}
 
-  void setReported() { mLastReportTime = seconds(); }
+  bool isReportDue() const { return mIsReportDue; }
+
+  void setReported() {
+    mIsReportDue = false;
+    mLastReportTime = seconds();
+  }
+
+  void setIsReportDue(bool isDue) { mIsReportDue = isDue; }
 
   uint32_t timeSinceLastReport() const { return seconds() - mLastReportTime; }
 
@@ -24,7 +31,8 @@ class BaseComponent {
   const char* getName() const { return mName; }
 
  private:
-  uint32_t mLastReportTime = {};  // s
-  const uint8_t mEntityId = {};
-  const char* mName = "";
+  bool mIsReportDue{true};
+  uint32_t mLastReportTime{};  // s
+  const uint8_t mEntityId{};
+  const char* mName{""};
 };

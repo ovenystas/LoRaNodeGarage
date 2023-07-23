@@ -68,7 +68,11 @@ class BinarySensor {
 
   bool isDiffLastReportedState() const { return mState != mLastReportedState; }
 
+  bool isReportDue() const { return mBaseComponent.isReportDue(); }
+
   size_t print(Stream& stream) const;
+
+  void setIsReportDue(bool isDue) { mBaseComponent.setIsReportDue(isDue); }
 
   void setReported() {
     mBaseComponent.setReported();
@@ -83,8 +87,8 @@ class BinarySensor {
 
  private:
   BaseComponent mBaseComponent;
-  const BinarySensorDeviceClass mDeviceClass = {BinarySensorDeviceClass::none};
+  const BinarySensorDeviceClass mDeviceClass;
   const Unit mUnit;
-  bool mState = {};
-  bool mLastReportedState = {};
+  bool mState{};
+  bool mLastReportedState{};
 };

@@ -58,6 +58,10 @@ enum class SensorDeviceClass {
   wind_speed
 };
 
+namespace SensorConstants {
+static const int16_t factors[4] = {1, 10, 100, 1000};
+}
+
 template <class T>
 class Sensor {
  public:
@@ -71,8 +75,7 @@ class Sensor {
       : mBaseComponent{BaseComponent(entityId, name)},
         mDeviceClass{deviceClass},
         mUnit{unitType},
-        mPrecision{precision > 3 ? static_cast<uint8_t>(3) : precision},
-        mScaleFactor{factors[mPrecision]} {}
+        mPrecision{precision > 3 ? static_cast<uint8_t>(3) : precision} {}
 
   BaseComponent::Type getComponentType() const {
     return BaseComponent::Type::sensor;
@@ -107,12 +110,15 @@ class Sensor {
     item->value = static_cast<uint32_t>(mValue);
   }
 
+  bool isReportDue() const { return mBaseComponent.isReportDue(); }
+
   size_t print(Stream& stream) const {
     size_t n = 0;
     n += stream.print(mBaseComponent.getName());
     n += stream.print(": ");
 
-    if (mScaleFactor == 1) {
+    const int16_t scaleFactor = SensorConstants::factors[mPrecision];
+    if (scaleFactor == 1) {
       n += stream.print(mValue);
     } else {
       // cppcheck-suppress unsignedLessThanZero
@@ -121,27 +127,35 @@ class Sensor {
         n += stream.print('-');
       }
 
-      uint32_t integer = abs(mValue / mScaleFactor);
+      uint32_t integer = abs(mValue / scaleFactor);
       n += stream.print(integer);
 
       n += stream.print('.');
 
-      uint32_t fractional = abs(mValue % mScaleFactor);
-      if (mScaleFactor >= 1000 && fractional < 100) {
+      uint32_t fractional = abs(mValue % scaleFactor);
+      if (scaleFactor >= 1000 && fractional < 100) {
         n += stream.print('0');
       }
-      if (mScaleFactor >= 100 && fractional < 10) {
+      if (scaleFactor >= 100 && fractional < 10) {
         n += stream.print('0');
       }
       n += stream.print(fractional);
     }
 
+    n += printUnit(stream);
+    return n;
+  }
+
+  size_t printUnit(Stream& stream) const {
+    size_t n = 0;
     if (mUnit.getType() != Unit::Type::none) {
       n += stream.print(' ');
       n += stream.print(mUnit.getName());
     }
     return n;
   }
+
+  void setIsReportDue(bool isDue) { mBaseComponent.setIsReportDue(isDue); }
 
   void setReported() {
     mBaseComponent.setReported();
@@ -155,13 +169,10 @@ class Sensor {
   }
 
  private:
-  const int16_t factors[4] = {1, 10, 100, 1000};
-
   BaseComponent mBaseComponent;
   T mValue{};
   T mLastReportedValue{};
-  const SensorDeviceClass mDeviceClass = {SensorDeviceClass::none};
+  const SensorDeviceClass mDeviceClass{SensorDeviceClass::none};
   const Unit mUnit{Unit::Type::none};
   const uint8_t mPrecision{};
-  const int16_t mScaleFactor{factors[mPrecision]};
 };

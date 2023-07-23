@@ -12,6 +12,10 @@
 #include "Unit.h"
 #include "Util.h"
 
+namespace ConfigItemConstants {
+static const int16_t factors[4] = {1, 10, 100, 1000};
+}
+
 template <class T>
 class ConfigItem {
  public:
@@ -21,12 +25,13 @@ class ConfigItem {
       : mConfigId{configId},
         mValue{value},
         mUnit{unitType},
-        mPrecision{precision > 3 ? static_cast<uint8_t>(3) : precision},
-        mScaleFactor{factors[mPrecision]} {}
+        mPrecision{precision > 3 ? static_cast<uint8_t>(3) : precision} {}
 
   inline uint8_t getPrecision() const { return mPrecision; }
 
-  inline int16_t getScaleFactor() const { return mScaleFactor; }
+  inline int16_t getScaleFactor() const {
+    return ConfigItemConstants::factors[mPrecision];
+  }
 
   inline Unit getUnit() const { return mUnit; }
 
@@ -58,11 +63,8 @@ class ConfigItem {
   }
 
  private:
-  const int16_t factors[4] = {1, 10, 100, 1000};  // TODO: Move out of class
-
   const uint8_t mConfigId;
   T mValue;
   const Unit mUnit;
   const uint8_t mPrecision;
-  const int16_t mScaleFactor;
 };

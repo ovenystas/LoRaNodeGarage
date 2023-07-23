@@ -36,6 +36,8 @@ class GarageCover : public IComponent {
     return mCover.getValueItem(item);
   }
 
+  bool isReportDue() const final { return mCover.isReportDue(); }
+
   size_t print(Stream& stream) const final { return mCover.print(stream); };
 
   size_t print(Stream& stream, uint8_t service) const final {

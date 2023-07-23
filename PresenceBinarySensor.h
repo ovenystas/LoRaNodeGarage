@@ -30,6 +30,8 @@ class PresenceBinarySensor : public IComponent {
     return mBinarySensor.getValueItem(item);
   }
 
+  bool isReportDue() const final { return mBinarySensor.isReportDue(); }
+
   size_t print(Stream& stream) const final {
     return mBinarySensor.print(stream);
   };
@@ -67,6 +69,6 @@ class PresenceBinarySensor : public IComponent {
   BinarySensor mBinarySensor;
   Config mConfig;
   Sensor<HeightT>& mHeightSensor;
-  uint32_t mLastChangedTime = {};
-  bool mStableState = {};
+  uint32_t mLastChangedTime{};
+  bool mStableState{};
 };
