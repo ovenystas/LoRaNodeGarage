@@ -43,6 +43,11 @@ include(CodeCoverage)
 
 include_directories(.. mocks)
 
+add_executable(AirTime_test EXCLUDE_FROM_ALL AirTime_test.cpp ../AirTime.cpp
+                                             mocks/Arduino.cpp)
+target_link_libraries(AirTime_test GTest::gtest_main GTest::gmock_main)
+gtest_discover_tests(AirTime_test)
+
 add_executable(
   BaseComponent_test EXCLUDE_FROM_ALL BaseComponent_test.cpp ../Util.cpp
                                       mocks/Arduino.cpp mocks/Print.cpp)
@@ -104,8 +109,13 @@ gtest_discover_tests(HumiditySensor_test)
 
 add_executable(
   LoRaHandler_test EXCLUDE_FROM_ALL
-  LoRaHandler_test.cpp ../LoRaHandler.cpp ../Util.cpp mocks/Arduino.cpp
-  mocks/Print.cpp mocks/BufferSerial.cpp)
+  LoRaHandler_test.cpp
+  ../LoRaHandler.cpp
+  ../Util.cpp
+  ../AirTime.cpp
+  mocks/Arduino.cpp
+  mocks/Print.cpp
+  mocks/BufferSerial.cpp)
 target_link_libraries(LoRaHandler_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(LoRaHandler_test)
 
@@ -126,6 +136,11 @@ add_executable(
 target_link_libraries(PresenceBinarySensor_test GTest::gtest_main
                       GTest::gmock_main)
 gtest_discover_tests(PresenceBinarySensor_test)
+
+add_executable(RingBuffer_test EXCLUDE_FROM_ALL RingBuffer_test.cpp
+                                                mocks/Arduino.cpp)
+target_link_libraries(RingBuffer_test GTest::gtest_main GTest::gmock_main)
+gtest_discover_tests(RingBuffer_test)
 
 add_executable(
   Sensor_test EXCLUDE_FROM_ALL Sensor_test.cpp ../Util.cpp mocks/Arduino.cpp
@@ -159,7 +174,8 @@ gtest_discover_tests(Util_test)
 add_custom_target(
   test_all
   COMMENT "Target to build all unit tests"
-  DEPENDS BaseComponent_test
+  DEPENDS AirTime_test
+          BaseComponent_test
           BinarySensor_test
           ConfigItem_test
           Cover_test
@@ -170,6 +186,7 @@ add_custom_target(
           LoRaHandler_test
           Node_test
           PresenceBinarySensor_test
+          RingBuffer_test
           Sensor_test
           TemperatureSensor_test
           Types_test

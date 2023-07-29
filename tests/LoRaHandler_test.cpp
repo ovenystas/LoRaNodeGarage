@@ -125,7 +125,11 @@ TEST_F(LoRaHandler_test, configsValueMsg) {
       .WillOnce(DoAll(SaveArg<1>(&writeSize), Invoke(loraReadBuf),
                       Return(expectedMsgSize)));
   EXPECT_CALL(*pLoRaMock, endPacket(false)).WillOnce(Return(1));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(61500));
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(61500))   // Print
+      .WillOnce(Return(61501))   // AirTime update
+      .WillOnce(Return(61502))   // Send start
+      .WillOnce(Return(61602));  // Send end
 
   pLH->beginConfigsValueMsg(entityId);
   pLH->addConfigItemValues(items, 2);
@@ -164,7 +168,11 @@ TEST_F(LoRaHandler_test, discoveryMsg) {
       .WillOnce(DoAll(SaveArg<1>(&writeSize), Invoke(loraReadBuf),
                       Return(expectedMsgSize)));
   EXPECT_CALL(*pLoRaMock, endPacket(false)).WillOnce(Return(1));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(100));
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(100))   // Print
+      .WillOnce(Return(101))   // AirTime update
+      .WillOnce(Return(102))   // Send start
+      .WillOnce(Return(202));  // Send end
 
   pLH->beginDiscoveryMsg();
   pLH->addDiscoveryItem((&item));
@@ -256,7 +264,11 @@ TEST_F(LoRaHandler_test, loraRx_ping_req_no_ack_shall_send_ping_msg) {
   EXPECT_CALL(*pLoRaMock, write(_, expectedMsgSize))
       .WillOnce(DoAll(Invoke(loraReadBuf), Return(expectedMsgSize)));
   EXPECT_CALL(*pLoRaMock, endPacket(false)).WillOnce(Return(1));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(100));
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(100))   // Print
+      .WillOnce(Return(101))   // AirTime update
+      .WillOnce(Return(102))   // Send start
+      .WillOnce(Return(202));  // Send end
 
   // Recieve msg
   EXPECT_EQ(pLH->loraRx(), LORA_HEADER_LENGTH);
@@ -345,7 +357,11 @@ TEST_F(
   EXPECT_CALL(*pLoRaMock, write(_, expectedMsgSize))
       .WillOnce(DoAll(Invoke(loraReadBuf), Return(expectedMsgSize)));
   EXPECT_CALL(*pLoRaMock, endPacket(false)).WillOnce(Return(1));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(100));
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(100))   // Print
+      .WillOnce(Return(101))   // AirTime update
+      .WillOnce(Return(102))   // Send start
+      .WillOnce(Return(202));  // Send end
 
   // Begin and recieve msg
   pLH->begin(FakeCallbackFunc, nullptr, nullptr, nullptr, nullptr);
@@ -556,7 +572,11 @@ TEST_F(LoRaHandler_test, valueMsg) {
       .WillOnce(DoAll(SaveArg<1>(&writeSize), Invoke(loraReadBuf),
                       Return(expectedMsgSize)));
   EXPECT_CALL(*pLoRaMock, endPacket(false)).WillOnce(Return(1));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(61500));
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(61500))   // Print
+      .WillOnce(Return(61501))   // AirTime update
+      .WillOnce(Return(61502))   // Send start
+      .WillOnce(Return(61602));  // Send end
 
   pLH->beginValueMsg();
   pLH->addValueItem(&item1);

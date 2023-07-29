@@ -174,10 +174,19 @@ void LoRaHandler::sendMsg(const LoRaTxMessageT* msg) {
   printMessage(msg);
 #endif
 
+  if (airTime.isLimitReached()) {
+    mStream.println(F("AirTime limit reached! Not sending."));
+    return;
+  }
+
   (void)mLoRa.beginPacket();
   (void)mLoRa.write(reinterpret_cast<const uint8_t*>(msg),
                     sizeof(msg->header) + msg->header.len);
+
+  uint32_t sendStartTime = millis();
   (void)mLoRa.endPacket();
+  uint32_t sendEndTime = millis();
+  airTime.update(sendStartTime, sendEndTime);
 
   mSeqId++;
 }

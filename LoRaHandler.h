@@ -84,6 +84,7 @@
 #include <Stream.h>
 #include <assert.h>
 
+#include "AirTime.h"
 #include "Types.h"
 #include "Util.h"
 
@@ -94,6 +95,9 @@
 
 #define FLAGS_REQ_ACK 0x40
 #define FLAGS_ACK 0x80
+
+#define AIRTIME_LIMIT_PERCENT 1
+#define AIRTIME_LIMIT_PPM (AIRTIME_LIMIT_PERCENT * 10000)
 
 struct LoRaHeaderT {
   uint8_t dst;
@@ -212,12 +216,13 @@ class LoRaHandler {
   Stream& mStream;
   const uint8_t mGatewayAddress;
   const uint8_t mMyAddress;
-  uint8_t mSeqId = {0};
-  LoRaTxMessageT mMsgTx = {};
+  uint8_t mSeqId{};
+  LoRaTxMessageT mMsgTx{};
+  AirTime airTime{AirTime(AIRTIME_LIMIT_PPM)};
 
-  OnDiscoveryReqMsgFunc mOnDiscoveryReqMsgFunc = {nullptr};
-  OnValueReqMsgFunc mOnValueReqMsgFunc = {nullptr};
-  OnConfigReqMsgFunc mOnConfigReqMsgFunc = {nullptr};
-  OnConfigSetReqMsgFunc mOnConfigSetReqMsgFunc = {nullptr};
-  OnServiceReqMsgFunc mOnServiceReqMsgFunc = {nullptr};
+  OnDiscoveryReqMsgFunc mOnDiscoveryReqMsgFunc{nullptr};
+  OnValueReqMsgFunc mOnValueReqMsgFunc{nullptr};
+  OnConfigReqMsgFunc mOnConfigReqMsgFunc{nullptr};
+  OnConfigSetReqMsgFunc mOnConfigSetReqMsgFunc{nullptr};
+  OnServiceReqMsgFunc mOnServiceReqMsgFunc{nullptr};
 };
