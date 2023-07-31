@@ -25,6 +25,8 @@ class ComponentChild : public IComponent {
 
   void getValueItem(ValueItemT* item) const { (void)item; }
 
+  bool isReportDue() const { return false; }
+
   size_t print(Stream& stream) const { return stream.print(mEntityId); }
 
   size_t print(Stream& stream, uint8_t service) const {

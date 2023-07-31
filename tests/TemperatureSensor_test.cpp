@@ -10,19 +10,27 @@ using ::testing::Return;
 
 using TemperatureT = int16_t;  // Degree C
 
-class TemperatureSensorPrint_test : public ::testing::Test {
+BufferSerial Serial = BufferSerial(256);
+
+class TemperatureSensor_test : public ::testing::Test {
  protected:
   void SetUp() override {
-    pSerial = new BufferSerial(256);
+    pArduinoMock = arduinoMockInstance();
+    pDhtMock = new DHTMock();
+    pTs = new TemperatureSensor(15, "TemperatureSensor", *pDhtMock);
     strBuf[0] = '\0';
   }
 
-  void TearDown() override { delete pSerial; }
+  void TearDown() override {
+    delete pTs;
+    delete pDhtMock;
+    releaseArduinoMock();
+  }
 
   void bufSerReadStr() {
     size_t i = 0;
-    while (pSerial->available()) {
-      int c = pSerial->read();
+    while (Serial.available()) {
+      int c = Serial.read();
       if (c < 0) {
         break;
       }
@@ -32,23 +40,6 @@ class TemperatureSensorPrint_test : public ::testing::Test {
   }
 
   char strBuf[256];
-  BufferSerial *pSerial;
-};
-
-class TemperatureSensor_test : public ::testing::Test {
- protected:
-  void SetUp() override {
-    pArduinoMock = arduinoMockInstance();
-    pDhtMock = new DHTMock();
-    pTs = new TemperatureSensor(15, "TemperatureSensor", *pDhtMock);
-  }
-
-  void TearDown() override {
-    delete pTs;
-    delete pDhtMock;
-    releaseArduinoMock();
-  }
-
   ArduinoMock *pArduinoMock;
   DHTMock *pDhtMock;
   TemperatureSensor *pTs;
@@ -132,21 +123,19 @@ TEST_F(TemperatureSensor_test, getValueItem) {
   EXPECT_EQ(item.value, 0);
 }
 
-TEST_F(TemperatureSensorPrint_test, print) {
+TEST_F(TemperatureSensor_test, print) {
   const char *expectStr = "TemperatureSensor: 0.0 °C";
-  DHTMock *pDhtMock = new DHTMock();
   TemperatureSensor ts = TemperatureSensor(15, "TemperatureSensor", *pDhtMock);
 
-  EXPECT_EQ(ts.print(*pSerial), strlen(expectStr));
+  EXPECT_EQ(ts.print(Serial), strlen(expectStr));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
 }
 
-TEST_F(TemperatureSensorPrint_test, print_service_shall_do_nothing) {
-  DHTMock *pDhtMock = new DHTMock();
+TEST_F(TemperatureSensor_test, print_service_shall_do_nothing) {
   TemperatureSensor ts = TemperatureSensor(15, "TemperatureSensor", *pDhtMock);
-  EXPECT_EQ(ts.print(*pSerial, 0), 0);
+  EXPECT_EQ(ts.print(Serial, 0), 0);
 }
 
 TEST_F(TemperatureSensor_test, setConfigs_all_in_order) {
@@ -201,6 +190,7 @@ TEST_F(TemperatureSensor_test, setConfigs_out_of_range) {
 
 TEST_F(TemperatureSensor_test,
        update_largeValueDiff_largeTimeDiff_withConfigsZero_shall_return_false) {
+  EXPECT_CALL(*pDhtMock, read(false)).WillOnce(Return(true));
   EXPECT_CALL(*pDhtMock, readTemperature(false, false)).WillOnce(Return(0.950));
   EXPECT_CALL(*pArduinoMock, millis()).Times(0);
   ConfigItemValueT inItems[4] = {{0, 0}, {1, 0}, {2, 0}, {3, 0}};
@@ -215,6 +205,7 @@ TEST_F(TemperatureSensor_test, setReported) {
 
 TEST_F(TemperatureSensor_test,
        update_smallValueDiff_smallTimeDiff_shall_return_false) {
+  EXPECT_CALL(*pDhtMock, read(false)).WillOnce(Return(true));
   EXPECT_CALL(*pDhtMock, readTemperature(false, false)).WillOnce(Return(0.949));
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
   EXPECT_FALSE(pTs->update());
@@ -222,6 +213,7 @@ TEST_F(TemperatureSensor_test,
 
 TEST_F(TemperatureSensor_test,
        update_smallValueDiff_largeTimeDiff_shall_return_true) {
+  EXPECT_CALL(*pDhtMock, read(false)).WillOnce(Return(true));
   EXPECT_CALL(*pDhtMock, readTemperature(false, false)).WillOnce(Return(0.949));
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
   EXPECT_TRUE(pTs->update());
@@ -229,6 +221,7 @@ TEST_F(TemperatureSensor_test,
 
 TEST_F(TemperatureSensor_test,
        update_largeValueDiff_smallTimeDiff_shall_return_true) {
+  EXPECT_CALL(*pDhtMock, read(false)).WillOnce(Return(true));
   EXPECT_CALL(*pDhtMock, readTemperature(false, false)).WillOnce(Return(0.950));
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
   EXPECT_TRUE(pTs->update());
@@ -236,6 +229,7 @@ TEST_F(TemperatureSensor_test,
 
 TEST_F(TemperatureSensor_test,
        update_largeValueDiff_largeTimeDiff_shall_return_true) {
+  EXPECT_CALL(*pDhtMock, read(false)).WillOnce(Return(true));
   EXPECT_CALL(*pDhtMock, readTemperature(false, false)).WillOnce(Return(0.950));
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
   EXPECT_TRUE(pTs->update());

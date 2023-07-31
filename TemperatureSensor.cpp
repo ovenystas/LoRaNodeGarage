@@ -7,6 +7,12 @@
 #include "Sensor.h"
 #include "Util.h"
 
+// TODO: Replace this ugly workaround with something better
+#ifndef HAVE_HWSERIAL0
+#include "tests/mocks/BufferSerial.h"
+extern BufferSerial Serial;
+#endif
+
 bool TemperatureSensor::update() {
   if (mDht.read()) {
     TemperatureT newValue =

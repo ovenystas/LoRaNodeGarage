@@ -57,7 +57,7 @@ void BinarySensor::getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
   item->entityId = mBaseComponent.getEntityId();
   item->componentType = static_cast<uint8_t>(getComponentType());
   item->deviceClass = static_cast<uint8_t>(getDeviceClass());
-  item->unit = static_cast<uint8_t>(mUnit.getType());
+  item->unit = static_cast<uint8_t>(mUnit.type());
   item->isSigned = false;
   item->size = 0;
   item->precision = 0;

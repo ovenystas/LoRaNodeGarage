@@ -2,14 +2,12 @@
 
 #include <gtest/gtest.h>
 
-TEST(Unit_test, GetType_km) {
-  Unit *pUnit = new Unit(Unit::Type::km);
-  EXPECT_EQ(pUnit->getType(), Unit::Type::km);
-  delete pUnit;
+TEST(Unit_test, type_km) {
+  Unit unit = Unit(Unit::Type::km);
+  EXPECT_EQ(unit.type(), Unit::Type::km);
 }
 
-TEST(Unit_test, GetName_km) {
-  Unit *pUnit = new Unit(Unit::Type::km);
-  EXPECT_STREQ(pUnit->getName(), "km");
-  delete pUnit;
+TEST(Unit_test, name_km) {
+  Unit unit = Unit(Unit::Type::km);
+  EXPECT_STREQ(unit.name(), "km");
 }

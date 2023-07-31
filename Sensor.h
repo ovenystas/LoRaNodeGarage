@@ -6,6 +6,7 @@
 #include "Types.h"
 #include "Unit.h"
 #include "Util.h"
+#include "ValueItem.h"
 
 // From https://www.home-assistant.io/integrations/sensor/ at 2023-01-17
 enum class SensorDeviceClass {
@@ -58,10 +59,6 @@ enum class SensorDeviceClass {
   wind_speed
 };
 
-namespace SensorConstants {
-static const int16_t factors[4] = {1, 10, 100, 1000};
-}
-
 template <class T>
 class Sensor {
  public:
@@ -74,8 +71,7 @@ class Sensor {
          Unit::Type unitType = Unit::Type::none, uint8_t precision = 0)
       : mBaseComponent{BaseComponent(entityId, name)},
         mDeviceClass{deviceClass},
-        mUnit{unitType},
-        mPrecision{precision > 3 ? static_cast<uint8_t>(3) : precision} {}
+        mValueItem{ValueItem<T>(unitType, precision)} {}
 
   BaseComponent::Type getComponentType() const {
     return BaseComponent::Type::sensor;
@@ -87,27 +83,27 @@ class Sensor {
     item->entityId = mBaseComponent.getEntityId();
     item->componentType = static_cast<uint8_t>(getComponentType());
     item->deviceClass = static_cast<uint8_t>(getDeviceClass());
-    item->unit = static_cast<uint8_t>(mUnit.getType());
-    item->isSigned = IS_SIGNED_TYPE(T);
-    item->size = sizeof(T) / 2;
-    item->precision = mPrecision;
+    item->unit = static_cast<uint8_t>(mValueItem.getUnit().type());
+    item->isSigned = mValueItem.isSigned();
+    item->size = static_cast<uint8_t>(mValueItem.getValueSize()) / 2;
+    item->precision = mValueItem.getPrecision();
   }
 
   uint8_t getEntityId() const { return mBaseComponent.getEntityId(); }
 
   T absDiffLastReportedValue() const {
-    return abs(mValue - mLastReportedValue);
+    return abs(mValueItem.getValue() - mLastReportedValue);
   }
 
-  const char* getUnitName() const { return mUnit.getName(); }
+  const char* getUnitName() const { return mValueItem.getUnit().name(); }
 
-  Unit::Type getUnitType() const { return mUnit.getType(); }
+  Unit::Type getUnitType() const { return mValueItem.getUnit().type(); }
 
-  T getValue() const { return mValue; }
+  T getValue() const { return mValueItem.getValue(); }
 
   void getValueItem(ValueItemT* item) const {
     item->entityId = mBaseComponent.getEntityId();
-    item->value = static_cast<uint32_t>(mValue);
+    item->value = static_cast<uint32_t>(mValueItem.getValue());
   }
 
   bool isReportDue() const { return mBaseComponent.isReportDue(); }
@@ -116,42 +112,7 @@ class Sensor {
     size_t n = 0;
     n += stream.print(mBaseComponent.getName());
     n += stream.print(": ");
-
-    const int16_t scaleFactor = SensorConstants::factors[mPrecision];
-    if (scaleFactor == 1) {
-      n += stream.print(mValue);
-    } else {
-      // cppcheck-suppress unsignedLessThanZero
-      // cppcheck-suppress unmatchedSuppression
-      if (IS_SIGNED_TYPE(T) && mValue < 0) {
-        n += stream.print('-');
-      }
-
-      uint32_t integer = abs(mValue / scaleFactor);
-      n += stream.print(integer);
-
-      n += stream.print('.');
-
-      uint32_t fractional = abs(mValue % scaleFactor);
-      if (scaleFactor >= 1000 && fractional < 100) {
-        n += stream.print('0');
-      }
-      if (scaleFactor >= 100 && fractional < 10) {
-        n += stream.print('0');
-      }
-      n += stream.print(fractional);
-    }
-
-    n += printUnit(stream);
-    return n;
-  }
-
-  size_t printUnit(Stream& stream) const {
-    size_t n = 0;
-    if (mUnit.getType() != Unit::Type::none) {
-      n += stream.print(' ');
-      n += stream.print(mUnit.getName());
-    }
+    n += mValueItem.print(stream);
     return n;
   }
 
@@ -159,10 +120,10 @@ class Sensor {
 
   void setReported() {
     mBaseComponent.setReported();
-    mLastReportedValue = mValue;
+    mLastReportedValue = mValueItem.getValue();
   }
 
-  void setValue(T value) { mValue = value; }
+  void setValue(T value) { mValueItem.setValue(value); }
 
   uint32_t timeSinceLastReport() const {
     return mBaseComponent.timeSinceLastReport();
@@ -170,9 +131,7 @@ class Sensor {
 
  private:
   BaseComponent mBaseComponent;
-  T mValue{};
-  T mLastReportedValue{};
   const SensorDeviceClass mDeviceClass{SensorDeviceClass::none};
-  const Unit mUnit{Unit::Type::none};
-  const uint8_t mPrecision{};
+  ValueItem<T> mValueItem;
+  T mLastReportedValue{};
 };

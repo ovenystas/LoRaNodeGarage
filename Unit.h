@@ -5,10 +5,13 @@
 
 #pragma once
 
+#include <Stream.h>
 #include <stdint.h>
 
+namespace UnitConstants {
 static const char UnitName[][4] = {"",   "°C", "°F", "K",  "%", "km", "m",
                                    "dm", "cm", "mm", "um", "s", "ms"};
+}
 
 class Unit {
  public:
@@ -30,10 +33,19 @@ class Unit {
 
   explicit Unit(Type type) : mType{type} {}
 
-  inline Type getType() const { return mType; }
+  Type type() const { return mType; }
 
-  inline const char* getName() const {
-    return UnitName[static_cast<uint8_t>(mType)];
+  const char* name() const {
+    return UnitConstants::UnitName[static_cast<uint8_t>(mType)];
+  }
+
+  size_t print(Stream& stream) const {
+    size_t n = 0;
+    if (mType != Unit::Type::none) {
+      n += stream.print(' ');
+      n += stream.print(name());
+    }
+    return n;
   }
 
  private:
