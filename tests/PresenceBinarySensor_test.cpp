@@ -6,18 +6,38 @@
 #include "Unit.h"
 #include "mocks/BufferSerial.h"
 
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::NiceMock;
 using ::testing::Return;
 
 using HeightT = int16_t;  // cm
 
-class PresenceBinarySensorPrint_test : public ::testing::Test {
+class PresenceBinarySensor_test : public ::testing::Test {
  protected:
   void SetUp() override {
-    pSerial = new BufferSerial(256);
     strBuf[0] = '\0';
+    pSerial = new BufferSerial(256);
+    pArduinoMock = arduinoMockInstance();
+    pEepromMock = eepromNiceMockInstance();
+
+    EXPECT_CALL(*pEepromMock, eeprom_read_byte(_))
+        .Times(AtLeast(12 * 2))
+        .WillRepeatedly(Return(0xFF));
+    EXPECT_CALL(*pEepromMock, eeprom_write_byte(_, _)).Times(AtLeast(12));
+
+    pHeightSensor = new Sensor<HeightT>(
+        99, "Height", SensorDeviceClass::distance, Unit::Type::cm);
+    pPbs = new PresenceBinarySensor(89, "PresenceBinarySensor", *pHeightSensor);
   }
 
-  void TearDown() override { delete pSerial; }
+  void TearDown() override {
+    delete pPbs;
+    delete pHeightSensor;
+    delete pSerial;
+    releaseEepromMock();
+    releaseArduinoMock();
+  }
 
   void bufSerReadStr() {
     size_t i = 0;
@@ -33,24 +53,8 @@ class PresenceBinarySensorPrint_test : public ::testing::Test {
 
   char strBuf[256];
   BufferSerial* pSerial;
-};
-
-class PresenceBinarySensor_test : public ::testing::Test {
- protected:
-  void SetUp() override {
-    pArduinoMock = arduinoMockInstance();
-    pHeightSensor = new Sensor<HeightT>(
-        99, "Height", SensorDeviceClass::distance, Unit::Type::cm);
-    pPbs = new PresenceBinarySensor(89, "PresenceBinarySensor", *pHeightSensor);
-  }
-
-  void TearDown() override {
-    delete pPbs;
-    delete pHeightSensor;
-    releaseArduinoMock();
-  }
-
   ArduinoMock* pArduinoMock;
+  NiceMock<EepromMock>* pEepromMock;
   Sensor<HeightT>* pHeightSensor;
   PresenceBinarySensor* pPbs;
 };
@@ -90,7 +94,7 @@ TEST_F(PresenceBinarySensor_test, getDiscoveryItem) {
             static_cast<uint8_t>(BinarySensorDeviceClass::presence));
   EXPECT_EQ(item.entity.unit, static_cast<uint8_t>(Unit::Type::none));
   EXPECT_FALSE(item.entity.isSigned);
-  EXPECT_EQ(item.entity.size, 1);
+  EXPECT_EQ(item.entity.size, 0);
   EXPECT_EQ(item.entity.precision, 0);
 
   EXPECT_EQ(item.numberOfConfigItems, 4);
@@ -133,12 +137,12 @@ TEST_F(PresenceBinarySensor_test, getValueItem) {
   EXPECT_EQ(item.value, 0);
 }
 
-TEST_F(PresenceBinarySensorPrint_test, print) {
+TEST_F(PresenceBinarySensor_test, print) {
   const char* expectStr = "PresenceBinarySensor: away";
-  Sensor<HeightT>* pHeightSensor = new Sensor<HeightT>(
+  Sensor<HeightT> hs = Sensor<HeightT>(
       99, "Height", SensorDeviceClass::distance, Unit::Type::cm);
   PresenceBinarySensor pbs =
-      PresenceBinarySensor(89, "PresenceBinarySensor", *pHeightSensor);
+      PresenceBinarySensor(89, "PresenceBinarySensor", hs);
 
   EXPECT_EQ(pbs.print(*pSerial), strlen(expectStr));
 
@@ -146,11 +150,11 @@ TEST_F(PresenceBinarySensorPrint_test, print) {
   EXPECT_STREQ(strBuf, expectStr);
 }
 
-TEST_F(PresenceBinarySensorPrint_test, print_service_shall_do_nothing) {
-  Sensor<HeightT>* pHeightSensor = new Sensor<HeightT>(
+TEST_F(PresenceBinarySensor_test, print_service_shall_do_nothing) {
+  Sensor<HeightT> hs = Sensor<HeightT>(
       99, "Height", SensorDeviceClass::distance, Unit::Type::cm);
   PresenceBinarySensor pbs =
-      PresenceBinarySensor(89, "PresenceBinarySensor", *pHeightSensor);
+      PresenceBinarySensor(89, "PresenceBinarySensor", hs);
   EXPECT_EQ(pbs.print(*pSerial, 0), 0);
 }
 

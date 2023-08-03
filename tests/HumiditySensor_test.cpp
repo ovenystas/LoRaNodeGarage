@@ -6,6 +6,9 @@
 #include "mocks/BufferSerial.h"
 #include "mocks/DHT.h"
 
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::NiceMock;
 using ::testing::Return;
 
 using HumidityT = uint8_t;  // percent
@@ -16,7 +19,13 @@ class HumiditySensor_test : public ::testing::Test {
  protected:
   void SetUp() override {
     pArduinoMock = arduinoMockInstance();
+    pEepromMock = eepromNiceMockInstance();
     pDhtMock = new DHTMock();
+
+    EXPECT_CALL(*pEepromMock, eeprom_read_byte(_))
+        .Times(AtLeast(9 * 2))
+        .WillRepeatedly(Return(0xFF));
+    EXPECT_CALL(*pEepromMock, eeprom_write_byte(_, _)).Times(AtLeast(9));
     pHs = new HumiditySensor(51, "HumiditySensor", *pDhtMock);
     strBuf[0] = '\0';
   }
@@ -24,6 +33,7 @@ class HumiditySensor_test : public ::testing::Test {
   void TearDown() override {
     delete pHs;
     delete pDhtMock;
+    releaseEepromMock();
     releaseArduinoMock();
   }
 
@@ -41,6 +51,7 @@ class HumiditySensor_test : public ::testing::Test {
 
   char strBuf[256];
   ArduinoMock* pArduinoMock;
+  NiceMock<EepromMock>* pEepromMock;
   DHTMock* pDhtMock;
   HumiditySensor* pHs;
 };

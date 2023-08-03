@@ -5,23 +5,43 @@
 #include "Unit.h"
 #include "mocks/Arduino.h"
 #include "mocks/BufferSerial.h"
+#include "mocks/EEPROM.h"
 #include "mocks/NewPing.h"
 
 #define SONAR_TRIGGER_PIN 7
 #define SONAR_ECHO_PIN 6
 #define SONAR_MAX_DISTANCE_CM 300
 
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::NiceMock;
 using ::testing::Return;
+
 using DistanceT = int16_t;  // cm
 
-class DistanceSensorPrint_test : public ::testing::Test {
+class DistanceSensor_test : public ::testing::Test {
  protected:
   void SetUp() override {
+    pArduinoMock = arduinoMockInstance();
+    pSonarMock = new NewPingMock();
+    pEepromMock = eepromNiceMockInstance();
     pSerial = new BufferSerial(256);
     strBuf[0] = '\0';
+
+    EXPECT_CALL(*pEepromMock, eeprom_read_byte(_))
+        .Times(AtLeast(9 * 2))
+        .WillRepeatedly(Return(0xFF));
+    EXPECT_CALL(*pEepromMock, eeprom_write_byte(_, _)).Times(AtLeast(9));
+    pDs = new DistanceSensor(7, "DistanceSensor", *pSonarMock);
   }
 
-  void TearDown() override { delete pSerial; }
+  void TearDown() override {
+    delete pDs;
+    delete pSonarMock;
+    delete pSerial;
+    releaseEepromMock();
+    releaseArduinoMock();
+  }
 
   void bufSerReadStr() {
     size_t i = 0;
@@ -36,25 +56,10 @@ class DistanceSensorPrint_test : public ::testing::Test {
   }
 
   char strBuf[256];
-  BufferSerial* pSerial;
-};
-
-class DistanceSensor_test : public ::testing::Test {
- protected:
-  void SetUp() override {
-    pArduinoMock = arduinoMockInstance();
-    pSonarMock = new NewPingMock();
-    pDs = new DistanceSensor(7, "DistanceSensor", *pSonarMock);
-  }
-
-  void TearDown() override {
-    delete pDs;
-    delete pSonarMock;
-    releaseArduinoMock();
-  }
-
   ArduinoMock* pArduinoMock;
   NewPingMock* pSonarMock;
+  NiceMock<EepromMock>* pEepromMock;
+  BufferSerial* pSerial;
   DistanceSensor* pDs;
 };
 
@@ -130,7 +135,7 @@ TEST_F(DistanceSensor_test, getValueItem) {
   EXPECT_EQ(item.value, 0);
 }
 
-TEST_F(DistanceSensorPrint_test, print) {
+TEST_F(DistanceSensor_test, print) {
   const char* expectStr = "DistanceSensor: 0 cm";
   NewPingMock sonarMock;
   DistanceSensor ds = DistanceSensor(7, "DistanceSensor", sonarMock);
@@ -141,7 +146,7 @@ TEST_F(DistanceSensorPrint_test, print) {
   EXPECT_STREQ(strBuf, expectStr);
 }
 
-TEST_F(DistanceSensorPrint_test, print_service_shall_do_nothing) {
+TEST_F(DistanceSensor_test, print_service_shall_do_nothing) {
   NewPingMock sonarMock;
   DistanceSensor ds = DistanceSensor(7, "DistanceSensor", sonarMock);
   EXPECT_EQ(ds.print(*pSerial, 0), 0);
@@ -149,6 +154,7 @@ TEST_F(DistanceSensorPrint_test, print_service_shall_do_nothing) {
 
 TEST_F(DistanceSensor_test, setConfigs_all_in_order) {
   ConfigItemValueT inItems[3] = {{0, 1000}, {1, 1001}, {2, 1002}};
+
   EXPECT_TRUE(pDs->setConfigItemValues(inItems, 3));
 
   ConfigItemValueT items[3];
@@ -161,6 +167,7 @@ TEST_F(DistanceSensor_test, setConfigs_all_in_order) {
 
 TEST_F(DistanceSensor_test, setConfigs_all_out_of_order) {
   ConfigItemValueT inItems[3] = {{2, 2002}, {1, 2001}, {0, 2000}};
+
   EXPECT_TRUE(pDs->setConfigItemValues(inItems, 3));
 
   ConfigItemValueT items[3];
@@ -173,6 +180,7 @@ TEST_F(DistanceSensor_test, setConfigs_all_out_of_order) {
 
 TEST_F(DistanceSensor_test, setConfigs_one) {
   ConfigItemValueT inItems[1] = {{2, 3002}};
+
   EXPECT_TRUE(pDs->setConfigItemValues(inItems, 1));
 
   ConfigItemValueT items[3];
@@ -185,11 +193,13 @@ TEST_F(DistanceSensor_test, setConfigs_one) {
 
 TEST_F(DistanceSensor_test, setConfigs_too_many) {
   ConfigItemValueT inItems[4] = {{0, 1000}, {1, 1001}, {2, 1002}, {3, 1003}};
+
   EXPECT_FALSE(pDs->setConfigItemValues(inItems, 4));
 }
 
 TEST_F(DistanceSensor_test, setConfigs_out_of_range) {
   ConfigItemValueT inItems[1] = {{4, 3004}};
+
   EXPECT_FALSE(pDs->setConfigItemValues(inItems, 1));
 }
 

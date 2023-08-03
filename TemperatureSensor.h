@@ -5,6 +5,7 @@
 
 #include "Component.h"
 #include "ConfigItem.h"
+#include "EeAdressMap.h"
 #include "Sensor.h"
 #include "Util.h"
 
@@ -55,17 +56,17 @@ class TemperatureSensor : public IComponent {
     // cppcheck-suppress unusedStructMember
     const uint8_t numberOfConfigItems = {4};
 
-    ConfigItem<TemperatureT> reportHysteresis = {
-        ConfigItem<TemperatureT>(0, 10, Unit::Type::C, 1)};
+    ConfigItem<TemperatureT> reportHysteresis = {ConfigItem<TemperatureT>(
+        0, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_0, 10, Unit::Type::C, 1)};
 
-    ConfigItem<uint16_t> measureInterval = {
-        ConfigItem<uint16_t>(1, 60, Unit::Type::s, 0)};
+    ConfigItem<uint16_t> measureInterval = {ConfigItem<uint16_t>(
+        1, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_1, 60, Unit::Type::s)};
 
-    ConfigItem<uint16_t> reportInterval = {
-        ConfigItem<uint16_t>(2, 60, Unit::Type::s, 0)};
+    ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
+        2, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_2, 60, Unit::Type::s)};
 
-    ConfigItem<TemperatureT> compensation = {
-        ConfigItem<TemperatureT>(3, 0, Unit::Type::C, 1)};
+    ConfigItem<TemperatureT> compensation = {ConfigItem<TemperatureT>(
+        3, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_3, 0, Unit::Type::C, 1)};
   };
 
   Sensor<TemperatureT> mSensor;

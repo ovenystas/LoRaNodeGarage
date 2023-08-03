@@ -25,6 +25,11 @@ ArduinoMock::ArduinoMock() {
   //   setMillisRaw(sysTime*1000);
 }
 
+void yield(void) {
+  assert(arduinoMock != NULL);
+  arduinoMock->yield();
+}
+
 void pinMode(uint8_t a, uint8_t b) {
   assert(arduinoMock != NULL);
   arduinoMock->pinMode(a, b);

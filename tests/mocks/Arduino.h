@@ -14,6 +14,8 @@
 extern "C" {
 #endif
 
+void yield(void);
+
 #define HIGH 0x1
 #define LOW 0x0
 
@@ -140,13 +142,14 @@ class ArduinoMock {
       addMillisRaw(hours  * 60 * 60 * 1000);
     };
 #endif
-  MOCK_METHOD2(pinMode, void(uint8_t, uint8_t));
-  MOCK_METHOD2(analogWrite, void(uint8_t, int));
-  MOCK_METHOD2(digitalWrite, void(uint8_t, uint8_t));
-  MOCK_METHOD1(digitalRead, int(int));
-  MOCK_METHOD1(analogRead, int(int));
-  MOCK_METHOD1(delay, void(int));
-  MOCK_METHOD0(millis, unsigned long());
+  MOCK_METHOD(void, yield, ());
+  MOCK_METHOD(void, pinMode, (uint8_t, uint8_t));
+  MOCK_METHOD(void, analogWrite, (uint8_t, int));
+  MOCK_METHOD(void, digitalWrite, (uint8_t, uint8_t));
+  MOCK_METHOD(int, digitalRead, (int));
+  MOCK_METHOD(int, analogRead, (int));
+  MOCK_METHOD(void, delay, (int));
+  MOCK_METHOD(unsigned long, millis, ());
 };
 ArduinoMock* arduinoMockInstance();
 void releaseArduinoMock();

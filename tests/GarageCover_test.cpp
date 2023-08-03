@@ -197,7 +197,7 @@ TEST_F(GarageCover_test, getDiscoveryItem) {
             static_cast<uint8_t>(CoverDeviceClass::garage));
   EXPECT_EQ(item.entity.unit, static_cast<uint8_t>(Unit::Type::none));
   EXPECT_FALSE(item.entity.isSigned);
-  EXPECT_EQ(item.entity.size, 1);
+  EXPECT_EQ(item.entity.size, 0);
   EXPECT_EQ(item.entity.precision, 0);
 
   EXPECT_EQ(item.numberOfConfigItems, 0);

@@ -4,6 +4,7 @@
 
 #include "Component.h"
 #include "ConfigItem.h"
+#include "EeAdressMap.h"
 #include "Sensor.h"
 #include "Util.h"
 
@@ -56,14 +57,14 @@ class DistanceSensor : public IComponent {
     // cppcheck-suppress unusedStructMember
     const uint8_t numberOfConfigItems = {3};
 
-    ConfigItem<DistanceT> reportHysteresis = {
-        ConfigItem<DistanceT>(0, 10, Unit::Type::cm)};
+    ConfigItem<DistanceT> reportHysteresis = {ConfigItem<DistanceT>(
+        0, EE_ADDRESS_CONFIG_DISTANCESENSOR_0, 10, Unit::Type::cm)};
 
-    ConfigItem<uint16_t> measureInterval = {
-        ConfigItem<uint16_t>(1, 60, Unit::Type::s)};
+    ConfigItem<uint16_t> measureInterval = {ConfigItem<uint16_t>(
+        1, EE_ADDRESS_CONFIG_DISTANCESENSOR_1, 60, Unit::Type::s)};
 
-    ConfigItem<uint16_t> reportInterval = {
-        ConfigItem<uint16_t>(2, 60, Unit::Type::s)};
+    ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
+        2, EE_ADDRESS_CONFIG_DISTANCESENSOR_2, 60, Unit::Type::s)};
   };
 
   Sensor<DistanceT> mSensor;

@@ -5,6 +5,7 @@
 #include "Component.h"
 #include "ConfigItem.h"
 #include "DistanceSensor.h"
+#include "EeAdressMap.h"
 #include "Sensor.h"
 #include "Unit.h"
 #include "Util.h"
@@ -40,6 +41,9 @@ class HeightSensor : public IComponent {
 
   bool isReportDue() const final { return mSensor.isReportDue(); }
 
+  void loadConfigValues();
+  void saveConfigValues() const;
+
   size_t print(Stream& stream) const final { return mSensor.print(stream); };
 
   size_t print(Stream& stream, uint8_t service) const final {
@@ -59,17 +63,17 @@ class HeightSensor : public IComponent {
     // cppcheck-suppress unusedStructMember
     const uint8_t numberOfConfigItems = {4};
 
-    ConfigItem<HeightT> reportHysteresis = {
-        ConfigItem<HeightT>(0, 10, Unit::Type::cm, 0)};
+    ConfigItem<HeightT> reportHysteresis = {ConfigItem<HeightT>(
+        0, EE_ADDRESS_CONFIG_HEIGHTSENSOR_0, 10, Unit::Type::cm)};
 
-    ConfigItem<uint16_t> reportInterval = {
-        ConfigItem<uint16_t>(1, 60, Unit::Type::s, 0)};
+    ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
+        1, EE_ADDRESS_CONFIG_HEIGHTSENSOR_1, 60, Unit::Type::s)};
 
-    ConfigItem<uint16_t> stableTime = {
-        ConfigItem<uint16_t>(2, 5000, Unit::Type::ms, 0)};
+    ConfigItem<uint16_t> stableTime = {ConfigItem<uint16_t>(
+        2, EE_ADDRESS_CONFIG_HEIGHTSENSOR_0, 5000, Unit::Type::ms)};
 
-    ConfigItem<HeightT> zeroValue = {
-        ConfigItem<HeightT>(3, 60, Unit::Type::cm, 0)};
+    ConfigItem<HeightT> zeroValue = {ConfigItem<HeightT>(
+        3, EE_ADDRESS_CONFIG_HEIGHTSENSOR_0, 60, Unit::Type::cm)};
   };
 
   Sensor<HeightT> mSensor;

@@ -3,6 +3,7 @@
 #include "BinarySensor.h"
 #include "Component.h"
 #include "ConfigItem.h"
+#include "EeAdressMap.h"
 #include "HeightSensor.h"
 
 class PresenceBinarySensor : public IComponent {
@@ -53,17 +54,17 @@ class PresenceBinarySensor : public IComponent {
     // cppcheck-suppress unusedStructMember
     const uint8_t numberOfConfigItems = {4};
 
-    ConfigItem<HeightT> lowLimit = {
-        ConfigItem<HeightT>(0, 180, Unit::Type::cm, 0)};
+    ConfigItem<HeightT> lowLimit = {ConfigItem<HeightT>(
+        0, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_0, 180, Unit::Type::cm)};
 
-    ConfigItem<HeightT> highLimit = {
-        ConfigItem<HeightT>(1, 200, Unit::Type::cm, 0)};
+    ConfigItem<HeightT> highLimit = {ConfigItem<HeightT>(
+        1, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_1, 200, Unit::Type::cm)};
 
-    ConfigItem<uint16_t> minStableTime = {
-        ConfigItem<uint16_t>(2, 10000, Unit::Type::ms, 0)};
+    ConfigItem<uint16_t> minStableTime = {ConfigItem<uint16_t>(
+        2, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_2, 10000, Unit::Type::ms)};
 
-    ConfigItem<uint16_t> reportInterval = {
-        ConfigItem<uint16_t>(3, 60, Unit::Type::s, 0)};
+    ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
+        3, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_3, 60, Unit::Type::s)};
   };
 
   BinarySensor mBinarySensor;

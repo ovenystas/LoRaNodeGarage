@@ -6,18 +6,38 @@
 #include "Unit.h"
 #include "mocks/BufferSerial.h"
 
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::NiceMock;
 using ::testing::Return;
 
 using HeightT = int16_t;  // cm
 
-class HeightSensorPrint_test : public ::testing::Test {
+class HeightSensor_test : public ::testing::Test {
  protected:
   void SetUp() override {
     pSerial = new BufferSerial(256);
+    pArduinoMock = arduinoMockInstance();
+    pEepromMock = eepromNiceMockInstance();
     strBuf[0] = '\0';
+
+    EXPECT_CALL(*pEepromMock, eeprom_read_byte(_))
+        .Times(AtLeast(12 * 2))
+        .WillRepeatedly(Return(0xFF));
+    EXPECT_CALL(*pEepromMock, eeprom_write_byte(_, _)).Times(AtLeast(12));
+
+    pDistanceSensor = new Sensor<DistanceT>(
+        99, "Distance", SensorDeviceClass::distance, Unit::Type::cm);
+    pHs = new HeightSensor(39, "HeightSensor", *pDistanceSensor);
   }
 
-  void TearDown() override { delete pSerial; }
+  void TearDown() override {
+    delete pHs;
+    delete pDistanceSensor;
+    delete pSerial;
+    releaseEepromMock();
+    releaseArduinoMock();
+  }
 
   void bufSerReadStr() {
     size_t i = 0;
@@ -33,24 +53,8 @@ class HeightSensorPrint_test : public ::testing::Test {
 
   char strBuf[256];
   BufferSerial* pSerial;
-};
-
-class HeightSensor_test : public ::testing::Test {
- protected:
-  void SetUp() override {
-    pArduinoMock = arduinoMockInstance();
-    pDistanceSensor = new Sensor<DistanceT>(
-        99, "Distance", SensorDeviceClass::distance, Unit::Type::cm);
-    pHs = new HeightSensor(39, "HeightSensor", *pDistanceSensor);
-  }
-
-  void TearDown() override {
-    delete pHs;
-    delete pDistanceSensor;
-    releaseArduinoMock();
-  }
-
   ArduinoMock* pArduinoMock;
+  NiceMock<EepromMock>* pEepromMock;
   Sensor<DistanceT>* pDistanceSensor;
   HeightSensor* pHs;
 };
@@ -134,11 +138,11 @@ TEST_F(HeightSensor_test, getValueItem) {
   EXPECT_EQ(item.value, 0);
 }
 
-TEST_F(HeightSensorPrint_test, print) {
+TEST_F(HeightSensor_test, print) {
   const char* expectStr = "HeightSensor: 0 cm";
-  Sensor<DistanceT>* pDistanceSensor = new Sensor<DistanceT>(
+  Sensor<DistanceT> ds = Sensor<DistanceT>(
       99, "Distance", SensorDeviceClass::distance, Unit::Type::cm);
-  HeightSensor hs = HeightSensor(39, "HeightSensor", *pDistanceSensor);
+  HeightSensor hs = HeightSensor(39, "HeightSensor", ds);
 
   EXPECT_EQ(hs.print(*pSerial), 18);
 
@@ -146,10 +150,10 @@ TEST_F(HeightSensorPrint_test, print) {
   EXPECT_STREQ(strBuf, expectStr);
 }
 
-TEST_F(HeightSensorPrint_test, print_service_shall_do_nothing) {
-  Sensor<DistanceT>* pDistanceSensor = new Sensor<DistanceT>(
+TEST_F(HeightSensor_test, print_service_shall_do_nothing) {
+  Sensor<DistanceT> ds = Sensor<DistanceT>(
       99, "Distance", SensorDeviceClass::distance, Unit::Type::cm);
-  HeightSensor hs = HeightSensor(39, "HeightSensor", *pDistanceSensor);
+  HeightSensor hs = HeightSensor(39, "HeightSensor", ds);
   EXPECT_EQ(hs.print(*pSerial, 0), 0);
 }
 

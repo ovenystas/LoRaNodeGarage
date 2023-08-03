@@ -6,6 +6,9 @@
 #include "mocks/BufferSerial.h"
 #include "mocks/DHT.h"
 
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::NiceMock;
 using ::testing::Return;
 
 using TemperatureT = int16_t;  // Degree C
@@ -16,14 +19,22 @@ class TemperatureSensor_test : public ::testing::Test {
  protected:
   void SetUp() override {
     pArduinoMock = arduinoMockInstance();
+    pEepromMock = eepromNiceMockInstance();
     pDhtMock = new DHTMock();
-    pTs = new TemperatureSensor(15, "TemperatureSensor", *pDhtMock);
     strBuf[0] = '\0';
+
+    EXPECT_CALL(*pEepromMock, eeprom_read_byte(_))
+        .Times(AtLeast(12 * 2))
+        .WillRepeatedly(Return(0xFF));
+    EXPECT_CALL(*pEepromMock, eeprom_write_byte(_, _)).Times(AtLeast(12));
+
+    pTs = new TemperatureSensor(15, "TemperatureSensor", *pDhtMock);
   }
 
   void TearDown() override {
     delete pTs;
     delete pDhtMock;
+    releaseEepromMock();
     releaseArduinoMock();
   }
 
@@ -41,6 +52,7 @@ class TemperatureSensor_test : public ::testing::Test {
 
   char strBuf[256];
   ArduinoMock *pArduinoMock;
+  NiceMock<EepromMock> *pEepromMock;
   DHTMock *pDhtMock;
   TemperatureSensor *pTs;
 };

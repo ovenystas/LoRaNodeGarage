@@ -62,9 +62,11 @@ target_link_libraries(BinarySensor_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(BinarySensor_test)
 
 add_executable(
-  ConfigItem_test EXCLUDE_FROM_ALL ConfigItem_test.cpp ../Util.cpp
-                                   mocks/Arduino.cpp mocks/Print.cpp)
+  ConfigItem_test EXCLUDE_FROM_ALL
+  ConfigItem_test.cpp ../Util.cpp ../libraries/CRC/src/CRC8.cpp
+  ../libraries/CRC/src/CrcFastReverse.cpp mocks/Arduino.cpp mocks/Print.cpp)
 target_link_libraries(ConfigItem_test GTest::gtest_main GTest::gmock_main)
+target_include_directories(ConfigItem_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(ConfigItem_test)
 
 add_executable(
@@ -76,9 +78,16 @@ gtest_discover_tests(Cover_test)
 
 add_executable(
   DistanceSensor_test EXCLUDE_FROM_ALL
-  DistanceSensor_test.cpp ../DistanceSensor.cpp ../Util.cpp mocks/Arduino.cpp
-  mocks/Print.cpp mocks/BufferSerial.cpp)
+  DistanceSensor_test.cpp
+  ../DistanceSensor.cpp
+  ../Util.cpp
+  ../libraries/CRC/src/CRC8.cpp
+  ../libraries/CRC/src/CrcFastReverse.cpp
+  mocks/Arduino.cpp
+  mocks/Print.cpp
+  mocks/BufferSerial.cpp)
 target_link_libraries(DistanceSensor_test GTest::gtest_main GTest::gmock_main)
+target_include_directories(DistanceSensor_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(DistanceSensor_test)
 
 add_executable(
@@ -95,16 +104,30 @@ gtest_discover_tests(GarageCover_test)
 
 add_executable(
   HeightSensor_test EXCLUDE_FROM_ALL
-  HeightSensor_test.cpp ../HeightSensor.cpp ../Util.cpp mocks/Arduino.cpp
-  mocks/Print.cpp mocks/BufferSerial.cpp)
+  HeightSensor_test.cpp
+  ../HeightSensor.cpp
+  ../Util.cpp
+  ../libraries/CRC/src/CRC8.cpp
+  ../libraries/CRC/src/CrcFastReverse.cpp
+  mocks/Arduino.cpp
+  mocks/Print.cpp
+  mocks/BufferSerial.cpp)
 target_link_libraries(HeightSensor_test GTest::gtest_main GTest::gmock_main)
+target_include_directories(HeightSensor_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(HeightSensor_test)
 
 add_executable(
   HumiditySensor_test EXCLUDE_FROM_ALL
-  HumiditySensor_test.cpp ../HumiditySensor.cpp ../Util.cpp mocks/Arduino.cpp
-  mocks/Print.cpp mocks/BufferSerial.cpp)
+  HumiditySensor_test.cpp
+  ../HumiditySensor.cpp
+  ../Util.cpp
+  ../libraries/CRC/src/CRC8.cpp
+  ../libraries/CRC/src/CrcFastReverse.cpp
+  mocks/Arduino.cpp
+  mocks/Print.cpp
+  mocks/BufferSerial.cpp)
 target_link_libraries(HumiditySensor_test GTest::gtest_main GTest::gmock_main)
+target_include_directories(HumiditySensor_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(HumiditySensor_test)
 
 add_executable(
@@ -130,11 +153,15 @@ add_executable(
   ../PresenceBinarySensor.cpp
   ../Util.cpp
   ../BinarySensor.cpp
+  ../libraries/CRC/src/CRC8.cpp
+  ../libraries/CRC/src/CrcFastReverse.cpp
   mocks/Arduino.cpp
   mocks/Print.cpp
   mocks/BufferSerial.cpp)
 target_link_libraries(PresenceBinarySensor_test GTest::gtest_main
                       GTest::gmock_main)
+target_include_directories(PresenceBinarySensor_test
+                           PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(PresenceBinarySensor_test)
 
 add_executable(RingBuffer_test EXCLUDE_FROM_ALL RingBuffer_test.cpp
@@ -150,10 +177,17 @@ gtest_discover_tests(Sensor_test)
 
 add_executable(
   TemperatureSensor_test EXCLUDE_FROM_ALL
-  TemperatureSensor_test.cpp ../TemperatureSensor.cpp ../Util.cpp
-  mocks/Arduino.cpp mocks/Print.cpp mocks/BufferSerial.cpp)
+  TemperatureSensor_test.cpp
+  ../TemperatureSensor.cpp
+  ../Util.cpp
+  ../libraries/CRC/src/CRC8.cpp
+  ../libraries/CRC/src/CrcFastReverse.cpp
+  mocks/Arduino.cpp
+  mocks/Print.cpp
+  mocks/BufferSerial.cpp)
 target_link_libraries(TemperatureSensor_test GTest::gtest_main
                       GTest::gmock_main)
+target_include_directories(TemperatureSensor_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(TemperatureSensor_test)
 
 add_executable(Types_test EXCLUDE_FROM_ALL Types_test.cpp ../Util.cpp

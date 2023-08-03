@@ -1,0 +1,3 @@
+[submodule "libraries/CRC"]
+	path = libraries/CRC
+	url = https://github.com/RobTillaart/CRC
