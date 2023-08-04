@@ -36,7 +36,7 @@ struct DiscoveryEntityItemT {
     buf[4] = (isSigned << 4) | (size << 2) | precision;
     return sizeof(*this);
   }
-} __attribute__((packed, aligned(1)));
+};
 
 struct DiscoveryConfigItemT {
   uint8_t configId;
@@ -65,7 +65,7 @@ struct DiscoveryConfigItemT {
     buf[2] = (isSigned << 4) | (size << 2) | precision;
     return sizeof(*this);
   }
-} __attribute__((packed, aligned(1)));
+};
 
 // TODO: See if the array size can be templatized
 // // N is number of config items it can hold.
@@ -109,7 +109,7 @@ struct DiscoveryItemT {
     }
     return n;
   }
-} __attribute__((packed, aligned(1)));
+};
 
 struct ValueItemT {
   uint8_t entityId;
@@ -130,7 +130,7 @@ struct ValueItemT {
     *pValue_n = hton(value);
     return sizeof(*this);
   }
-} __attribute__((packed, aligned(1)));
+};
 
 struct ConfigItemValueT {
   uint8_t configId;
@@ -151,7 +151,7 @@ struct ConfigItemValueT {
     *pValue_n = hton(value);
     return sizeof(*this);
   }
-} __attribute__((packed, aligned(1)));
+};
 
 struct ConfigValuePayloadT {
   uint8_t entityId;
@@ -175,4 +175,4 @@ struct ConfigValuePayloadT {
     }
     return 1;
   }
-} __attribute__((packed, aligned(1)));
+};
