@@ -124,8 +124,41 @@ struct LoRaRxMessageT {
 struct LoRaValuePayloadT {
   uint8_t numberOfEntities;
   ValueItemT valueItems[(LORA_MAX_PAYLOAD_LENGTH - sizeof(numberOfEntities)) /
-                        sizeof(ValueItemT)];
-} __attribute__((packed, aligned(1)));
+                        ValueItemT::size()];
+
+  size_t size() const {
+    return sizeof(numberOfEntities) + ValueItemT::size() * numberOfEntities;
+  }
+
+  size_t toByteArray(uint8_t* buf, size_t length) const {
+    if (length < size()) {
+      return 0;
+    }
+
+    buf[0] = numberOfEntities;
+
+    size_t n = 1;
+    for (uint8_t i = 0; i < numberOfEntities; i++) {
+      n += valueItems[i].toByteArray(&buf[n], length - n);
+    }
+
+    return n;
+  }
+
+  uint8_t fromByteArray(const uint8_t* buf, size_t length) {
+    if (length < 1 + buf[0] * ValueItemT::size()) {
+      return 0;
+    }
+
+    numberOfEntities = buf[0];
+
+    size_t n = 1;
+    for (uint8_t i = 0; i < numberOfEntities; i++) {
+      n += valueItems[i].fromByteArray(&buf[n], length - n);
+    }
+    return n;
+  }
+};
 
 struct LoRaServiceItemT {
   uint8_t entityId;

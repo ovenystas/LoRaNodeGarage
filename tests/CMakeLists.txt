@@ -63,8 +63,13 @@ gtest_discover_tests(BinarySensor_test)
 
 add_executable(
   ConfigItem_test EXCLUDE_FROM_ALL
-  ConfigItem_test.cpp ../Util.cpp ../libraries/CRC/src/CRC8.cpp
-  ../libraries/CRC/src/CrcFastReverse.cpp mocks/Arduino.cpp mocks/Print.cpp)
+  ConfigItem_test.cpp
+  ../Util.cpp
+  ../libraries/CRC/src/CRC8.cpp
+  ../libraries/CRC/src/CrcFastReverse.cpp
+  mocks/Arduino.cpp
+  mocks/Print.cpp
+  mocks/EEPROM.cpp)
 target_link_libraries(ConfigItem_test GTest::gtest_main GTest::gmock_main)
 target_include_directories(ConfigItem_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(ConfigItem_test)
@@ -85,7 +90,8 @@ add_executable(
   ../libraries/CRC/src/CrcFastReverse.cpp
   mocks/Arduino.cpp
   mocks/Print.cpp
-  mocks/BufferSerial.cpp)
+  mocks/BufferSerial.cpp
+  mocks/EEPROM.cpp)
 target_link_libraries(DistanceSensor_test GTest::gtest_main GTest::gmock_main)
 target_include_directories(DistanceSensor_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(DistanceSensor_test)
@@ -111,7 +117,8 @@ add_executable(
   ../libraries/CRC/src/CrcFastReverse.cpp
   mocks/Arduino.cpp
   mocks/Print.cpp
-  mocks/BufferSerial.cpp)
+  mocks/BufferSerial.cpp
+  mocks/EEPROM.cpp)
 target_link_libraries(HeightSensor_test GTest::gtest_main GTest::gmock_main)
 target_include_directories(HeightSensor_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(HeightSensor_test)
@@ -125,7 +132,8 @@ add_executable(
   ../libraries/CRC/src/CrcFastReverse.cpp
   mocks/Arduino.cpp
   mocks/Print.cpp
-  mocks/BufferSerial.cpp)
+  mocks/BufferSerial.cpp
+  mocks/EEPROM.cpp)
 target_link_libraries(HumiditySensor_test GTest::gtest_main GTest::gmock_main)
 target_include_directories(HumiditySensor_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(HumiditySensor_test)
@@ -157,7 +165,8 @@ add_executable(
   ../libraries/CRC/src/CrcFastReverse.cpp
   mocks/Arduino.cpp
   mocks/Print.cpp
-  mocks/BufferSerial.cpp)
+  mocks/BufferSerial.cpp
+  mocks/EEPROM.cpp)
 target_link_libraries(PresenceBinarySensor_test GTest::gtest_main
                       GTest::gmock_main)
 target_include_directories(PresenceBinarySensor_test
@@ -184,7 +193,8 @@ add_executable(
   ../libraries/CRC/src/CrcFastReverse.cpp
   mocks/Arduino.cpp
   mocks/Print.cpp
-  mocks/BufferSerial.cpp)
+  mocks/BufferSerial.cpp
+  mocks/EEPROM.cpp)
 target_link_libraries(TemperatureSensor_test GTest::gtest_main
                       GTest::gmock_main)
 target_include_directories(TemperatureSensor_test PRIVATE ../libraries/CRC/src)

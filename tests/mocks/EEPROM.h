@@ -25,63 +25,9 @@
 // #include <avr/io.h>
 // #include <inttypes.h>
 #include <assert.h>
-#include <gmock/gmock.h>
+#include <stdint.h>
 
 #define E2END 511
-
-using ::testing::NiceMock;
-using ::testing::StrictMock;
-
-class EepromMock {
- public:
-  MOCK_METHOD(uint8_t, eeprom_read_byte, (const uint8_t *));
-  MOCK_METHOD(void, eeprom_write_byte, (uint8_t *, uint8_t));
-};
-
-static NiceMock<EepromMock> *niceEepromMock = NULL;
-static StrictMock<EepromMock> *strictEepromMock = NULL;
-
-inline NiceMock<EepromMock> *eepromNiceMockInstance() {
-  if (!niceEepromMock) {
-    niceEepromMock = new NiceMock<EepromMock>();
-  }
-  return niceEepromMock;
-}
-
-inline StrictMock<EepromMock> *eepromStrictMockInstance() {
-  if (!strictEepromMock) {
-    strictEepromMock = new StrictMock<EepromMock>();
-  }
-  return strictEepromMock;
-}
-
-inline void releaseEepromMock() {
-  if (niceEepromMock) {
-    delete niceEepromMock;
-    niceEepromMock = NULL;
-  }
-  if (strictEepromMock) {
-    delete strictEepromMock;
-    strictEepromMock = NULL;
-  }
-}
-
-inline uint8_t eeprom_read_byte(const uint8_t *__p) {
-  assert(niceEepromMock != NULL || strictEepromMock != NULL);
-  if (niceEepromMock != NULL) {
-    return niceEepromMock->eeprom_read_byte(__p);
-  }
-  return strictEepromMock->eeprom_read_byte(__p);
-}
-
-inline void eeprom_write_byte(uint8_t *__p, uint8_t __value) {
-  assert(niceEepromMock != NULL || strictEepromMock != NULL);
-  if (niceEepromMock != NULL) {
-    niceEepromMock->eeprom_write_byte(__p, __value);
-  } else {
-    strictEepromMock->eeprom_write_byte(__p, __value);
-  }
-}
 
 /***
     EERef class.
@@ -92,13 +38,21 @@ EEPROM. This class has an overhead of two bytes, similar to storing a pointer to
 an EEPROM cell.
 ***/
 
+uint8_t eeprom_read_byte(int index);
+void eeprom_write_byte(int index, uint8_t __value);
+
+// Extra helper function to clear EEPROM stub. (Fill with val which is 0xFF by
+// default)
+void eeprom_clear(uint8_t val = 0xFF);
+
 struct EERef {
   // cppcheck-suppress noExplicitConstructor
   EERef(const int _index) : index(_index) {}
 
   // Access/read members.
   uint8_t operator*() const {
-    return eeprom_read_byte(reinterpret_cast<uint8_t *>(index));
+    // return eeprom_read_byte(reinterpret_cast<uint8_t *>(index));
+    return eeprom_read_byte(index);
   }
   operator uint8_t() const { return **this; }
 
@@ -106,7 +60,8 @@ struct EERef {
   EERef &operator=(const EERef &ref) { return *this = *ref; }
   // cppcheck-suppress operatorEqRetRefThis
   EERef &operator=(uint8_t in) {
-    return eeprom_write_byte(reinterpret_cast<uint8_t *>(index), in), *this;
+    // return eeprom_write_byte(reinterpret_cast<uint8_t *>(index), in), *this;
+    return eeprom_write_byte(index, in), *this;
   }
   EERef &operator+=(uint8_t in) { return *this = **this + in; }
   EERef &operator-=(uint8_t in) { return *this = **this - in; }

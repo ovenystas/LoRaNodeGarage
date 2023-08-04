@@ -168,7 +168,7 @@ TEST_F(SensorInt8_test, getDiscoveryEntityItem) {
   EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::none));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
   EXPECT_TRUE(item.isSigned);
-  EXPECT_EQ(item.size, 0);
+  EXPECT_EQ(item.sizeCode, 0);
   EXPECT_EQ(item.precision, 0);
 }
 
@@ -183,7 +183,7 @@ TEST_F(SensorUInt16_test, getDiscoveryEntityItem) {
   EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::none));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
   EXPECT_FALSE(item.isSigned);
-  EXPECT_EQ(item.size, 1);
+  EXPECT_EQ(item.sizeCode, 1);
   EXPECT_EQ(item.precision, 0);
 }
 
@@ -198,7 +198,7 @@ TEST_F(SensorInt32_test, getDiscoveryEntityItem) {
   EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::none));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
   EXPECT_TRUE(item.isSigned);
-  EXPECT_EQ(item.size, 2);
+  EXPECT_EQ(item.sizeCode, 2);
   EXPECT_EQ(item.precision, 0);
 }
 
@@ -215,7 +215,7 @@ TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision0) {
   EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::battery));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
   EXPECT_TRUE(item.isSigned);
-  EXPECT_EQ(item.size, 2);
+  EXPECT_EQ(item.sizeCode, 2);
   EXPECT_EQ(item.precision, 0);
 }
 
@@ -232,7 +232,7 @@ TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision1) {
   EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::battery));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
   EXPECT_TRUE(item.isSigned);
-  EXPECT_EQ(item.size, 2);
+  EXPECT_EQ(item.sizeCode, 2);
   EXPECT_EQ(item.precision, 1);
 }
 
@@ -249,7 +249,7 @@ TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision2) {
   EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::battery));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
   EXPECT_TRUE(item.isSigned);
-  EXPECT_EQ(item.size, 2);
+  EXPECT_EQ(item.sizeCode, 2);
   EXPECT_EQ(item.precision, 2);
 }
 
@@ -266,7 +266,7 @@ TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision3) {
   EXPECT_EQ(item.deviceClass, static_cast<uint8_t>(SensorDeviceClass::battery));
   EXPECT_EQ(item.unit, static_cast<uint8_t>(Unit::Type::none));
   EXPECT_TRUE(item.isSigned);
-  EXPECT_EQ(item.size, 2);
+  EXPECT_EQ(item.sizeCode, 2);
   EXPECT_EQ(item.precision, 3);
 }
 

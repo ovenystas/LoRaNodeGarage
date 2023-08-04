@@ -91,7 +91,7 @@ TEST(Type_test, DiscoveryItemT_entity_not_equal) {
   const DiscoveryItemT item1 = {
       1, 2, 3, 4, 3, 2, 1, 0, 2, {{0, 1, 3, 2, 1, 0}, {1, 4, 3, 2, 1, 0}}};
   DiscoveryItemT item2 = item1;
-  item2.entity.size++;
+  item2.entity.sizeCode++;
 
   EXPECT_NE(item1, item2);
 }
@@ -117,7 +117,7 @@ TEST(Type_test, DiscoveryItemT_configItems_not_equal) {
   const DiscoveryItemT item1 = {
       1, 2, 3, 4, 3, 2, 1, 0, 13, {{0, 1, 3, 2, 1, 0}, {1, 4, 3, 2, 1, 0}}};
   DiscoveryItemT item2 = item1;
-  item2.configItems[12].size++;
+  item2.configItems[12].sizeCode++;
 
   EXPECT_NE(item1, item2);
 }

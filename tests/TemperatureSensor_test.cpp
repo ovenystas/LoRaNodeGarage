@@ -5,10 +5,8 @@
 #include "Unit.h"
 #include "mocks/BufferSerial.h"
 #include "mocks/DHT.h"
+#include "mocks/EEPROM.h"
 
-using ::testing::_;
-using ::testing::AtLeast;
-using ::testing::NiceMock;
 using ::testing::Return;
 
 using TemperatureT = int16_t;  // Degree C
@@ -18,15 +16,10 @@ BufferSerial Serial = BufferSerial(256);
 class TemperatureSensor_test : public ::testing::Test {
  protected:
   void SetUp() override {
-    pArduinoMock = arduinoMockInstance();
-    pEepromMock = eepromNiceMockInstance();
-    pDhtMock = new DHTMock();
     strBuf[0] = '\0';
-
-    EXPECT_CALL(*pEepromMock, eeprom_read_byte(_))
-        .Times(AtLeast(12 * 2))
-        .WillRepeatedly(Return(0xFF));
-    EXPECT_CALL(*pEepromMock, eeprom_write_byte(_, _)).Times(AtLeast(12));
+    pArduinoMock = arduinoMockInstance();
+    pDhtMock = new DHTMock();
+    eeprom_clear();
 
     pTs = new TemperatureSensor(15, "TemperatureSensor", *pDhtMock);
   }
@@ -34,7 +27,6 @@ class TemperatureSensor_test : public ::testing::Test {
   void TearDown() override {
     delete pTs;
     delete pDhtMock;
-    releaseEepromMock();
     releaseArduinoMock();
   }
 
@@ -52,7 +44,6 @@ class TemperatureSensor_test : public ::testing::Test {
 
   char strBuf[256];
   ArduinoMock *pArduinoMock;
-  NiceMock<EepromMock> *pEepromMock;
   DHTMock *pDhtMock;
   TemperatureSensor *pTs;
 };
@@ -92,7 +83,7 @@ TEST_F(TemperatureSensor_test, getDiscoveryItem) {
             static_cast<uint8_t>(SensorDeviceClass::temperature));
   EXPECT_EQ(item.entity.unit, static_cast<uint8_t>(Unit::Type::C));
   EXPECT_TRUE(item.entity.isSigned);
-  EXPECT_EQ(item.entity.size, sizeof(TemperatureT) / 2);
+  EXPECT_EQ(item.entity.sizeCode, sizeof(TemperatureT) / 2);
   EXPECT_EQ(item.entity.precision, 1);
 
   EXPECT_EQ(item.numberOfConfigItems, 4);
@@ -100,25 +91,25 @@ TEST_F(TemperatureSensor_test, getDiscoveryItem) {
   EXPECT_EQ(item.configItems[0].configId, 0);
   EXPECT_EQ(item.configItems[0].unit, static_cast<uint8_t>(Unit::Type::C));
   EXPECT_TRUE(item.configItems[0].isSigned);
-  EXPECT_EQ(item.configItems[0].size, sizeof(TemperatureT) / 2);
+  EXPECT_EQ(item.configItems[0].sizeCode, sizeof(TemperatureT) / 2);
   EXPECT_EQ(item.configItems[0].precision, 1);
 
   EXPECT_EQ(item.configItems[1].configId, 1);
   EXPECT_EQ(item.configItems[1].unit, static_cast<uint8_t>(Unit::Type::s));
   EXPECT_FALSE(item.configItems[1].isSigned);
-  EXPECT_EQ(item.configItems[1].size, sizeof(uint16_t) / 2);
+  EXPECT_EQ(item.configItems[1].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[1].precision, 0);
 
   EXPECT_EQ(item.configItems[2].configId, 2);
   EXPECT_EQ(item.configItems[2].unit, static_cast<uint8_t>(Unit::Type::s));
   EXPECT_FALSE(item.configItems[2].isSigned);
-  EXPECT_EQ(item.configItems[2].size, sizeof(uint16_t) / 2);
+  EXPECT_EQ(item.configItems[2].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[2].precision, 0);
 
   EXPECT_EQ(item.configItems[3].configId, 3);
   EXPECT_EQ(item.configItems[3].unit, static_cast<uint8_t>(Unit::Type::C));
   EXPECT_TRUE(item.configItems[3].isSigned);
-  EXPECT_EQ(item.configItems[3].size, sizeof(TemperatureT) / 2);
+  EXPECT_EQ(item.configItems[3].sizeCode, sizeof(TemperatureT) / 2);
   EXPECT_EQ(item.configItems[3].precision, 1);
 }
 

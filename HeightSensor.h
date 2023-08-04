@@ -70,10 +70,10 @@ class HeightSensor : public IComponent {
         1, EE_ADDRESS_CONFIG_HEIGHTSENSOR_1, 60, Unit::Type::s)};
 
     ConfigItem<uint16_t> stableTime = {ConfigItem<uint16_t>(
-        2, EE_ADDRESS_CONFIG_HEIGHTSENSOR_0, 5000, Unit::Type::ms)};
+        2, EE_ADDRESS_CONFIG_HEIGHTSENSOR_2, 5000, Unit::Type::ms)};
 
     ConfigItem<HeightT> zeroValue = {ConfigItem<HeightT>(
-        3, EE_ADDRESS_CONFIG_HEIGHTSENSOR_0, 60, Unit::Type::cm)};
+        3, EE_ADDRESS_CONFIG_HEIGHTSENSOR_3, 60, Unit::Type::cm)};
   };
 
   Sensor<HeightT> mSensor;

@@ -115,7 +115,7 @@ TEST_F(LoRaHandler_test, configsValueMsg) {
   const ConfigItemValueT items[2] = {{1, 0x11}, {2, 0x11223344}};
   const size_t payloadSize = sizeof(ConfigValuePayloadT::entityId) +
                              sizeof(ConfigValuePayloadT::numberOfConfigs) +
-                             sizeof(items);
+                             items[0].size() * 2;
   const size_t expectedMsgSize = LORA_HEADER_LENGTH + payloadSize;
   const uint8_t expectedPayload[] = {55,   2, 1,    0x00, 0x00, 0x00,
                                      0x11, 2, 0x11, 0x22, 0x33, 0x44};
@@ -158,9 +158,7 @@ TEST_F(LoRaHandler_test, discoveryMsg) {
   const DiscoveryItemT item = {{123, 1, 2, 3, 3, 2, 1, 0},
                                2,
                                {{6, 16, 3, 2, 1, 0}, {7, 17, 2, 1, 0, 0}}};
-  const size_t payloadSize =
-      sizeof(item.entity) + sizeof(item.numberOfConfigItems) +
-      item.numberOfConfigItems * sizeof(item.configItems[0]);
+  const size_t payloadSize = item.size();
   const size_t expectedMsgSize = LORA_HEADER_LENGTH + payloadSize;
   size_t writeSize;
   EXPECT_CALL(*pLoRaMock, beginPacket(false)).WillOnce(Return(1));
@@ -559,10 +557,10 @@ TEST_F(LoRaHandler_test, setDefaultHeader) {
 
 // TODO: Not according to protocol, Only one or more values in one message?
 TEST_F(LoRaHandler_test, valueMsg) {
-  const ValueItemT item1 = {123, 0x01};
-  const ValueItemT item2 = {124, 0x11223344};
-  const size_t payloadSize = sizeof(LoRaValuePayloadT::numberOfEntities) +
-                             sizeof(item1) + sizeof(item2);
+  const ValueItemT item1 = ValueItemT(123, 0x01);
+  const ValueItemT item2 = ValueItemT(124, 0x11223344);
+  const size_t payloadSize =
+      sizeof(LoRaValuePayloadT::numberOfEntities) + item1.size() + item2.size();
   const uint8_t expectedPayload[] = {2,   123,  0x00, 0x00, 0x00, 0x01,
                                      124, 0x11, 0x22, 0x33, 0x44};
   const size_t expectedMsgSize = LORA_HEADER_LENGTH + payloadSize;

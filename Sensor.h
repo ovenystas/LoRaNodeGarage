@@ -85,7 +85,7 @@ class Sensor {
     item->deviceClass = static_cast<uint8_t>(getDeviceClass());
     item->unit = static_cast<uint8_t>(mValueItem.getUnit().type());
     item->isSigned = mValueItem.isSigned();
-    item->size = static_cast<uint8_t>(mValueItem.getValueSize()) / 2;
+    item->sizeCode = static_cast<uint8_t>(mValueItem.getValueSize()) / 2;
     item->precision = mValueItem.getPrecision();
   }
 

@@ -235,43 +235,47 @@ void LoRaHandler::addDiscoveryItem(const DiscoveryItemT* item) {
 void LoRaHandler::beginValueMsg() {
   setDefaultHeader(&mMsgTx.header);
   mMsgTx.header.flags |= MsgType::value_msg;
-  reinterpret_cast<LoRaValuePayloadT*>(mMsgTx.payload)->numberOfEntities = 0;
-  mMsgTx.header.len = 1;
+
+  LoRaValuePayloadT payload;
+  payload.numberOfEntities = 0;
+
+  mMsgTx.header.len =
+      payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
 }
 
 void LoRaHandler::addValueItem(const ValueItemT* item) {
-  size_t length = item->toByteArray(&mMsgTx.payload[mMsgTx.header.len],
-                                    sizeof(mMsgTx.payload) - mMsgTx.header.len);
-  if (length > 0) {
-    mMsgTx.header.len += length;
+  LoRaValuePayloadT payload;
+  payload.fromByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
 
-    LoRaValuePayloadT* payload =
-        reinterpret_cast<LoRaValuePayloadT*>(mMsgTx.payload);
-    payload->numberOfEntities++;
-  }
+  payload.valueItems[payload.numberOfEntities++] = *item;
+  mMsgTx.header.len += item->size();
+
+  payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
 }
 
 void LoRaHandler::beginConfigsValueMsg(uint8_t entityId) {
   setDefaultHeader(&mMsgTx.header);
   mMsgTx.header.flags |= MsgType::config_msg;
-  ConfigValuePayloadT* payload =
-      reinterpret_cast<ConfigValuePayloadT*>(mMsgTx.payload);
-  payload->entityId = entityId;
-  payload->numberOfConfigs = 0;
+
+  ConfigValuePayloadT payload;
+  payload.entityId = entityId;
+  payload.numberOfConfigs = 0;
+
+  payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
+
   mMsgTx.header.len += 2;
 }
 
 void LoRaHandler::addConfigItemValues(const ConfigItemValueT* items,
                                       uint8_t length) {
-  for (uint8_t i = 0; i < length; i++) {
-    size_t n = items[i].toByteArray(&mMsgTx.payload[mMsgTx.header.len],
-                                    sizeof(mMsgTx.payload) - mMsgTx.header.len);
-    if (n > 0) {
-      mMsgTx.header.len += n;
+  ConfigValuePayloadT payload;
+  payload.fromByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
 
-      ConfigValuePayloadT* payload =
-          reinterpret_cast<ConfigValuePayloadT*>(mMsgTx.payload);
-      payload->numberOfConfigs++;
-    }
+  for (uint8_t i = 0; i < length; i++) {
+    payload.configValues[i] = items[i];
+    payload.numberOfConfigs++;
+    mMsgTx.header.len += payload.configValues[0].size();
   }
+
+  payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
 }

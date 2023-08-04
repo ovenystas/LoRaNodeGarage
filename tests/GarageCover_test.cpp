@@ -8,14 +8,24 @@
 
 using ::testing::Return;
 
-class GarageCoverPrint_test : public ::testing::Test {
+class GarageCover_test : public ::testing::Test {
  protected:
   void SetUp() override {
-    pSerial = new BufferSerial(256);
     strBuf[0] = '\0';
+    pSerial = new BufferSerial(256);
+    pArduinoMock = arduinoMockInstance();
+    EXPECT_CALL(*pArduinoMock, pinMode(11, INPUT_PULLUP));
+    EXPECT_CALL(*pArduinoMock, pinMode(12, INPUT_PULLUP));
+    EXPECT_CALL(*pArduinoMock, pinMode(13, OUTPUT));
+    EXPECT_CALL(*pArduinoMock, digitalWrite(13, LOW));
+    pGc = new GarageCover(91, "GarageCover", 11, 12, 13);
   }
 
-  void TearDown() override { delete pSerial; }
+  void TearDown() override {
+    delete pGc;
+    delete pSerial;
+    releaseArduinoMock();
+  }
 
   void bufSerReadStr() {
     size_t i = 0;
@@ -31,24 +41,6 @@ class GarageCoverPrint_test : public ::testing::Test {
 
   char strBuf[256];
   BufferSerial* pSerial;
-};
-
-class GarageCover_test : public ::testing::Test {
- protected:
-  void SetUp() override {
-    pArduinoMock = arduinoMockInstance();
-    EXPECT_CALL(*pArduinoMock, pinMode(11, INPUT_PULLUP));
-    EXPECT_CALL(*pArduinoMock, pinMode(12, INPUT_PULLUP));
-    EXPECT_CALL(*pArduinoMock, pinMode(13, OUTPUT));
-    EXPECT_CALL(*pArduinoMock, digitalWrite(13, LOW));
-    pGc = new GarageCover(91, "GarageCover", 11, 12, 13);
-  }
-
-  void TearDown() override {
-    delete pGc;
-    releaseArduinoMock();
-  }
-
   ArduinoMock* pArduinoMock;
   GarageCover* pGc;
 };
@@ -197,7 +189,7 @@ TEST_F(GarageCover_test, getDiscoveryItem) {
             static_cast<uint8_t>(CoverDeviceClass::garage));
   EXPECT_EQ(item.entity.unit, static_cast<uint8_t>(Unit::Type::none));
   EXPECT_FALSE(item.entity.isSigned);
-  EXPECT_EQ(item.entity.size, 0);
+  EXPECT_EQ(item.entity.sizeCode, 0);
   EXPECT_EQ(item.entity.precision, 0);
 
   EXPECT_EQ(item.numberOfConfigItems, 0);
@@ -214,9 +206,8 @@ TEST_F(GarageCover_test, getValueItem) {
   EXPECT_EQ(item.value, 0);
 }
 
-TEST_F(GarageCoverPrint_test, print) {
+TEST_F(GarageCover_test, print) {
   const char* expectStr = "GarageCover: closed";
-  ArduinoMock* pArduinoMock = arduinoMockInstance();
   EXPECT_CALL(*pArduinoMock, pinMode(11, INPUT_PULLUP));
   EXPECT_CALL(*pArduinoMock, pinMode(12, INPUT_PULLUP));
   EXPECT_CALL(*pArduinoMock, pinMode(13, OUTPUT));
@@ -227,13 +218,11 @@ TEST_F(GarageCoverPrint_test, print) {
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
-  releaseArduinoMock();
 }
 
-TEST_F(GarageCoverPrint_test, print_service_open) {
+TEST_F(GarageCover_test, print_service_open) {
   const char* expectStr =
       "GarageCover: Service open called when in state closed";
-  ArduinoMock* pArduinoMock = arduinoMockInstance();
   EXPECT_CALL(*pArduinoMock, pinMode(11, INPUT_PULLUP));
   EXPECT_CALL(*pArduinoMock, pinMode(12, INPUT_PULLUP));
   EXPECT_CALL(*pArduinoMock, pinMode(13, OUTPUT));
@@ -244,7 +233,6 @@ TEST_F(GarageCoverPrint_test, print_service_open) {
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
-  releaseArduinoMock();
 }
 
 // No config items

@@ -59,7 +59,7 @@ void BinarySensor::getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
   item->deviceClass = static_cast<uint8_t>(getDeviceClass());
   item->unit = static_cast<uint8_t>(mUnit.type());
   item->isSigned = false;
-  item->size = 0;
+  item->sizeCode = 0;
   item->precision = 0;
 }
 

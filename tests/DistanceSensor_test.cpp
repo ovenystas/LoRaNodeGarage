@@ -12,9 +12,6 @@
 #define SONAR_ECHO_PIN 6
 #define SONAR_MAX_DISTANCE_CM 300
 
-using ::testing::_;
-using ::testing::AtLeast;
-using ::testing::NiceMock;
 using ::testing::Return;
 
 using DistanceT = int16_t;  // cm
@@ -24,14 +21,10 @@ class DistanceSensor_test : public ::testing::Test {
   void SetUp() override {
     pArduinoMock = arduinoMockInstance();
     pSonarMock = new NewPingMock();
-    pEepromMock = eepromNiceMockInstance();
     pSerial = new BufferSerial(256);
     strBuf[0] = '\0';
+    eeprom_clear();
 
-    EXPECT_CALL(*pEepromMock, eeprom_read_byte(_))
-        .Times(AtLeast(9 * 2))
-        .WillRepeatedly(Return(0xFF));
-    EXPECT_CALL(*pEepromMock, eeprom_write_byte(_, _)).Times(AtLeast(9));
     pDs = new DistanceSensor(7, "DistanceSensor", *pSonarMock);
   }
 
@@ -39,7 +32,6 @@ class DistanceSensor_test : public ::testing::Test {
     delete pDs;
     delete pSonarMock;
     delete pSerial;
-    releaseEepromMock();
     releaseArduinoMock();
   }
 
@@ -58,7 +50,6 @@ class DistanceSensor_test : public ::testing::Test {
   char strBuf[256];
   ArduinoMock* pArduinoMock;
   NewPingMock* pSonarMock;
-  NiceMock<EepromMock>* pEepromMock;
   BufferSerial* pSerial;
   DistanceSensor* pDs;
 };
@@ -95,7 +86,7 @@ TEST_F(DistanceSensor_test, getDiscoveryItem) {
             static_cast<uint8_t>(SensorDeviceClass::distance));
   EXPECT_EQ(item.entity.unit, static_cast<uint8_t>(Unit::Type::cm));
   EXPECT_TRUE(item.entity.isSigned);
-  EXPECT_EQ(item.entity.size, sizeof(DistanceT) / 2);
+  EXPECT_EQ(item.entity.sizeCode, sizeof(DistanceT) / 2);
   EXPECT_EQ(item.entity.precision, 0);
 
   EXPECT_EQ(item.numberOfConfigItems, 3);
@@ -103,19 +94,19 @@ TEST_F(DistanceSensor_test, getDiscoveryItem) {
   EXPECT_EQ(item.configItems[0].configId, 0);
   EXPECT_EQ(item.configItems[0].unit, static_cast<uint8_t>(Unit::Type::cm));
   EXPECT_TRUE(item.configItems[0].isSigned);
-  EXPECT_EQ(item.configItems[0].size, sizeof(DistanceT) / 2);
+  EXPECT_EQ(item.configItems[0].sizeCode, sizeof(DistanceT) / 2);
   EXPECT_EQ(item.configItems[0].precision, 0);
 
   EXPECT_EQ(item.configItems[1].configId, 1);
   EXPECT_EQ(item.configItems[1].unit, static_cast<uint8_t>(Unit::Type::s));
   EXPECT_FALSE(item.configItems[1].isSigned);
-  EXPECT_EQ(item.configItems[1].size, sizeof(uint16_t) / 2);
+  EXPECT_EQ(item.configItems[1].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[1].precision, 0);
 
   EXPECT_EQ(item.configItems[2].configId, 2);
   EXPECT_EQ(item.configItems[2].unit, static_cast<uint8_t>(Unit::Type::s));
   EXPECT_FALSE(item.configItems[2].isSigned);
-  EXPECT_EQ(item.configItems[2].size, sizeof(uint16_t) / 2);
+  EXPECT_EQ(item.configItems[2].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[2].precision, 0);
 }
 
