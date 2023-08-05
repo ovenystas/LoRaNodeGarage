@@ -10,7 +10,7 @@
 
 namespace UnitConstants {
 static const char UnitName[][4] = {"",   "°C", "°F", "K",  "%", "km", "m",
-                                   "dm", "cm", "mm", "um", "s", "ms"};
+                                   "dm", "cm", "mm", "μm", "s", "ms"};
 }
 
 class Unit {

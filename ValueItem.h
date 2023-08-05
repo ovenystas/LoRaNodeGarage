@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Arduino.h>
 #include <stdint.h>
 
 #include "Unit.h"
@@ -7,7 +8,7 @@
 #define IS_SIGNED_TYPE(type) (type(-1) < type(0))
 
 namespace ValueItemConstants {
-static const int16_t factors[4] = {1, 10, 100, 1000};
+static const uint16_t factors[4] = {1, 10, 100, 1000};
 }
 
 template <class T>
@@ -28,7 +29,7 @@ class ValueItem {
   size_t print(Stream& stream) const {
     size_t n = 0;
 
-    const int16_t scaleFactor = ValueItemConstants::factors[mPrecision];
+    const uint16_t scaleFactor = ValueItemConstants::factors[mPrecision];
     if (scaleFactor == 1) {
       n += stream.print(mValue);
     } else {
@@ -38,12 +39,24 @@ class ValueItem {
         n += stream.print('-');
       }
 
-      uint32_t integer = abs(mValue / scaleFactor);
+      uint32_t integer;
+      if (IS_SIGNED_TYPE(T) && mValue < 0) {
+        integer = -(mValue / scaleFactor);
+      } else {
+        integer = mValue / scaleFactor;
+      }
+
       n += stream.print(integer);
 
       n += stream.print('.');
 
-      uint32_t fractional = abs(mValue % scaleFactor);
+      uint32_t fractional;
+      if (IS_SIGNED_TYPE(T) && mValue < 0) {
+        fractional = -(mValue % scaleFactor);
+      } else {
+        fractional = mValue % scaleFactor;
+      }
+
       if (scaleFactor >= 1000 && fractional < 100) {
         n += stream.print('0');
       }

@@ -205,8 +205,9 @@ add_executable(Types_test EXCLUDE_FROM_ALL Types_test.cpp ../Util.cpp
 target_link_libraries(Types_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(Types_test)
 
-add_executable(Unit_test EXCLUDE_FROM_ALL Unit_test.cpp)
-target_link_libraries(Unit_test GTest::gtest_main)
+add_executable(Unit_test EXCLUDE_FROM_ALL Unit_test.cpp mocks/Print.cpp
+                                          mocks/BufferSerial.cpp)
+target_link_libraries(Unit_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(Unit_test)
 
 add_executable(
@@ -214,6 +215,11 @@ add_executable(
                              mocks/Print.cpp mocks/BufferSerial.cpp)
 target_link_libraries(Util_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(Util_test)
+
+add_executable(ValueItem_test EXCLUDE_FROM_ALL
+               ValueItem_test.cpp mocks/Print.cpp mocks/BufferSerial.cpp)
+target_link_libraries(ValueItem_test GTest::gtest_main GTest::gmock_main)
+gtest_discover_tests(ValueItem_test)
 
 add_custom_target(
   test_all
