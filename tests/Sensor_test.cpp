@@ -373,7 +373,7 @@ TEST_F(SensorPrint_test, print_negative_value_scalefactor_10_unit_mm) {
 }
 
 TEST_F(SensorPrint_test, print_negative_value_scalefactor_1000_unit_um) {
-  const char* expectStr = "Sensor32: -2147483.648 um";
+  const char* expectStr = "Sensor32: -2147483.648 μm";
   Sensor<int32_t> sc = Sensor<int32_t>(
       116, "Sensor32", SensorDeviceClass::distance, Unit::Type::um, 3);
   sc.setValue(INT32_MIN);
