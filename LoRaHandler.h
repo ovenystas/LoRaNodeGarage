@@ -82,7 +82,6 @@
 #include <Arduino.h>
 #include <LoRa.h>
 #include <Stream.h>
-#include <assert.h>
 
 #include "AirTime.h"
 #include "Types.h"

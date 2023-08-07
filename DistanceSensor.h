@@ -64,7 +64,7 @@ class DistanceSensor : public IComponent {
         1, EE_ADDRESS_CONFIG_DISTANCESENSOR_1, 60, Unit::Type::s)};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        2, EE_ADDRESS_CONFIG_DISTANCESENSOR_2, 60, Unit::Type::s)};
+        2, EE_ADDRESS_CONFIG_DISTANCESENSOR_2, 300, Unit::Type::s)};
   };
 
   Sensor<DistanceT> mSensor;

@@ -165,3 +165,14 @@ TEST_F(
   // One hour completed, now 0 ms.
   EXPECT_EQ(at.getTime_ms(), 0);
 }
+
+TEST_F(
+    AirTime_test,
+    for_airtime_ppm_above_UINT16_MAX_getTime_ppm_shall_be_limited_to_UINT16_MAX) {
+  auto at = AirTime(10000);
+  EXPECT_CALL(*pArduinoMock, millis()).WillRepeatedly(Return(0));
+
+  at.update(0, 235924);
+
+  EXPECT_EQ(at.getTime_ppm(), UINT16_MAX);
+}

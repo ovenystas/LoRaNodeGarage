@@ -9,12 +9,15 @@
  */
 
 /* TODO:
- * - Store configs in EEPROM
  * - Handle millis() wrap-around
  */
 
+#define DEBUGLOG_DEFAULT_LOG_LEVEL_TRACE
+
 #include <Arduino.h>
-#include <DHT.h>  // DHT sensor library by Adafruit
+#include <DHT.h>       // DHT sensor library by Adafruit
+#include <DebugLog.h>  // DebugLog by hideakitai
+#include <EEPROM.h>
 #include <LoRa.h>
 #include <NewPing.h>  // NewPing by Tim Eckel
 #include <SPI.h>
@@ -33,6 +36,8 @@
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 0
 #define VERSION_PATCH 6
+
+// #define ERASE_EEPROM
 
 #define DEBUG_SENSOR_VALUES
 #define DEBUG_SENSOR_REPORT
@@ -105,6 +110,14 @@ void setup() {
 
   printWelcomeMsg();
 
+#ifdef ERASE_EEPROM
+  Serial.print(F("Erasing EEPROM..."));
+  for (uint16_t i = 0; i <= E2END; i++) {
+    EEPROM.write(i, 0xFF);
+  }
+  Serial.println(F("Done!"));
+#endif
+
   if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onConfigReqMsg,
                   &onConfigSetReqMsg, &onServiceReqMsg)) {
     Serial.println(F("Starting LoRa failed!"));
@@ -114,7 +127,6 @@ void setup() {
   }
 
   sendDiscoveryMsgForAllComponents();
-
   dht.begin();
 }
 
@@ -124,7 +136,7 @@ void loop() {
     nextRunTime += UPDATE_SENSORS_INTERVAL;
 
     updateSensors();
-    // sendSensorValueForComponentsWhereReportIsDue();
+    sendSensorValueForComponentsWhereReportIsDue();
 
 #ifdef DEBUG_SENSOR_VALUES
     printMillis(Serial);
@@ -180,7 +192,7 @@ static void updateSensors() {
 
     if (c->update()) {
       LOG_SENSOR(c);
-      c->setReported();  // Tmp: Fake
+      // c->setReported();  // Tmp: Fake
     }
   }
 }

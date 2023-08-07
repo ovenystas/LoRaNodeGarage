@@ -57,13 +57,13 @@ class HumiditySensor : public IComponent {
     const uint8_t numberOfConfigItems = {4};
 
     ConfigItem<HumidityT> reportHysteresis = {ConfigItem<HumidityT>(
-        0, EE_ADDRESS_CONFIG_HUMIDITYSENSOR_0, 2, Unit::Type::percent)};
+        0, EE_ADDRESS_CONFIG_HUMIDITYSENSOR_0, 10, Unit::Type::percent)};
 
     ConfigItem<uint16_t> measureInterval = {ConfigItem<uint16_t>(
         1, EE_ADDRESS_CONFIG_HUMIDITYSENSOR_1, 60, Unit::Type::s)};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        2, EE_ADDRESS_CONFIG_HUMIDITYSENSOR_2, 60, Unit::Type::s)};
+        2, EE_ADDRESS_CONFIG_HUMIDITYSENSOR_2, 300, Unit::Type::s)};
 
     ConfigItem<HumidityT> compensation = {ConfigItem<HumidityT>(
         3, EE_ADDRESS_CONFIG_HUMIDITYSENSOR_3, 0, Unit::Type::percent)};

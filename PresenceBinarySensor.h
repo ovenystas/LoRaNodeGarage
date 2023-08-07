@@ -64,7 +64,7 @@ class PresenceBinarySensor : public IComponent {
         2, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_2, 10000, Unit::Type::ms)};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        3, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_3, 60, Unit::Type::s)};
+        3, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_3, 300, Unit::Type::s)};
   };
 
   BinarySensor mBinarySensor;

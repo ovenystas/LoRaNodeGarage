@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Component.h"
+#include "ConfigItem.h"
 #include "Cover.h"
+#include "EeAdressMap.h"
 
 class GarageCover : public IComponent {
  public:
@@ -24,9 +26,7 @@ class GarageCover : public IComponent {
   void callService(uint8_t service) final;
 
   uint8_t getConfigItemValues(ConfigItemValueT* items,
-                              uint8_t length) const final {
-    return 0;
-  }
+                              uint8_t length) const final;
 
   void getDiscoveryItem(DiscoveryItemT* item) const final;
 
@@ -44,12 +44,7 @@ class GarageCover : public IComponent {
     return mCover.print(stream, service);
   };
 
-  bool setConfigItemValues(const ConfigItemValueT* items,
-                           uint8_t length) final {
-    (void)items;
-    (void)length;
-    return false;
-  }
+  bool setConfigItemValues(const ConfigItemValueT* items, uint8_t length) final;
 
   void setReported() final { mCover.setReported(); }
 
@@ -73,6 +68,15 @@ class GarageCover : public IComponent {
   Cover mCover;
 
  private:
+  struct Config {
+    // cppcheck-suppress unusedStructMember
+    const uint8_t numberOfConfigItems = {1};
+
+    ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
+        0, EE_ADDRESS_CONFIG_GARAGECOVER_0, 300, Unit::Type::s)};
+  };
+
+  Config mConfig;
   const uint8_t mPinClosed;
   const uint8_t mPinOpen;
   const uint8_t mPinRelay;

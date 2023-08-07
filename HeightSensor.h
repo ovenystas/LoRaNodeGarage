@@ -67,7 +67,7 @@ class HeightSensor : public IComponent {
         0, EE_ADDRESS_CONFIG_HEIGHTSENSOR_0, 10, Unit::Type::cm)};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        1, EE_ADDRESS_CONFIG_HEIGHTSENSOR_1, 60, Unit::Type::s)};
+        1, EE_ADDRESS_CONFIG_HEIGHTSENSOR_1, 300, Unit::Type::s)};
 
     ConfigItem<uint16_t> stableTime = {ConfigItem<uint16_t>(
         2, EE_ADDRESS_CONFIG_HEIGHTSENSOR_2, 5000, Unit::Type::ms)};

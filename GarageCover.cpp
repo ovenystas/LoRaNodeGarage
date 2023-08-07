@@ -83,7 +83,17 @@ CoverState GarageCover::determineState() {
 
 void GarageCover::getDiscoveryItem(DiscoveryItemT* item) const {
   mCover.getDiscoveryEntityItem(&item->entity);
-  item->numberOfConfigItems = 0;
+  item->numberOfConfigItems = mConfig.numberOfConfigItems;
+  mConfig.reportInterval.getDiscoveryConfigItem(&item->configItems[0]);
+}
+
+uint8_t GarageCover::getConfigItemValues(ConfigItemValueT* items,
+                                         uint8_t length) const {
+  assert(mConfig.numberOfConfigItems <= length);
+
+  mConfig.reportInterval.getConfigItemValue(&items[0]);
+
+  return mConfig.numberOfConfigItems;
 }
 
 bool GarageCover::isClosed(bool closedSensor, bool openSensor) {
@@ -116,4 +126,23 @@ bool GarageCover::update() {
   mCover.setIsReportDue(isReportDue);
 
   return isReportDue;
+}
+
+bool GarageCover::setConfigItemValues(const ConfigItemValueT* items,
+                                      uint8_t length) {
+  if (length > mConfig.numberOfConfigItems) {
+    return false;
+  }
+
+  for (uint8_t i = 0; i < length; i++) {
+    switch (items[i].configId) {
+      case 0:
+        (void)mConfig.reportInterval.setConfigItemValue(&items[i]);
+        break;
+      default:
+        return false;
+    }
+  }
+
+  return true;
 }

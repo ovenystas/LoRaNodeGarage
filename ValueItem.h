@@ -40,6 +40,8 @@ class ValueItem {
       }
 
       uint32_t integer;
+      // cppcheck-suppress unsignedLessThanZero
+      // cppcheck-suppress unmatchedSuppression
       if (IS_SIGNED_TYPE(T) && mValue < 0) {
         integer = -(mValue / scaleFactor);
       } else {
@@ -51,6 +53,8 @@ class ValueItem {
       n += stream.print('.');
 
       uint32_t fractional;
+      // cppcheck-suppress unsignedLessThanZero
+      // cppcheck-suppress unmatchedSuppression
       if (IS_SIGNED_TYPE(T) && mValue < 0) {
         fractional = -(mValue % scaleFactor);
       } else {

@@ -24,10 +24,34 @@ TEST(BaseComponent_test, setReported_and_timeSinceLastReport) {
       .WillOnce(Return(20500ul))
       .WillOnce(Return(35999ul))
       .WillOnce(Return(135000ul));
+
   cmp.setReported();
   EXPECT_EQ(cmp.timeSinceLastReport(), 10);
+
   cmp.setReported();
   EXPECT_EQ(cmp.timeSinceLastReport(), 100);
+
+  releaseArduinoMock();
+}
+
+TEST(BaseComponent_test, isReportDue) {
+  BaseComponent cmp = BaseComponent(23);
+  ArduinoMock* arduinoMock = arduinoMockInstance();
+  EXPECT_CALL(*arduinoMock, millis()).WillOnce(Return(10000ul));
+
+  // Newly constructed shall be true
+  EXPECT_TRUE(cmp.isReportDue());
+
+  // Shall be set to false when setReported() is called
+  cmp.setReported();
+  EXPECT_FALSE(cmp.isReportDue());
+
+  // Shall set it with setIsReportDue()
+  cmp.setIsReportDue(true);
+  EXPECT_TRUE(cmp.isReportDue());
+  cmp.setIsReportDue(false);
+  EXPECT_FALSE(cmp.isReportDue());
+
   releaseArduinoMock();
 }
 

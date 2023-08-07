@@ -188,6 +188,13 @@ void LoRaHandler::sendMsg(const LoRaTxMessageT* msg) {
   uint32_t sendEndTime = millis();
   airTime.update(sendStartTime, sendEndTime);
 
+  printMillis(mStream);
+  mStream.print(F("AirTime: "));
+  mStream.print(airTime.getTime_ms());
+  mStream.print(F(" ms, "));
+  mStream.print(airTime.getTime_ppm());
+  mStream.println(F(" ppm"));
+
   mSeqId++;
 }
 

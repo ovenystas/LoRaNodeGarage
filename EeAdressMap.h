@@ -11,6 +11,11 @@
 #define EE_ADDRESS_TEMPERATURESENSOR (0x00E0)
 
 /**
+ * @brief Detailed EEPROM address map for GarageCover.
+ */
+#define EE_ADDRESS_CONFIG_GARAGECOVER_0 EE_ADDRESS_GARAGECOVER
+
+/**
  * @brief Detailed EEPROM address map for DistanceSensor.
  */
 #define EE_ADDRESS_CONFIG_DISTANCESENSOR_0 EE_ADDRESS_DISTANCESENSOR
