@@ -24,32 +24,30 @@ class ValueItem {
 
   void setValue(T value = {}) { mValue = value; }
 
-  bool isSigned() const { return IS_SIGNED_TYPE(T); }
+  static constexpr bool isSigned() { return IS_SIGNED_TYPE(T); }
 
   size_t print(Stream& stream) const {
     size_t n = 0;
 
     const uint16_t scaleFactor = ValueItemConstants::factors[mPrecision];
-    if (scaleFactor == 1) {
-      n += stream.print(mValue);
+    // cppcheck-suppress unsignedLessThanZero
+    // cppcheck-suppress unmatchedSuppression
+    if (IS_SIGNED_TYPE(T) && mValue < 0) {
+      n += stream.print('-');
+    }
+
+    uint32_t integer;
+    // cppcheck-suppress unsignedLessThanZero
+    // cppcheck-suppress unmatchedSuppression
+    if (IS_SIGNED_TYPE(T) && mValue < 0) {
+      integer = -(mValue / scaleFactor);
     } else {
-      // cppcheck-suppress unsignedLessThanZero
-      // cppcheck-suppress unmatchedSuppression
-      if (IS_SIGNED_TYPE(T) && mValue < 0) {
-        n += stream.print('-');
-      }
+      integer = mValue / scaleFactor;
+    }
 
-      uint32_t integer;
-      // cppcheck-suppress unsignedLessThanZero
-      // cppcheck-suppress unmatchedSuppression
-      if (IS_SIGNED_TYPE(T) && mValue < 0) {
-        integer = -(mValue / scaleFactor);
-      } else {
-        integer = mValue / scaleFactor;
-      }
+    n += stream.print(integer);
 
-      n += stream.print(integer);
-
+    if (scaleFactor != 1) {
       n += stream.print('.');
 
       uint32_t fractional;
@@ -78,7 +76,7 @@ class ValueItem {
 
   uint8_t getPrecision() const { return mPrecision; }
 
-  size_t getValueSize() const { return sizeof(T); }
+  static constexpr size_t getValueSize() { return sizeof(T); }
 
   int16_t getScaleFactor() const {
     return ValueItemConstants::factors[mPrecision];

@@ -110,5 +110,5 @@ class ConfigItem {
 
   const uint8_t mConfigId;
   ValueItem<T> mValueItem;
-  uint16_t mEeAddress;
+  const uint16_t mEeAddress;
 };

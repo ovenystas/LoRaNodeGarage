@@ -102,10 +102,14 @@ add_executable(
   ../GarageCover.cpp
   ../Cover.cpp
   ../Util.cpp
+  ../libraries/CRC/src/CRC8.cpp
+  ../libraries/CRC/src/CrcFastReverse.cpp
   mocks/Arduino.cpp
   mocks/Print.cpp
-  mocks/BufferSerial.cpp)
+  mocks/BufferSerial.cpp
+  mocks/EEPROM.cpp)
 target_link_libraries(GarageCover_test GTest::gtest_main GTest::gmock_main)
+target_include_directories(GarageCover_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(GarageCover_test)
 
 add_executable(

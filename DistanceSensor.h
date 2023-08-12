@@ -10,6 +10,12 @@
 
 using DistanceT = int16_t;  // cm
 
+namespace DistanceSensorConstants {
+static const DistanceT CONFIG_REPORT_HYSTERESIS_DEFAULT = 10;
+static const uint16_t CONFIG_MEASURE_INTERVAL_DEFAULT = 60;
+static const uint16_t CONFIG_REPORT_INTERVAL_DEFAULT = 300;
+}  // namespace DistanceSensorConstants
+
 class DistanceSensor : public IComponent {
  public:
   virtual ~DistanceSensor() = default;
@@ -55,16 +61,22 @@ class DistanceSensor : public IComponent {
  private:
   struct Config {
     // cppcheck-suppress unusedStructMember
-    const uint8_t numberOfConfigItems = {3};
+    static const uint8_t numberOfConfigItems = {3};
 
     ConfigItem<DistanceT> reportHysteresis = {ConfigItem<DistanceT>(
-        0, EE_ADDRESS_CONFIG_DISTANCESENSOR_0, 10, Unit::Type::cm)};
+        0, EE_ADDRESS_CONFIG_DISTANCESENSOR_0,
+        DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT,
+        Unit::Type::cm)};
 
     ConfigItem<uint16_t> measureInterval = {ConfigItem<uint16_t>(
-        1, EE_ADDRESS_CONFIG_DISTANCESENSOR_1, 60, Unit::Type::s)};
+        1, EE_ADDRESS_CONFIG_DISTANCESENSOR_1,
+        DistanceSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT,
+        Unit::Type::s)};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        2, EE_ADDRESS_CONFIG_DISTANCESENSOR_2, 300, Unit::Type::s)};
+        2, EE_ADDRESS_CONFIG_DISTANCESENSOR_2,
+        DistanceSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT,
+        Unit::Type::s)};
   };
 
   Sensor<DistanceT> mSensor;

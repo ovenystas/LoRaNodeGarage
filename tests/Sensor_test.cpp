@@ -384,3 +384,23 @@ TEST_F(SensorPrint_test, print_negative_value_scalefactor_1000_unit_um) {
   EXPECT_STREQ(strBuf, expectStr);
   EXPECT_EQ(printedChars, strlen(expectStr));
 }
+
+TEST_F(SensorInt8_test, isReportDue) {
+  ArduinoMock* arduinoMock = arduinoMockInstance();
+  EXPECT_CALL(*arduinoMock, millis()).WillOnce(Return(0));
+
+  // Newly constructed shall be true
+  EXPECT_TRUE(sc.isReportDue());
+
+  // Shall be set to false when setReported() is called
+  sc.setReported();
+  EXPECT_FALSE(sc.isReportDue());
+
+  // Shall set it with setIsReportDue()
+  sc.setIsReportDue(true);
+  EXPECT_TRUE(sc.isReportDue());
+  sc.setIsReportDue(false);
+  EXPECT_FALSE(sc.isReportDue());
+
+  releaseArduinoMock();
+}

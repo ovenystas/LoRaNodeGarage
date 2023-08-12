@@ -12,6 +12,13 @@
 
 using HeightT = int16_t;  // cm
 
+namespace HeightSensorConstants {
+static const HeightT CONFIG_REPORT_HYSTERESIS_DEFAULT = 10;
+static const uint16_t CONFIG_REPORT_INTERVAL_DEFAULT = 300;
+static const uint16_t CONFIG_STABLE_TIME_DEFAULT = 5000;
+static const HeightT CONFIG_ZERO_VALUE_DEFAULT = 60;
+}  // namespace HeightSensorConstants
+
 class HeightSensor : public IComponent {
  public:
   virtual ~HeightSensor() = default;
@@ -64,16 +71,21 @@ class HeightSensor : public IComponent {
     const uint8_t numberOfConfigItems = {4};
 
     ConfigItem<HeightT> reportHysteresis = {ConfigItem<HeightT>(
-        0, EE_ADDRESS_CONFIG_HEIGHTSENSOR_0, 10, Unit::Type::cm)};
+        0, EE_ADDRESS_CONFIG_HEIGHTSENSOR_0,
+        HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT,
+        Unit::Type::cm)};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        1, EE_ADDRESS_CONFIG_HEIGHTSENSOR_1, 300, Unit::Type::s)};
+        1, EE_ADDRESS_CONFIG_HEIGHTSENSOR_1,
+        HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, Unit::Type::s)};
 
     ConfigItem<uint16_t> stableTime = {ConfigItem<uint16_t>(
-        2, EE_ADDRESS_CONFIG_HEIGHTSENSOR_2, 5000, Unit::Type::ms)};
+        2, EE_ADDRESS_CONFIG_HEIGHTSENSOR_2,
+        HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT, Unit::Type::ms)};
 
     ConfigItem<HeightT> zeroValue = {ConfigItem<HeightT>(
-        3, EE_ADDRESS_CONFIG_HEIGHTSENSOR_3, 60, Unit::Type::cm)};
+        3, EE_ADDRESS_CONFIG_HEIGHTSENSOR_3,
+        HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT, Unit::Type::cm)};
   };
 
   Sensor<HeightT> mSensor;

@@ -259,3 +259,23 @@ TEST_F(Cover_test, serviceDecode) {
   EXPECT_EQ(pC->serviceDecode(4), CoverService::unknown);
   EXPECT_EQ(pC->serviceDecode(5), CoverService::unknown);
 }
+
+TEST_F(Cover_test, isReportDue) {
+  ArduinoMock* arduinoMock = arduinoMockInstance();
+  EXPECT_CALL(*arduinoMock, millis()).WillOnce(Return(0));
+
+  // Newly constructed shall be true
+  EXPECT_TRUE(pC->isReportDue());
+
+  // Shall be set to false when setReported() is called
+  pC->setReported();
+  EXPECT_FALSE(pC->isReportDue());
+
+  // Shall set it with setIsReportDue()
+  pC->setIsReportDue(true);
+  EXPECT_TRUE(pC->isReportDue());
+  pC->setIsReportDue(false);
+  EXPECT_FALSE(pC->isReportDue());
+
+  releaseArduinoMock();
+}

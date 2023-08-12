@@ -46,6 +46,8 @@ void yield(void);
 #define FALLING 2
 #define RISING 3
 
+#define PROGMEM
+
 #define NOT_AN_INTERRUPT -1
 #define digitalPinToInterrupt(p) \
   ((p) == 2 ? 0 : ((p) == 3 ? 1 : NOT_AN_INTERRUPT))

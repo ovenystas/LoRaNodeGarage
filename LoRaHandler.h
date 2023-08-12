@@ -206,13 +206,13 @@ class LoRaHandler {
   using OnConfigSetReqMsgFunc = void (*)(const ConfigValuePayloadT&);
   using OnServiceReqMsgFunc = void (*)(const LoRaServiceItemT&);
 
-  int begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc = nullptr,
-            OnValueReqMsgFunc onValueReqMsgFunc = nullptr,
-            OnConfigReqMsgFunc onConfigReqMsgFunc = nullptr,
-            OnConfigSetReqMsgFunc onConfigSetReqMsgFunc = nullptr,
-            OnServiceReqMsgFunc onServiceReqMsgFunc = nullptr);
+  int16_t begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc = nullptr,
+                OnValueReqMsgFunc onValueReqMsgFunc = nullptr,
+                OnConfigReqMsgFunc onConfigReqMsgFunc = nullptr,
+                OnConfigSetReqMsgFunc onConfigSetReqMsgFunc = nullptr,
+                OnServiceReqMsgFunc onServiceReqMsgFunc = nullptr);
 
-  int loraRx();
+  int16_t loraRx();
 
   void beginDiscoveryMsg();
   void addDiscoveryItem(const DiscoveryItemT* item);
@@ -228,8 +228,6 @@ class LoRaHandler {
   void setDefaultHeader(LoRaHeaderT* header);
 
  private:
-  static constexpr uint8_t msgTypeMask = 0x0f;
-
   void printMessage(const LoRaTxMessageT* msg);
   void printHeader(const LoRaHeaderT* header);
   void printPayload(const uint8_t* payload, uint8_t len);

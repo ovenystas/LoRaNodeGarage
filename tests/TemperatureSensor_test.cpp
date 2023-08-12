@@ -59,16 +59,20 @@ TEST_F(TemperatureSensor_test, getConfigItemValues) {
             4);
 
   EXPECT_EQ(items[0].configId, 0);
-  EXPECT_EQ(items[0].value, 10);
+  EXPECT_EQ(items[0].value,
+            TemperatureSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
 
   EXPECT_EQ(items[1].configId, 1);
-  EXPECT_EQ(items[1].value, 60);
+  EXPECT_EQ(items[1].value,
+            TemperatureSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT);
 
   EXPECT_EQ(items[2].configId, 2);
-  EXPECT_EQ(items[2].value, 60);
+  EXPECT_EQ(items[2].value,
+            TemperatureSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
 
   EXPECT_EQ(items[3].configId, 3);
-  EXPECT_EQ(items[3].value, 0);
+  EXPECT_EQ(items[3].value,
+            TemperatureSensorConstants::CONFIG_COMPENSATION_DEFAULT);
 }
 
 TEST_F(TemperatureSensor_test, getDiscoveryItem) {
@@ -174,9 +178,12 @@ TEST_F(TemperatureSensor_test, setConfigs_one) {
   ConfigItemValueT items[4];
   EXPECT_EQ(pTs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
             4);
-  EXPECT_EQ(items[0].value, 10);
-  EXPECT_EQ(items[1].value, 60);
-  EXPECT_EQ(items[2].value, 60);
+  EXPECT_EQ(items[0].value,
+            TemperatureSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
+  EXPECT_EQ(items[1].value,
+            TemperatureSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT);
+  EXPECT_EQ(items[2].value,
+            TemperatureSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
   EXPECT_EQ(items[3].value, 3003);
 }
 
@@ -209,31 +216,64 @@ TEST_F(TemperatureSensor_test, setReported) {
 TEST_F(TemperatureSensor_test,
        update_smallValueDiff_smallTimeDiff_shall_return_false) {
   EXPECT_CALL(*pDhtMock, read(false)).WillOnce(Return(true));
-  EXPECT_CALL(*pDhtMock, readTemperature(false, false)).WillOnce(Return(0.949));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
+  EXPECT_CALL(*pDhtMock, readTemperature(false, false))
+      .WillOnce(Return(
+          (TemperatureSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT - 1) /
+          10.0f));
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(
+          TemperatureSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000 -
+          1));
   EXPECT_FALSE(pTs->update());
 }
 
 TEST_F(TemperatureSensor_test,
        update_smallValueDiff_largeTimeDiff_shall_return_true) {
   EXPECT_CALL(*pDhtMock, read(false)).WillOnce(Return(true));
-  EXPECT_CALL(*pDhtMock, readTemperature(false, false)).WillOnce(Return(0.949));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
+  EXPECT_CALL(*pDhtMock, readTemperature(false, false))
+      .WillOnce(Return(
+          (TemperatureSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT - 1) /
+          10.0f));
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(
+          TemperatureSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000));
   EXPECT_TRUE(pTs->update());
 }
 
 TEST_F(TemperatureSensor_test,
        update_largeValueDiff_smallTimeDiff_shall_return_true) {
   EXPECT_CALL(*pDhtMock, read(false)).WillOnce(Return(true));
-  EXPECT_CALL(*pDhtMock, readTemperature(false, false)).WillOnce(Return(0.950));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
+  EXPECT_CALL(*pDhtMock, readTemperature(false, false))
+      .WillOnce(
+          Return(TemperatureSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT /
+                 10.0f));
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(
+          TemperatureSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000 -
+          1));
   EXPECT_TRUE(pTs->update());
 }
 
 TEST_F(TemperatureSensor_test,
        update_largeValueDiff_largeTimeDiff_shall_return_true) {
   EXPECT_CALL(*pDhtMock, read(false)).WillOnce(Return(true));
-  EXPECT_CALL(*pDhtMock, readTemperature(false, false)).WillOnce(Return(0.950));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
+  EXPECT_CALL(*pDhtMock, readTemperature(false, false))
+      .WillOnce(
+          Return(TemperatureSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT /
+                 10.0f));
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(
+          TemperatureSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000));
   EXPECT_TRUE(pTs->update());
+}
+
+TEST_F(TemperatureSensor_test, isReportDue) {
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(0));
+
+  // Newly constructed shall be true
+  EXPECT_TRUE(pTs->isReportDue());
+
+  // Shall be set to false when setReported() is called
+  pTs->setReported();
+  EXPECT_FALSE(pTs->isReportDue());
 }

@@ -4,10 +4,10 @@
 
 #include "RingBuffer.h"
 
-#define SECONDS_PER_MINUTE 60
-#define MINUTES_PER_HOUR 60
-#define MS_PER_MINUTE (SECONDS_PER_MINUTE * 1000)
-#define MS_PER_HOUR (MINUTES_PER_HOUR * MS_PER_MINUTE)
+constexpr uint8_t SECONDS_PER_MINUTE = 60;
+constexpr uint8_t MINUTES_PER_HOUR = 60;
+constexpr uint16_t MS_PER_MINUTE = SECONDS_PER_MINUTE * 1000;
+constexpr uint32_t MS_PER_HOUR = MINUTES_PER_HOUR * MS_PER_MINUTE;
 
 class AirTime {
  public:

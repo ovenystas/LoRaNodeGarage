@@ -173,6 +173,17 @@ TEST_F(
   EXPECT_CALL(*pArduinoMock, millis()).WillRepeatedly(Return(0));
 
   at.update(0, 235924);
+  EXPECT_EQ(at.getTime_ppm(), UINT16_MAX - 1);
 
+  at.update(235924, 235925);
+  EXPECT_EQ(at.getTime_ppm(), UINT16_MAX);
+
+  at.update(235925, 235928);
+  EXPECT_EQ(at.getTime_ppm(), UINT16_MAX);
+
+  at.update(235928, 300000);
+  EXPECT_EQ(at.getTime_ppm(), UINT16_MAX);
+
+  at.update(300000, 400000);
   EXPECT_EQ(at.getTime_ppm(), UINT16_MAX);
 }

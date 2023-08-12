@@ -8,10 +8,10 @@
 #include <Stream.h>
 
 IComponent* Node::getComponent(uint8_t idx) {
-  if (idx < mSize) {
-    return mComponents[idx];
+  if (idx >= mSize) {
+    return nullptr;
   }
-  return nullptr;
+  return mComponents[idx];
 }
 
 IComponent* Node::getComponentByEntityId(uint8_t entityId) {

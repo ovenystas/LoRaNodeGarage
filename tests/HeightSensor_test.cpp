@@ -59,16 +59,18 @@ TEST_F(HeightSensor_test, getConfigItemValues) {
             4);
 
   EXPECT_EQ(items[0].configId, 0);
-  EXPECT_EQ(items[0].value, 10);
+  EXPECT_EQ(items[0].value,
+            HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
 
   EXPECT_EQ(items[1].configId, 1);
-  EXPECT_EQ(items[1].value, 60);
+  EXPECT_EQ(items[1].value,
+            HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
 
   EXPECT_EQ(items[2].configId, 2);
-  EXPECT_EQ(items[2].value, 5000);
+  EXPECT_EQ(items[2].value, HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT);
 
   EXPECT_EQ(items[3].configId, 3);
-  EXPECT_EQ(items[3].value, 60);
+  EXPECT_EQ(items[3].value, HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT);
 }
 
 TEST_F(HeightSensor_test, getDiscoveryItem) {
@@ -182,9 +184,11 @@ TEST_F(HeightSensor_test, setConfigs_one) {
   ConfigItemValueT items[4];
   EXPECT_EQ(pHs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
             4);
-  EXPECT_EQ(items[0].value, 10);
-  EXPECT_EQ(items[1].value, 60);
-  EXPECT_EQ(items[2].value, 5000);
+  EXPECT_EQ(items[0].value,
+            HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
+  EXPECT_EQ(items[1].value,
+            HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
+  EXPECT_EQ(items[2].value, HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT);
   EXPECT_EQ(items[3].value, 3003);
 }
 
@@ -215,28 +219,55 @@ TEST_F(HeightSensor_test,
 
 TEST_F(HeightSensor_test,
        update_smallValueDiff_smallTimeDiff_shall_return_false) {
-  pDistanceSensor->setValue(69);
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
+  pDistanceSensor->setValue(
+      HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT +
+      HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT - 1);
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(
+          HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000 - 1));
   EXPECT_FALSE(pHs->update());
 }
 
 TEST_F(HeightSensor_test,
        update_smallValueDiff_largeTimeDiff_shall_return_true) {
-  pDistanceSensor->setValue(69);
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
+  pDistanceSensor->setValue(
+      HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT +
+      HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT - 1);
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(
+          Return(HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000));
   EXPECT_TRUE(pHs->update());
 }
 
 TEST_F(HeightSensor_test,
        update_largeValueDiff_smallTimeDiff_shall_return_true) {
-  pDistanceSensor->setValue(70);
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
+  pDistanceSensor->setValue(
+      HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT +
+      HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(
+          HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000 - 1));
   EXPECT_TRUE(pHs->update());
 }
 
 TEST_F(HeightSensor_test,
        update_largeValueDiff_largeTimeDiff_shall_return_true) {
-  pDistanceSensor->setValue(70);
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
+  pDistanceSensor->setValue(
+      HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT +
+      HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(
+          Return(HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000));
   EXPECT_TRUE(pHs->update());
+}
+
+TEST_F(HeightSensor_test, isReportDue) {
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(0));
+
+  // Newly constructed shall be true
+  EXPECT_TRUE(pHs->isReportDue());
+
+  // Shall be set to false when setReported() is called
+  pHs->setReported();
+  EXPECT_FALSE(pHs->isReportDue());
 }

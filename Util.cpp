@@ -11,14 +11,15 @@ void printUptime(Stream& stream) {
   auto t = millis();
 
   uint16_t hours = t / 3600000;
-  t = t % 3600000;
+  t %= 3600000;
 
   uint8_t minutes = t / 60000;
-  t = t % 60000;
+  t %= 60000;
 
   uint8_t seconds = t / 1000;
+  t %= 1000;
 
-  uint16_t milliseconds = t % 1000;
+  uint16_t milliseconds = t;
 
   stream.print('[');
   stream.print(hours);

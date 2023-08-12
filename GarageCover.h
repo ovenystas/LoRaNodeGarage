@@ -5,6 +5,10 @@
 #include "Cover.h"
 #include "EeAdressMap.h"
 
+namespace GarageCoverConstants {
+static const uint16_t CONFIG_REPORT_INTERVAL_DEFAULT = 300;
+}  // namespace GarageCoverConstants
+
 class GarageCover : public IComponent {
  public:
   virtual ~GarageCover() = default;
@@ -70,10 +74,11 @@ class GarageCover : public IComponent {
  private:
   struct Config {
     // cppcheck-suppress unusedStructMember
-    const uint8_t numberOfConfigItems = {1};
+    static const uint8_t numberOfConfigItems = {1};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        0, EE_ADDRESS_CONFIG_GARAGECOVER_0, 300, Unit::Type::s)};
+        0, EE_ADDRESS_CONFIG_GARAGECOVER_0,
+        GarageCoverConstants::CONFIG_REPORT_INTERVAL_DEFAULT, Unit::Type::s)};
   };
 
   Config mConfig;

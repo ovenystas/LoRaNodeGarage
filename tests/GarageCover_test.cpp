@@ -18,6 +18,8 @@ class GarageCover_test : public ::testing::Test {
     EXPECT_CALL(*pArduinoMock, pinMode(12, INPUT_PULLUP));
     EXPECT_CALL(*pArduinoMock, pinMode(13, OUTPUT));
     EXPECT_CALL(*pArduinoMock, digitalWrite(13, LOW));
+    eeprom_clear();
+
     pGc = new GarageCover(91, "GarageCover", 11, 12, 13);
   }
 
@@ -165,12 +167,15 @@ TEST_F(GarageCover_test, callService_unknown) {
   pGc->callService(4);  // unknown
 }
 
-// No config items
 TEST_F(GarageCover_test, getConfigItemValuesMsg) {
   ConfigItemValueT items[1];
 
   EXPECT_EQ(pGc->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
-            0);
+            1);
+
+  EXPECT_EQ(items[0].configId, 0);
+  EXPECT_EQ(items[0].value,
+            GarageCoverConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
 }
 
 TEST_F(GarageCover_test, getDeviceClass) {
@@ -192,7 +197,13 @@ TEST_F(GarageCover_test, getDiscoveryItem) {
   EXPECT_EQ(item.entity.sizeCode, 0);
   EXPECT_EQ(item.entity.precision, 0);
 
-  EXPECT_EQ(item.numberOfConfigItems, 0);
+  EXPECT_EQ(item.numberOfConfigItems, 1);
+
+  EXPECT_EQ(item.configItems[0].configId, 0);
+  EXPECT_EQ(item.configItems[0].unit, static_cast<uint8_t>(Unit::Type::s));
+  EXPECT_FALSE(item.configItems[0].isSigned);
+  EXPECT_EQ(item.configItems[0].sizeCode, sizeof(uint16_t) / 2);
+  EXPECT_EQ(item.configItems[0].precision, 0);
 }
 
 TEST_F(GarageCover_test, getEntityId) { EXPECT_EQ(pGc->getEntityId(), 91); }
@@ -308,4 +319,15 @@ TEST_F(GarageCover_test, update_closed_both_pins_low_shall_stay_in_same_state) {
   EXPECT_CALL(*pArduinoMock, digitalRead(12)).WillOnce(Return(LOW));
   EXPECT_EQ(pGc->update(), false);
   EXPECT_EQ(pGc->mCover.getState(), CoverState::closed);
+}
+
+TEST_F(GarageCover_test, isReportDue) {
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(0));
+
+  // Newly constructed shall be true
+  EXPECT_TRUE(pGc->isReportDue());
+
+  // Shall be set to false when setReported() is called
+  pGc->setReported();
+  EXPECT_FALSE(pGc->isReportDue());
 }

@@ -12,11 +12,13 @@
 
 #include "Util.h"
 
-int LoRaHandler::begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc,
-                       OnValueReqMsgFunc onValueReqMsgFunc,
-                       OnConfigReqMsgFunc onConfigReqMsgFunc,
-                       OnConfigSetReqMsgFunc onConfigSetReqMsgFunc,
-                       OnServiceReqMsgFunc onServiceReqMsgFunc) {
+static constexpr uint8_t msgTypeMask = 0x0f;
+
+int16_t LoRaHandler::begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc,
+                           OnValueReqMsgFunc onValueReqMsgFunc,
+                           OnConfigReqMsgFunc onConfigReqMsgFunc,
+                           OnConfigSetReqMsgFunc onConfigSetReqMsgFunc,
+                           OnServiceReqMsgFunc onServiceReqMsgFunc) {
   mOnDiscoveryReqMsgFunc = onDiscoveryReqMsgFunc;
   mOnValueReqMsgFunc = onValueReqMsgFunc;
   mOnConfigReqMsgFunc = onConfigReqMsgFunc;
@@ -26,9 +28,9 @@ int LoRaHandler::begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc,
   return mLoRa.begin(LORA_FREQUENCY);
 }
 
-int LoRaHandler::loraRx() {
+int16_t LoRaHandler::loraRx() {
   // try to parse packet
-  int packetSize = mLoRa.parsePacket();
+  int16_t packetSize = mLoRa.parsePacket();
   if (packetSize <= 0) {
     return 0;
   }

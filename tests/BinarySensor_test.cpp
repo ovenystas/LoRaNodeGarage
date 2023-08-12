@@ -317,5 +317,26 @@ TEST_F(BinarySensor_test,
   EXPECT_EQ(pBS->isDiffLastReportedState(), true);
   pBS->setReported();
   EXPECT_EQ(pBS->timeSinceLastReport(), 15);
+
+  releaseArduinoMock();
+}
+
+TEST_F(BinarySensor_test, isReportDue) {
+  ArduinoMock* arduinoMock = arduinoMockInstance();
+  EXPECT_CALL(*arduinoMock, millis()).WillOnce(Return(0));
+
+  // Newly constructed shall be true
+  EXPECT_TRUE(pBS->isReportDue());
+
+  // Shall be set to false when setReported() is called
+  pBS->setReported();
+  EXPECT_FALSE(pBS->isReportDue());
+
+  // Shall set it with setIsReportDue()
+  pBS->setIsReportDue(true);
+  EXPECT_TRUE(pBS->isReportDue());
+  pBS->setIsReportDue(false);
+  EXPECT_FALSE(pBS->isReportDue());
+
   releaseArduinoMock();
 }

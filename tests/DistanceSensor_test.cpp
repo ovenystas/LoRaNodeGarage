@@ -65,13 +65,16 @@ TEST_F(DistanceSensor_test, getConfigItemValues) {
             3);
 
   EXPECT_EQ(items[0].configId, 0);
-  EXPECT_EQ(items[0].value, 10);
+  EXPECT_EQ(items[0].value,
+            DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
 
   EXPECT_EQ(items[1].configId, 1);
-  EXPECT_EQ(items[1].value, 60);
+  EXPECT_EQ(items[1].value,
+            DistanceSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT);
 
   EXPECT_EQ(items[2].configId, 2);
-  EXPECT_EQ(items[2].value, 60);
+  EXPECT_EQ(items[2].value,
+            DistanceSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
 }
 
 TEST_F(DistanceSensor_test, getDiscoveryItem) {
@@ -177,8 +180,10 @@ TEST_F(DistanceSensor_test, setConfigs_one) {
   ConfigItemValueT items[3];
   EXPECT_EQ(pDs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
             3);
-  EXPECT_EQ(items[0].value, 10);
-  EXPECT_EQ(items[1].value, 60);
+  EXPECT_EQ(items[0].value,
+            DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
+  EXPECT_EQ(items[1].value,
+            DistanceSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT);
   EXPECT_EQ(items[2].value, 3002);
 }
 
@@ -202,7 +207,9 @@ TEST_F(DistanceSensor_test, setReported) {
 
 TEST_F(DistanceSensor_test,
        update_largeValueDiff_largeTimeDiff_withConfigsZero_shall_return_false) {
-  EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(10));
+  EXPECT_CALL(*pSonarMock, ping_cm(0))
+      .WillOnce(
+          Return(DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT));
   EXPECT_CALL(*pArduinoMock, millis()).Times(0);
 
   ConfigItemValueT inItems[3] = {{0, 0}, {1, 0}, {2, 0}};
@@ -213,32 +220,59 @@ TEST_F(DistanceSensor_test,
 
 TEST_F(DistanceSensor_test,
        update_smallValueDiff_smallTimeDiff_shall_return_false) {
-  EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(9));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
+  EXPECT_CALL(*pSonarMock, ping_cm(0))
+      .WillOnce(Return(
+          DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT - 1));
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(
+          DistanceSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000 - 1));
 
   EXPECT_FALSE(pDs->update());
 }
 
 TEST_F(DistanceSensor_test,
        update_smallValueDiff_largeTimeDiff_shall_return_true) {
-  EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(9));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
+  EXPECT_CALL(*pSonarMock, ping_cm(0))
+      .WillOnce(Return(
+          DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT - 1));
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(DistanceSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT *
+                       1000));
 
   EXPECT_TRUE(pDs->update());
 }
 
 TEST_F(DistanceSensor_test,
        update_largeValueDiff_smallTimeDiff_shall_return_true) {
-  EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(10));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
+  EXPECT_CALL(*pSonarMock, ping_cm(0))
+      .WillOnce(
+          Return(DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT));
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(
+          Return(DistanceSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT - 1));
 
   EXPECT_TRUE(pDs->update());
 }
 
 TEST_F(DistanceSensor_test,
        update_largeValueDiff_largeTimeDiff_shall_return_true) {
-  EXPECT_CALL(*pSonarMock, ping_cm(0)).WillOnce(Return(10));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
+  EXPECT_CALL(*pSonarMock, ping_cm(0))
+      .WillOnce(Return(
+          DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT - 1));
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(DistanceSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT *
+                       1000));
 
   EXPECT_TRUE(pDs->update());
+}
+
+TEST_F(DistanceSensor_test, isReportDue) {
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(0));
+
+  // Newly constructed shall be true
+  EXPECT_TRUE(pDs->isReportDue());
+
+  // Shall be set to false when setReported() is called
+  pDs->setReported();
+  EXPECT_FALSE(pDs->isReportDue());
 }

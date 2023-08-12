@@ -126,10 +126,10 @@ TEST_F(LoRaHandler_test, configsValueMsg) {
                       Return(expectedMsgSize)));
   EXPECT_CALL(*pLoRaMock, endPacket(false)).WillOnce(Return(1));
   EXPECT_CALL(*pArduinoMock, millis())
-      .WillOnce(Return(61500))   // Print
-      .WillOnce(Return(61501))   // AirTime update
-      .WillOnce(Return(61502))   // Send start
-      .WillOnce(Return(61602));  // Send end
+      .WillOnce(Return(61500))         // Print
+      .WillOnce(Return(61501))         // AirTime update
+      .WillOnce(Return(61502))         // Send start
+      .WillRepeatedly(Return(61602));  // Send end and debug print of AirTime
 
   pLH->beginConfigsValueMsg(entityId);
   pLH->addConfigItemValues(items, 2);
@@ -138,7 +138,7 @@ TEST_F(LoRaHandler_test, configsValueMsg) {
   bufSerReadStr();
   // clang-format off
   EXPECT_STREQ(strBuf,
-    "[61500] LoRaTx: H: 01 02 00 47 0C P: 37 02 01 00 00 00 11 02 11 22 33 44\r\n");
+    "[61500] LoRaTx: H: 01 02 00 47 0C P: 37 02 01 00 00 00 11 02 11 22 33 44\r\n[61602] AirTime: 100 ms, 28 ppm\r\n");
   // clang-format on
 
   EXPECT_EQ(writeSize, expectedMsgSize);
@@ -167,10 +167,10 @@ TEST_F(LoRaHandler_test, discoveryMsg) {
                       Return(expectedMsgSize)));
   EXPECT_CALL(*pLoRaMock, endPacket(false)).WillOnce(Return(1));
   EXPECT_CALL(*pArduinoMock, millis())
-      .WillOnce(Return(100))   // Print
-      .WillOnce(Return(101))   // AirTime update
-      .WillOnce(Return(102))   // Send start
-      .WillOnce(Return(202));  // Send end
+      .WillOnce(Return(100))         // Print
+      .WillOnce(Return(101))         // AirTime update
+      .WillOnce(Return(102))         // Send start
+      .WillRepeatedly(Return(202));  // Send end and debug print of AirTime
 
   pLH->beginDiscoveryMsg();
   pLH->addDiscoveryItem((&item));
@@ -179,7 +179,7 @@ TEST_F(LoRaHandler_test, discoveryMsg) {
   bufSerReadStr();
   // clang-format off
   EXPECT_STREQ(strBuf,
-    "[100] LoRaTx: H: 01 02 00 43 0C P: 7B 01 02 03 1B 02 06 10 1B 07 11 06\r\n");
+    "[100] LoRaTx: H: 01 02 00 43 0C P: 7B 01 02 03 1B 02 06 10 1B 07 11 06\r\n[202] AirTime: 100 ms, 28 ppm\r\n");
   // clang-format on
 
   EXPECT_EQ(writeSize, expectedMsgSize);
@@ -263,16 +263,17 @@ TEST_F(LoRaHandler_test, loraRx_ping_req_no_ack_shall_send_ping_msg) {
       .WillOnce(DoAll(Invoke(loraReadBuf), Return(expectedMsgSize)));
   EXPECT_CALL(*pLoRaMock, endPacket(false)).WillOnce(Return(1));
   EXPECT_CALL(*pArduinoMock, millis())
-      .WillOnce(Return(100))   // Print
-      .WillOnce(Return(101))   // AirTime update
-      .WillOnce(Return(102))   // Send start
-      .WillOnce(Return(202));  // Send end
+      .WillOnce(Return(100))         // Print
+      .WillOnce(Return(101))         // AirTime update
+      .WillOnce(Return(102))         // Send start
+      .WillRepeatedly(Return(202));  // Send end and debug print of AirTime
 
   // Recieve msg
   EXPECT_EQ(pLH->loraRx(), LORA_HEADER_LENGTH);
 
   bufSerReadStr();
-  EXPECT_THAT(strBuf, EndsWith("[100] LoRaTx: H: 01 02 00 41 01 P: 91\r\n"));
+  EXPECT_THAT(strBuf, EndsWith("[100] LoRaTx: H: 01 02 00 41 01 P: 91\r\n[202] "
+                               "AirTime: 100 ms, 28 ppm\r\n"));
 
   // Check TX header
   EXPECT_EQ(loraTxMsg.header.dst, LORA_GATEWAY);
@@ -356,17 +357,18 @@ TEST_F(
       .WillOnce(DoAll(Invoke(loraReadBuf), Return(expectedMsgSize)));
   EXPECT_CALL(*pLoRaMock, endPacket(false)).WillOnce(Return(1));
   EXPECT_CALL(*pArduinoMock, millis())
-      .WillOnce(Return(100))   // Print
-      .WillOnce(Return(101))   // AirTime update
-      .WillOnce(Return(102))   // Send start
-      .WillOnce(Return(202));  // Send end
+      .WillOnce(Return(100))         // Print
+      .WillOnce(Return(101))         // AirTime update
+      .WillOnce(Return(102))         // Send start
+      .WillRepeatedly(Return(202));  // Send end and debug print of AirTime
 
   // Begin and recieve msg
   pLH->begin(FakeCallbackFunc, nullptr, nullptr, nullptr, nullptr);
   EXPECT_EQ(pLH->loraRx(), rxMsgSize);
 
   bufSerReadStr();
-  EXPECT_THAT(strBuf, EndsWith("[100] LoRaTx: H: 01 02 00 82 00 P: --\r\n"));
+  EXPECT_THAT(strBuf, EndsWith("[100] LoRaTx: H: 01 02 00 82 00 P: --\r\n[202] "
+                               "AirTime: 100 ms, 28 ppm\r\n"));
 
   // Check TX header
   EXPECT_EQ(loraTxMsg.header.dst, LORA_GATEWAY);
@@ -571,10 +573,10 @@ TEST_F(LoRaHandler_test, valueMsg) {
                       Return(expectedMsgSize)));
   EXPECT_CALL(*pLoRaMock, endPacket(false)).WillOnce(Return(1));
   EXPECT_CALL(*pArduinoMock, millis())
-      .WillOnce(Return(61500))   // Print
-      .WillOnce(Return(61501))   // AirTime update
-      .WillOnce(Return(61502))   // Send start
-      .WillOnce(Return(61602));  // Send end
+      .WillOnce(Return(61500))         // Print
+      .WillOnce(Return(61501))         // AirTime update
+      .WillOnce(Return(61502))         // Send start
+      .WillRepeatedly(Return(61602));  // Send end and debug print of AirTime
 
   pLH->beginValueMsg();
   pLH->addValueItem(&item1);
@@ -585,7 +587,7 @@ TEST_F(LoRaHandler_test, valueMsg) {
   // clang-format off
   EXPECT_STREQ(
       strBuf,
-      "[61500] LoRaTx: H: 01 02 00 45 0B P: 02 7B 00 00 00 01 7C 11 22 33 44\r\n");
+      "[61500] LoRaTx: H: 01 02 00 45 0B P: 02 7B 00 00 00 01 7C 11 22 33 44\r\n[61602] AirTime: 100 ms, 28 ppm\r\n");
   // clang-format off
 
   EXPECT_EQ(writeSize, expectedMsgSize);

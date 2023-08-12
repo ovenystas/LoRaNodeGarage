@@ -61,16 +61,20 @@ TEST_F(PresenceBinarySensor_test, getConfigItemValues) {
             4);
 
   EXPECT_EQ(items[0].configId, 0);
-  EXPECT_EQ(items[0].value, 180);
+  EXPECT_EQ(items[0].value,
+            PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT);
 
   EXPECT_EQ(items[1].configId, 1);
-  EXPECT_EQ(items[1].value, 200);
+  EXPECT_EQ(items[1].value,
+            PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT);
 
   EXPECT_EQ(items[2].configId, 2);
-  EXPECT_EQ(items[2].value, 10000);
+  EXPECT_EQ(items[2].value,
+            PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT);
 
   EXPECT_EQ(items[3].configId, 3);
-  EXPECT_EQ(items[3].value, 60);
+  EXPECT_EQ(items[3].value,
+            PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
 }
 
 TEST_F(PresenceBinarySensor_test, getDiscoveryItem) {
@@ -182,10 +186,13 @@ TEST_F(PresenceBinarySensor_test, setConfigs_one) {
   ConfigItemValueT items[4];
   EXPECT_EQ(pPbs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
             4);
-  EXPECT_EQ(items[0].value, 180);
-  EXPECT_EQ(items[1].value, 200);
+  EXPECT_EQ(items[0].value,
+            PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT);
+  EXPECT_EQ(items[1].value,
+            PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT);
   EXPECT_EQ(items[2].value, 3002);
-  EXPECT_EQ(items[3].value, 60);
+  EXPECT_EQ(items[3].value,
+            PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
 }
 
 TEST_F(PresenceBinarySensor_test, setConfigs_too_many) {
@@ -207,8 +214,11 @@ TEST_F(PresenceBinarySensor_test, setReported) {
 TEST_F(
     PresenceBinarySensor_test,
     update_belowLowLimit_belowMinStableTime_aboveLastReportedTimeLimit_zeroMinReportTime_shall_return_false) {
-  pHeightSensor->setValue(179);
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(9999));
+  pHeightSensor->setValue(
+      PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT - 1);
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(
+          PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT - 1));
   ConfigItemValueT inItems[1] = {{3, 0}};
   EXPECT_TRUE(pPbs->setConfigItemValues(inItems, 1));
   EXPECT_FALSE(pPbs->update());
@@ -217,89 +227,136 @@ TEST_F(
 TEST_F(
     PresenceBinarySensor_test,
     update_belowLowLimit_belowMinStableTime_belowLastReportedTimeLimit_shall_return_false) {
-  pHeightSensor->setValue(179);
+  pHeightSensor->setValue(
+      PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT - 1);
   EXPECT_CALL(*pArduinoMock, millis())
-      .WillOnce(Return(9999))
-      .WillOnce(Return(59999));
+      .WillOnce(Return(
+          PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT - 1))
+      .WillOnce(Return(
+          PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000 -
+          1));
   EXPECT_FALSE(pPbs->update());
 }
 
 TEST_F(
     PresenceBinarySensor_test,
     update_aboveLowLimit_belowMinStableTime_belowLastReportedTimeLimit_shall_return_false) {
-  pHeightSensor->setValue(180);
+  pHeightSensor->setValue(
+      PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT);
   EXPECT_CALL(*pArduinoMock, millis())
-      .WillOnce(Return(9999))
-      .WillOnce(Return(59999));
+      .WillOnce(Return(
+          PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT - 1))
+      .WillOnce(Return(
+          PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000 -
+          1));
   EXPECT_FALSE(pPbs->update());
 }
 
 TEST_F(
     PresenceBinarySensor_test,
     update_belowHighLimit_belowMinStableTime_belowLastReportedTimeLimit_shall_return_false) {
-  pHeightSensor->setValue(200);
+  pHeightSensor->setValue(
+      PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT);
   EXPECT_CALL(*pArduinoMock, millis())
-      .WillOnce(Return(9999))
-      .WillOnce(Return(59999));
+      .WillOnce(Return(
+          PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT - 1))
+      .WillOnce(Return(
+          PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000 -
+          1));
   EXPECT_FALSE(pPbs->update());
 }
 
 TEST_F(
     PresenceBinarySensor_test,
     update_aboveHighLimit_belowMinStableTime_belowLastReportedTimeLimit_shall_return_false) {
-  pHeightSensor->setValue(201);
+  pHeightSensor->setValue(
+      PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT + 1);
   EXPECT_CALL(*pArduinoMock, millis())
-      .WillOnce(Return(9999))
-      .WillOnce(Return(59999));
+      .WillOnce(Return(
+          PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT - 1))
+      .WillOnce(Return(
+          PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000 -
+          1));
   EXPECT_FALSE(pPbs->update());
 }
 
 TEST_F(
     PresenceBinarySensor_test,
     update_belowLowLimit_aboveMinStableTime_belowLastReportedTimeLimit_shall_return_true) {
-  pHeightSensor->setValue(179);
+  pHeightSensor->setValue(
+      PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT - 1);
   EXPECT_CALL(*pArduinoMock, millis())
-      .WillOnce(Return(10000))
-      .WillOnce(Return(59999));
+      .WillOnce(
+          Return(PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT))
+      .WillOnce(Return(
+          PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000 -
+          1));
   EXPECT_TRUE(pPbs->update());
 }
 
 TEST_F(
     PresenceBinarySensor_test,
     update_aboveLowLimit_aboveMinStableTime_belowLastReportedTimeLimit_shall_return_false) {
-  pHeightSensor->setValue(180);
+  pHeightSensor->setValue(
+      PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT);
   EXPECT_CALL(*pArduinoMock, millis())
-      .WillOnce(Return(10000))
-      .WillOnce(Return(59999));
+      .WillOnce(
+          Return(PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT))
+      .WillOnce(Return(
+          PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000 -
+          1));
   EXPECT_FALSE(pPbs->update());
 }
 
 TEST_F(
     PresenceBinarySensor_test,
     update_belowHighLimit_aboveMinStableTime_belowLastReportedTimeLimit_shall_return_false) {
-  pHeightSensor->setValue(200);
+  pHeightSensor->setValue(
+      PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT);
   EXPECT_CALL(*pArduinoMock, millis())
-      .WillOnce(Return(10000))
-      .WillOnce(Return(59999));
+      .WillOnce(
+          Return(PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT))
+      .WillOnce(Return(
+          PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000 -
+          1));
   EXPECT_FALSE(pPbs->update());
 }
 
 TEST_F(
     PresenceBinarySensor_test,
     update_aboveHighLimit_aboveMinStableTime_belowLastReportedTimeLimit_shall_return_true) {
-  pHeightSensor->setValue(201);
+  pHeightSensor->setValue(
+      PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT + 1);
   EXPECT_CALL(*pArduinoMock, millis())
-      .WillOnce(Return(10000))
-      .WillOnce(Return(59999));
+      .WillOnce(
+          Return(PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT))
+      .WillOnce(Return(
+          PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT * 1000 -
+          1));
   EXPECT_TRUE(pPbs->update());
 }
 
 TEST_F(
     PresenceBinarySensor_test,
     update_belowLowLimit_belowMinStableTime_aboveLastReportedTimeLimit_shall_return_true) {
-  pHeightSensor->setValue(179);
+  pHeightSensor->setValue(
+      PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT - 1);
   EXPECT_CALL(*pArduinoMock, millis())
-      .WillOnce(Return(9999))
-      .WillOnce(Return(60000));
+      .WillOnce(Return(
+          PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT - 1))
+      .WillOnce(
+          Return(PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT *
+                 1000));
   EXPECT_TRUE(pPbs->update());
+}
+
+TEST_F(PresenceBinarySensor_test, isReportDue) {
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(0));
+
+  // Newly constructed shall be true
+  EXPECT_TRUE(pPbs->isReportDue());
+
+  // Shall be set to false when setReported() is called
+  pPbs->setReported();
+  EXPECT_FALSE(pPbs->isReportDue());
 }

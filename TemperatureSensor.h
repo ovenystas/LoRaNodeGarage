@@ -11,6 +11,13 @@
 
 using TemperatureT = int16_t;  // Degree C
 
+namespace TemperatureSensorConstants {
+static const TemperatureT CONFIG_REPORT_HYSTERESIS_DEFAULT = 50;
+static const uint16_t CONFIG_MEASURE_INTERVAL_DEFAULT = 60;
+static const uint16_t CONFIG_REPORT_INTERVAL_DEFAULT = 300;
+static const TemperatureT CONFIG_COMPENSATION_DEFAULT = 0;
+}  // namespace TemperatureSensorConstants
+
 class TemperatureSensor : public IComponent {
  public:
   virtual ~TemperatureSensor() = default;
@@ -57,16 +64,24 @@ class TemperatureSensor : public IComponent {
     const uint8_t numberOfConfigItems = {4};
 
     ConfigItem<TemperatureT> reportHysteresis = {ConfigItem<TemperatureT>(
-        0, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_0, 50, Unit::Type::C, 1)};
+        0, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_0,
+        TemperatureSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT,
+        Unit::Type::C, 1)};
 
     ConfigItem<uint16_t> measureInterval = {ConfigItem<uint16_t>(
-        1, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_1, 60, Unit::Type::s)};
+        1, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_1,
+        TemperatureSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT,
+        Unit::Type::s)};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        2, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_2, 300, Unit::Type::s)};
+        2, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_2,
+        TemperatureSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT,
+        Unit::Type::s)};
 
     ConfigItem<TemperatureT> compensation = {ConfigItem<TemperatureT>(
-        3, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_3, 0, Unit::Type::C, 1)};
+        3, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_3,
+        TemperatureSensorConstants::CONFIG_COMPENSATION_DEFAULT, Unit::Type::C,
+        1)};
   };
 
   Sensor<TemperatureT> mSensor;

@@ -59,13 +59,13 @@ TEST_F(HumiditySensor_test, getConfigItemValues) {
             4);
 
   EXPECT_EQ(items[0].configId, 0);
-  EXPECT_EQ(items[0].value, 2);
+  EXPECT_EQ(items[0].value, 10);
 
   EXPECT_EQ(items[1].configId, 1);
   EXPECT_EQ(items[1].value, 60);
 
   EXPECT_EQ(items[2].configId, 2);
-  EXPECT_EQ(items[2].value, 60);
+  EXPECT_EQ(items[2].value, 300);
 
   EXPECT_EQ(items[3].configId, 3);
   EXPECT_EQ(items[3].value, 0);
@@ -174,9 +174,9 @@ TEST_F(HumiditySensor_test, setConfigs_one) {
   ConfigItemValueT items[4];
   EXPECT_EQ(pHs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
             4);
-  EXPECT_EQ(items[0].value, 2);
+  EXPECT_EQ(items[0].value, 10);
   EXPECT_EQ(items[1].value, 60);
-  EXPECT_EQ(items[2].value, 60);
+  EXPECT_EQ(items[2].value, 300);
   EXPECT_EQ(items[3].value, 33);
 }
 
@@ -199,7 +199,7 @@ TEST_F(HumiditySensor_test, setReported) {
 TEST_F(HumiditySensor_test,
        update_largeValueDiff_largeTimeDiff_withConfigsZero_shall_return_false) {
   EXPECT_CALL(*pDhtMock, read(false)).WillOnce(Return(true));
-  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(2));
+  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(10));
   EXPECT_CALL(*pArduinoMock, millis()).Times(0);
   ConfigItemValueT inItems[4] = {{0, 0}, {1, 0}, {2, 0}, {3, 0}};
   EXPECT_TRUE(pHs->setConfigItemValues(inItems, 4));
@@ -209,7 +209,7 @@ TEST_F(HumiditySensor_test,
 TEST_F(HumiditySensor_test,
        update_smallValueDiff_smallTimeDiff_shall_return_false) {
   EXPECT_CALL(*pDhtMock, read(false)).WillOnce(Return(true));
-  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(1));
+  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(9));
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
   EXPECT_FALSE(pHs->update());
 }
@@ -217,23 +217,34 @@ TEST_F(HumiditySensor_test,
 TEST_F(HumiditySensor_test,
        update_smallValueDiff_largeTimeDiff_shall_return_true) {
   EXPECT_CALL(*pDhtMock, read(false)).WillOnce(Return(true));
-  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(1));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
+  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(9));
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(300000));
   EXPECT_TRUE(pHs->update());
 }
 
 TEST_F(HumiditySensor_test,
        update_largeValueDiff_smallTimeDiff_shall_return_true) {
   EXPECT_CALL(*pDhtMock, read(false)).WillOnce(Return(true));
-  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(2));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(59999));
+  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(10));
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(299999));
   EXPECT_TRUE(pHs->update());
 }
 
 TEST_F(HumiditySensor_test,
        update_largeValueDiff_largeTimeDiff_shall_return_true) {
   EXPECT_CALL(*pDhtMock, read(false)).WillOnce(Return(true));
-  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(2));
-  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(60000));
+  EXPECT_CALL(*pDhtMock, readHumidity(false)).WillOnce(Return(10));
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(300000));
   EXPECT_TRUE(pHs->update());
+}
+
+TEST_F(HumiditySensor_test, isReportDue) {
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(0));
+
+  // Newly constructed shall be true
+  EXPECT_TRUE(pHs->isReportDue());
+
+  // Shall be set to false when setReported() is called
+  pHs->setReported();
+  EXPECT_FALSE(pHs->isReportDue());
 }

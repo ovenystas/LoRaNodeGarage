@@ -3,7 +3,7 @@
 #include "Util.h"
 
 #define IS_SIGNED_TYPE(type) (type(-1) < type(0))
-#define CONFIGVALUES_MAX 8
+static const uint8_t CONFIGVALUES_MAX = 8;
 
 struct DiscoveryEntityItemT {
   uint8_t entityId;
@@ -15,7 +15,7 @@ struct DiscoveryEntityItemT {
   uint8_t isSigned : 1;
   uint8_t reserved : 3;
 
-  size_t size() const { return 5; }
+  static constexpr size_t size() { return 5; }
 
   bool operator==(const DiscoveryEntityItemT& rhs) const {
     return entityId == rhs.entityId && componentType == rhs.componentType &&
@@ -49,7 +49,7 @@ struct DiscoveryConfigItemT {
   uint8_t isSigned : 1;
   uint8_t reserved : 3;
 
-  size_t size() const { return 3; }
+  static constexpr size_t size() { return 3; }
 
   bool operator==(const DiscoveryConfigItemT& rhs) const {
     return configId == rhs.configId && unit == rhs.unit &&
