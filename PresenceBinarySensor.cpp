@@ -95,3 +95,14 @@ bool PresenceBinarySensor::setConfigItemValues(const ConfigItemValueT* items,
 
   return true;
 }
+
+void PresenceBinarySensor::loadConfigValues() {
+  mConfig.lowLimit.load(
+      PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT);
+  mConfig.highLimit.load(
+      PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT);
+  mConfig.minStableTime.load(
+      PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT);
+  mConfig.reportInterval.load(
+      PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
+}

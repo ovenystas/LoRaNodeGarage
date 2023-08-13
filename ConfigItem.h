@@ -64,14 +64,6 @@ class ConfigItem {
     return 0;
   }
 
- private:
-  void addValueToCrc(CRC8& crc, T value) {
-    for (int8_t i = sizeof(T) - 1; i >= 0; i--) {
-      uint8_t b = static_cast<uint8_t>((value >> (i * 8)) & 0xFF);
-      crc.add(b);
-    }
-  }
-
   void load(T defaultValue) {
     if (mEeAddress >= EEPROM.length()) {
       return;
@@ -90,6 +82,14 @@ class ConfigItem {
     } else {
       mValueItem.setValue(defaultValue);
       save();
+    }
+  }
+
+ private:
+  void addValueToCrc(CRC8& crc, T value) {
+    for (int8_t i = sizeof(T) - 1; i >= 0; i--) {
+      uint8_t b = static_cast<uint8_t>((value >> (i * 8)) & 0xFF);
+      crc.add(b);
     }
   }
 

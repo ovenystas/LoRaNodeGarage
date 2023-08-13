@@ -91,3 +91,14 @@ bool TemperatureSensor::setConfigItemValues(const ConfigItemValueT *items,
 
   return true;
 }
+
+void TemperatureSensor::loadConfigValues() {
+  mConfig.reportHysteresis.load(
+      TemperatureSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
+  mConfig.measureInterval.load(
+      TemperatureSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT);
+  mConfig.reportInterval.load(
+      TemperatureSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
+  mConfig.compensation.load(
+      TemperatureSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
+}

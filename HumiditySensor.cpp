@@ -90,3 +90,14 @@ bool HumiditySensor::setConfigItemValues(const ConfigItemValueT *items,
 
   return true;
 }
+
+void HumiditySensor::loadConfigValues() {
+  mConfig.reportHysteresis.load(
+      HumiditySensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
+  mConfig.measureInterval.load(
+      HumiditySensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT);
+  mConfig.reportInterval.load(
+      HumiditySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
+  mConfig.compensation.load(
+      HumiditySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
+}

@@ -48,8 +48,7 @@ class HeightSensor : public IComponent {
 
   bool isReportDue() const final { return mSensor.isReportDue(); }
 
-  void loadConfigValues();
-  void saveConfigValues() const;
+  void loadConfigValues() final;
 
   size_t print(Stream& stream) const final { return mSensor.print(stream); };
 

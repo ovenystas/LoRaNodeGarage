@@ -37,6 +37,8 @@ class IComponent {
 
   virtual bool isReportDue() const = 0;
 
+  virtual void loadConfigValues() = 0;
+
   virtual size_t print(Stream& stream) const = 0;
 
   virtual size_t print(Stream& stream, uint8_t service) const = 0;

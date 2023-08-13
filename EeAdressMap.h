@@ -3,6 +3,8 @@
 /**
  * @brief EEPROM address map.
  */
+#define EE_ADDRESS_CONFIG_MAGIC (0x0030)
+
 #define EE_ADDRESS_DISTANCESENSOR (0x0040)
 #define EE_ADDRESS_GARAGECOVER (0x0060)
 #define EE_ADDRESS_HEIGHTSENSOR (0x0080)

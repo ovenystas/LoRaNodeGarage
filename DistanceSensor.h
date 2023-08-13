@@ -44,6 +44,8 @@ class DistanceSensor : public IComponent {
 
   bool isReportDue() const final { return mSensor.isReportDue(); }
 
+  void loadConfigValues() final;
+
   size_t print(Stream& stream) const final { return mSensor.print(stream); };
 
   size_t print(Stream& stream, uint8_t service) const final {

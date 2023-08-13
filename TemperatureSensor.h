@@ -52,6 +52,8 @@ class TemperatureSensor : public IComponent {
     return 0;
   };
 
+  void loadConfigValues() final;
+
   bool setConfigItemValues(const ConfigItemValueT *items, uint8_t length) final;
 
   void setReported() final { mSensor.setReported(); }

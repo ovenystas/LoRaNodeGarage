@@ -83,3 +83,12 @@ bool HeightSensor::setConfigItemValues(const ConfigItemValueT* items,
 
   return true;
 }
+
+void HeightSensor::loadConfigValues() {
+  mConfig.reportHysteresis.load(
+      HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
+  mConfig.reportInterval.load(
+      HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
+  mConfig.stableTime.load(HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT);
+  mConfig.zeroValue.load(HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT);
+}

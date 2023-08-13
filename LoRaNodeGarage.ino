@@ -6,24 +6,28 @@
  * Libraries: DHT sensor library by Adafruit v1.4.4
  *            NewPing by Tim Eckel v1.9.7
  *            LoRa by Sandeep Mistry v0.8.0
+ *            CRC xxx by xxx vxxx
  */
 
 /* TODO:
  * - Handle millis() wrap-around
+ * - Add encryption of messages
+ * - Reload configuration after erasing EEPROM
+ * - Use configuration measurment interval to update sensors (or remove that
+ *   config)
  */
 
 #define DEBUGLOG_DEFAULT_LOG_LEVEL_TRACE
 
 #include <Arduino.h>
-#include <DHT.h>       // DHT sensor library by Adafruit
-#include <DebugLog.h>  // DebugLog by hideakitai
+#include <DHT.h>  // DHT sensor library by Adafruit
 #include <EEPROM.h>
-#include <LoRa.h>
 #include <NewPing.h>  // NewPing by Tim Eckel
 #include <SPI.h>
 
 #include "Component.h"
 #include "DistanceSensor.h"
+#include "EeAdressMap.h"
 #include "GarageCover.h"
 #include "HeightSensor.h"
 #include "HumiditySensor.h"
@@ -37,7 +41,8 @@
 #define VERSION_MINOR 0
 #define VERSION_PATCH 6
 
-// #define ERASE_EEPROM
+// Increment when breaking changes of configuration are made.
+#define CONFIG_MAGIC 0x00
 
 #define DEBUG_SENSOR_VALUES
 #define DEBUG_SENSOR_REPORT
@@ -110,13 +115,26 @@ void setup() {
 
   printWelcomeMsg();
 
-#ifdef ERASE_EEPROM
-  Serial.print(F("Erasing EEPROM..."));
-  for (uint16_t i = 0; i <= E2END; i++) {
-    EEPROM.write(i, 0xFF);
+  uint8_t configMagicEe = EEPROM.read(EE_ADDRESS_CONFIG_MAGIC);
+  if (configMagicEe != CONFIG_MAGIC) {
+    Serial.print(F("Config magic word in EEPROM "));
+    printHex(Serial, configMagicEe);
+    Serial.print(" != ");
+    printHex(Serial, static_cast<uint8_t>(CONFIG_MAGIC));
+    Serial.println('!');
+    Serial.print(F("Erasing EEPROM"));
+    for (uint16_t i = 0; i <= E2END; i++) {
+      EEPROM.write(i, 0xFF);
+      if (i % 64 == 0) {
+        Serial.print('.');
+      }
+    }
+    Serial.println(F("Done!"));
   }
-  Serial.println(F("Done!"));
-#endif
+
+  loadConfigValuesForAllComponents();
+
+  dht.begin();
 
   if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onConfigReqMsg,
                   &onConfigSetReqMsg, &onServiceReqMsg)) {
@@ -127,7 +145,6 @@ void setup() {
   }
 
   sendDiscoveryMsgForAllComponents();
-  dht.begin();
 }
 
 void loop() {
@@ -183,6 +200,13 @@ void onServiceReqMsg(const LoRaServiceItemT& item) {
   if (c) {
     LOG_SERVICE(c, item.service);
     c->callService(item.service);
+  }
+}
+
+static void loadConfigValuesForAllComponents() {
+  for (uint8_t i = 0; i < node.getSize(); i++) {
+    IComponent* c = node.getComponent(i);
+    c->loadConfigValues();
   }
 }
 
