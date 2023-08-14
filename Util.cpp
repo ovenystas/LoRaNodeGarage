@@ -7,7 +7,7 @@
 
 #include <Arduino.h>
 
-void printUptime(Stream& stream) {
+void printUptime(Print& printer) {
   auto t = millis();
 
   uint16_t hours = t / 3600000;
@@ -21,95 +21,95 @@ void printUptime(Stream& stream) {
 
   uint16_t milliseconds = t;
 
-  stream.print('[');
-  stream.print(hours);
-  stream.print(':');
+  printer.print('[');
+  printer.print(hours);
+  printer.print(':');
   if (minutes < 10) {
-    stream.print('0');
+    printer.print('0');
   }
-  stream.print(minutes);
-  stream.print(':');
+  printer.print(minutes);
+  printer.print(':');
   if (seconds < 10) {
-    stream.print('0');
+    printer.print('0');
   }
-  stream.print(seconds);
-  stream.print('.');
+  printer.print(seconds);
+  printer.print('.');
   if (milliseconds < 100) {
-    stream.print('0');
+    printer.print('0');
   }
   if (milliseconds < 10) {
-    stream.print('0');
+    printer.print('0');
   }
-  stream.print(milliseconds);
-  stream.print("] ");
+  printer.print(milliseconds);
+  printer.print("] ");
 }
 
-void printMillis(Stream& stream) {
+void printMillis(Print& printer) {
   auto t = millis();
 
-  stream.print('[');
-  stream.print(t);
-  stream.print("] ");
+  printer.print('[');
+  printer.print(t);
+  printer.print("] ");
 }
 
-void printVersion(Stream& stream, uint8_t major, uint8_t minor, uint8_t patch) {
-  stream.print(major);
-  stream.print('.');
-  stream.print(minor);
-  stream.print('.');
-  stream.print(patch);
+void printVersion(Print& printer, uint8_t major, uint8_t minor, uint8_t patch) {
+  printer.print(major);
+  printer.print('.');
+  printer.print(minor);
+  printer.print('.');
+  printer.print(patch);
 }
 
-void printHex(Stream& stream, uint8_t value, bool prefix) {
+void printHex(Print& printer, uint8_t value, bool prefix) {
   if (prefix) {
-    stream.print("0x");
+    printer.print("0x");
   }
   if (value < 0x10) {
-    stream.print('0');
+    printer.print('0');
   }
-  stream.print(value, HEX);
+  printer.print(value, HEX);
 }
 
-void printHex(Stream& stream, uint16_t value, bool prefix) {
+void printHex(Print& printer, uint16_t value, bool prefix) {
   if (prefix) {
-    stream.print("0x");
+    printer.print("0x");
   }
   if (value < 0x1000) {
-    stream.print('0');
+    printer.print('0');
   }
   if (value < 0x100) {
-    stream.print('0');
+    printer.print('0');
   }
   if (value < 0x10) {
-    stream.print('0');
+    printer.print('0');
   }
-  stream.print(value, HEX);
+  printer.print(value, HEX);
 }
 
-void printHex(Stream& stream, uint32_t value, bool prefix) {
+void printHex(Print& printer, uint32_t value, bool prefix) {
   if (prefix) {
-    stream.print("0x");
+    printer.print("0x");
   }
   if (value < 0x10000000) {
-    stream.print('0');
+    printer.print('0');
   }
   if (value < 0x1000000) {
-    stream.print('0');
+    printer.print('0');
   }
   if (value < 0x100000) {
-    stream.print('0');
+    printer.print('0');
   }
   if (value < 0x10000) {
-    stream.print('0');
+    printer.print('0');
   }
   if (value < 0x1000) {
-    stream.print('0');
+    printer.print('0');
   }
   if (value < 0x100) {
-    stream.print('0');
+    printer.print('0');
   }
   if (value < 0x10) {
-    stream.print('0');
+    printer.print('0');
   }
-  stream.print(value, HEX);
+  printer.print(value, HEX);
 }

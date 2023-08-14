@@ -6,7 +6,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include <Stream.h>
+#include <Print.h>
 
 // TODO: Handle wrap-around after 49 days.
 #define seconds() (millis() / 1000)
@@ -36,9 +36,9 @@ inline int16_t ntoh(int16_t v) { return ntohs(v); }
 inline uint32_t ntoh(uint32_t v) { return ntohl(v); }
 inline int32_t ntoh(int32_t v) { return ntohl(v); }
 
-void printMillis(Stream& stream);
-void printUptime(Stream& stream);
-void printVersion(Stream& stream, uint8_t major, uint8_t minor, uint8_t patch);
-void printHex(Stream& stream, uint8_t value, bool prefix = false);
-void printHex(Stream& stream, uint16_t value, bool prefix = false);
-void printHex(Stream& stream, uint32_t value, bool prefix = false);
+void printMillis(Print& stream);
+void printUptime(Print& stream);
+void printVersion(Print& stream, uint8_t major, uint8_t minor, uint8_t patch);
+void printHex(Print& stream, uint8_t value, bool prefix = false);
+void printHex(Print& stream, uint16_t value, bool prefix = false);
+void printHex(Print& stream, uint32_t value, bool prefix = false);

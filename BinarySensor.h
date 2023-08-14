@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Stream.h>
+#include <Print.h>
 #include <WString.h>
 
 #include "BaseComponent.h"
@@ -70,7 +70,7 @@ class BinarySensor {
 
   bool isReportDue() const { return mBaseComponent.isReportDue(); }
 
-  size_t print(Stream& stream) const;
+  size_t print(Print& printer) const;
 
   void setIsReportDue(bool isDue) { mBaseComponent.setIsReportDue(isDue); }
 

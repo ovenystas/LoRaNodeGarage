@@ -44,10 +44,10 @@ class GarageCover : public IComponent {
 
   void loadConfigValues() final;
 
-  size_t print(Stream& stream) const final { return mCover.print(stream); };
+  size_t print(Print& printer) const final { return mCover.print(printer); };
 
-  size_t print(Stream& stream, uint8_t service) const final {
-    return mCover.print(stream, service);
+  size_t print(Print& printer, uint8_t service) const final {
+    return mCover.print(printer, service);
   };
 
   bool setConfigItemValues(const ConfigItemValueT* items, uint8_t length) final;

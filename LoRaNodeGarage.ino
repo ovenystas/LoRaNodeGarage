@@ -17,8 +17,6 @@
  *   config)
  */
 
-#define DEBUGLOG_DEFAULT_LOG_LEVEL_TRACE
-
 #include <Arduino.h>
 #include <DHT.h>  // DHT sensor library by Adafruit
 #include <EEPROM.h>
@@ -339,5 +337,5 @@ void printWelcomeMsg() {
 }
 
 #ifdef DEBUG_SENSOR_VALUES
-static void printAllSensors(Stream& stream) { node.print(stream); }
+static void printAllSensors(Print& printer) { node.print(printer); }
 #endif

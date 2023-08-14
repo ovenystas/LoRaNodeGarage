@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Stream.h>
+#include <Print.h>
 
 #include "BaseComponent.h"
 #include "Types.h"
@@ -108,11 +108,11 @@ class Sensor {
 
   bool isReportDue() const { return mBaseComponent.isReportDue(); }
 
-  size_t print(Stream& stream) const {
+  size_t print(Print& printer) const {
     size_t n = 0;
-    n += stream.print(mBaseComponent.getName());
-    n += stream.print(": ");
-    n += mValueItem.print(stream);
+    n += printer.print(mBaseComponent.getName());
+    n += printer.print(": ");
+    n += mValueItem.print(printer);
     return n;
   }
 

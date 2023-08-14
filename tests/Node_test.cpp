@@ -5,45 +5,48 @@
 #include "Component.h"
 #include "mocks/BufferSerial.h"
 #include "mocks/Print.h"
-#include "mocks/Stream.h"
 
 class ComponentChild : public IComponent {
  public:
   explicit ComponentChild(uint8_t entityId) : mEntityId{entityId} {}
 
-  void callService(uint8_t service) { (void)service; }
+  void callService(uint8_t service) final { (void)service; }
 
-  uint8_t getConfigItemValues(ConfigItemValueT* items, uint8_t length) const {
+  uint8_t getConfigItemValues(ConfigItemValueT* items,
+                              uint8_t length) const final {
     (void)items;
     (void)length;
     return 0;
   }
 
-  void getDiscoveryItem(DiscoveryItemT* item) const { (void)item; }
+  void getDiscoveryItem(DiscoveryItemT* item) const final { (void)item; }
 
-  uint8_t getEntityId() const { return mEntityId; }
+  uint8_t getEntityId() const final { return mEntityId; }
 
-  void getValueItem(ValueItemT* item) const { (void)item; }
+  void getValueItem(ValueItemT* item) const final { (void)item; }
 
-  bool isReportDue() const { return false; }
+  bool isReportDue() const final { return false; }
 
-  size_t print(Stream& stream) const { return stream.print(mEntityId); }
+  void loadConfigValues() final {}
 
-  size_t print(Stream& stream, uint8_t service) const {
-    (void)stream;
+  size_t print(Print& printer) const final { return printer.print(mEntityId); }
+
+  size_t print(Print& printer, uint8_t service) const final {
+    (void)printer;
     (void)service;
     return 0;
   }
 
-  bool setConfigItemValues(const ConfigItemValueT* items, uint8_t length) {
+  bool setConfigItemValues(const ConfigItemValueT* items,
+                           uint8_t length) final {
     (void)items;
     (void)length;
     return false;
   }
 
-  void setReported() {}
+  void setReported() final {}
 
-  bool update() { return false; }
+  bool update() final { return false; }
 
  private:
   const uint8_t mEntityId;

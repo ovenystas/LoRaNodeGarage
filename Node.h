@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <Stream.h>
+#include <Print.h>
 #include <stdint.h>
 
 #include "Component.h"
@@ -22,7 +22,7 @@ class Node {
 
   uint8_t getSize() const { return mSize; }
 
-  size_t print(Stream& stream);
+  size_t print(Print& printer);
 
  private:
   IComponent** mComponents;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Stream.h>
+#include <Print.h>
 
 #include "BaseComponent.h"
 #include "Types.h"
@@ -58,9 +58,9 @@ class Cover {
 
   bool isReportDue() const { return mBaseComponent.isReportDue(); }
 
-  size_t print(Stream& stream) const;
+  size_t print(Print& printer) const;
 
-  size_t print(Stream& stream, uint8_t service) const;
+  size_t print(Print& printer, uint8_t service) const;
 
   CoverService serviceDecode(uint8_t service) const;
 

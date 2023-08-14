@@ -99,5 +99,5 @@ void HumiditySensor::loadConfigValues() {
   mConfig.reportInterval.load(
       HumiditySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
   mConfig.compensation.load(
-      HumiditySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
+      HumiditySensorConstants::CONFIG_COMPENSATION_DEFAULT);
 }

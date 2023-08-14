@@ -5,7 +5,7 @@
 
 #include "Node.h"
 
-#include <Stream.h>
+#include <Print.h>
 
 IComponent* Node::getComponent(uint8_t idx) {
   if (idx >= mSize) {
@@ -23,14 +23,14 @@ IComponent* Node::getComponentByEntityId(uint8_t entityId) {
   return nullptr;
 }
 
-size_t Node::print(Stream& stream) {
+size_t Node::print(Print& printer) {
   uint8_t i;
   size_t n = 0;
   for (i = 0; i < mSize - 1; i++) {
-    n += mComponents[i]->print(stream);
-    n += stream.print(", ");
+    n += mComponents[i]->print(printer);
+    n += printer.print(", ");
   }
-  n += mComponents[i]->print(stream);
-  n += stream.println();
+  n += mComponents[i]->print(printer);
+  n += printer.println();
   return n;
 }

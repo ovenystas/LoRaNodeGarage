@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Stream.h>
+#include <Print.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -39,9 +39,9 @@ class IComponent {
 
   virtual void loadConfigValues() = 0;
 
-  virtual size_t print(Stream& stream) const = 0;
+  virtual size_t print(Print& printer) const = 0;
 
-  virtual size_t print(Stream& stream, uint8_t service) const = 0;
+  virtual size_t print(Print& printer, uint8_t service) const = 0;
 
   virtual bool setConfigItemValues(const ConfigItemValueT* items,
                                    uint8_t length) = 0;

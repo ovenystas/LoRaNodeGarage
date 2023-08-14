@@ -40,12 +40,12 @@ class PresenceBinarySensor : public IComponent {
 
   bool isReportDue() const final { return mBinarySensor.isReportDue(); }
 
-  size_t print(Stream& stream) const final {
-    return mBinarySensor.print(stream);
+  size_t print(Print& printer) const final {
+    return mBinarySensor.print(printer);
   };
 
-  size_t print(Stream& stream, uint8_t service) const final {
-    (void)stream;
+  size_t print(Print& printer, uint8_t service) const final {
+    (void)printer;
     (void)service;
     return 0;
   };

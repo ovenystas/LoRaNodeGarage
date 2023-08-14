@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <Stream.h>
+#include <Print.h>
 #include <stdint.h>
 
 namespace UnitConstants {
@@ -39,11 +39,11 @@ class Unit {
     return UnitConstants::UnitName[static_cast<uint8_t>(mType)];
   }
 
-  size_t print(Stream& stream) const {
+  size_t print(Print& printer) const {
     size_t n = 0;
     if (mType != Unit::Type::none) {
-      n += stream.print(' ');
-      n += stream.print(name());
+      n += printer.print(' ');
+      n += printer.print(name());
     }
     return n;
   }
