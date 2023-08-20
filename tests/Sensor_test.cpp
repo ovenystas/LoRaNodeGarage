@@ -11,17 +11,14 @@ using ::testing::Return;
 
 class SensorPrint_test : public ::testing::Test {
  protected:
-  void SetUp() override {
-    pSerial = new BufferSerial(256);
-    strBuf[0] = '\0';
-  }
+  void SetUp() override { strBuf[0] = '\0'; }
 
-  void TearDown() override { delete pSerial; }
+  void TearDown() override {}
 
   void bufSerReadStr() {
     size_t i = 0;
-    while (pSerial->available()) {
-      int c = pSerial->read();
+    while (Serial.available()) {
+      int c = Serial.read();
       if (c < 0) {
         break;
       }
@@ -31,7 +28,6 @@ class SensorPrint_test : public ::testing::Test {
   }
 
   char strBuf[256];
-  BufferSerial* pSerial;
 };
 
 class SensorInt8_test : public ::testing::Test {
@@ -327,7 +323,7 @@ TEST_F(SensorPrint_test, print_simple_constructed_sensor) {
   const char* expectStr = ": 0";
   Sensor<int8_t> sc = Sensor<int8_t>(108);
 
-  size_t printedChars = sc.print(*pSerial);
+  size_t printedChars = sc.print(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -339,7 +335,7 @@ TEST_F(SensorPrint_test, print_negative_value_scalefactor_1_unit_none) {
   Sensor<int8_t> sc = Sensor<int8_t>(108, "Sensor8");
   sc.setValue(-123);
 
-  size_t printedChars = sc.print(*pSerial);
+  size_t printedChars = sc.print(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -352,7 +348,7 @@ TEST_F(SensorPrint_test, print_positive_value_scalefactor_1000_unit_percent) {
       108, "Sensor8", SensorDeviceClass::humidity, Unit::Type::percent, 3);
   sc.setValue(1);
 
-  size_t printedChars = sc.print(*pSerial);
+  size_t printedChars = sc.print(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -365,7 +361,7 @@ TEST_F(SensorPrint_test, print_negative_value_scalefactor_10_unit_mm) {
       116, "Sensor16", SensorDeviceClass::distance, Unit::Type::mm, 1);
   sc.setValue(12345);
 
-  size_t printedChars = sc.print(*pSerial);
+  size_t printedChars = sc.print(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -378,7 +374,7 @@ TEST_F(SensorPrint_test, print_negative_value_scalefactor_1000_unit_um) {
       116, "Sensor32", SensorDeviceClass::distance, Unit::Type::um, 3);
   sc.setValue(INT32_MIN);
 
-  size_t printedChars = sc.print(*pSerial);
+  size_t printedChars = sc.print(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);

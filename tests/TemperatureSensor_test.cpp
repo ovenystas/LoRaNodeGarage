@@ -11,8 +11,6 @@ using ::testing::Return;
 
 using TemperatureT = int16_t;  // Degree C
 
-BufferSerial Serial = BufferSerial(256);
-
 class TemperatureSensor_test : public ::testing::Test {
  protected:
   void SetUp() override {

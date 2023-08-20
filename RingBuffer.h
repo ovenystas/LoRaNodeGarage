@@ -11,7 +11,7 @@ class RingBuffer {
    *
    * @return size_t max number of elements the ring buffer can hold.
    */
-  size_t capacity() const { return N; }
+  constexpr size_t capacity() const { return N; }
 
   /**
    * @brief Checks the number of elements in the ring buffer.

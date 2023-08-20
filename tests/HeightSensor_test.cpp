@@ -14,7 +14,6 @@ using HeightT = int16_t;  // cm
 class HeightSensor_test : public ::testing::Test {
  protected:
   void SetUp() override {
-    pSerial = new BufferSerial(256);
     pArduinoMock = arduinoMockInstance();
     eeprom_clear();
     strBuf[0] = '\0';
@@ -27,14 +26,13 @@ class HeightSensor_test : public ::testing::Test {
   void TearDown() override {
     delete pHs;
     delete pDistanceSensor;
-    delete pSerial;
     releaseArduinoMock();
   }
 
   void bufSerReadStr() {
     size_t i = 0;
-    while (pSerial->available()) {
-      int c = pSerial->read();
+    while (Serial.available()) {
+      int c = Serial.read();
       if (c < 0) {
         break;
       }
@@ -44,7 +42,6 @@ class HeightSensor_test : public ::testing::Test {
   }
 
   char strBuf[256];
-  BufferSerial* pSerial;
   ArduinoMock* pArduinoMock;
   Sensor<DistanceT>* pDistanceSensor;
   HeightSensor* pHs;
@@ -137,7 +134,7 @@ TEST_F(HeightSensor_test, print) {
       99, "Distance", SensorDeviceClass::distance, Unit::Type::cm);
   HeightSensor hs = HeightSensor(39, "HeightSensor", ds);
 
-  EXPECT_EQ(hs.print(*pSerial), 18);
+  EXPECT_EQ(hs.print(Serial), 18);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -147,7 +144,7 @@ TEST_F(HeightSensor_test, print_service_shall_do_nothing) {
   Sensor<DistanceT> ds = Sensor<DistanceT>(
       99, "Distance", SensorDeviceClass::distance, Unit::Type::cm);
   HeightSensor hs = HeightSensor(39, "HeightSensor", ds);
-  EXPECT_EQ(hs.print(*pSerial, 0), 0);
+  EXPECT_EQ(hs.print(Serial, 0), 0);
 }
 
 TEST_F(HeightSensor_test, setConfigs_all_in_order) {

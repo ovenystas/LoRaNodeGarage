@@ -15,20 +15,16 @@ using ::testing::Return;
 class Cover_test : public ::testing::Test {
  protected:
   void SetUp() override {
-    pSerial = new BufferSerial(256);
     pC = new Cover(34, "Cover");
     strBuf[0] = '\0';
   }
 
-  void TearDown() override {
-    delete pC;
-    delete pSerial;
-  }
+  void TearDown() override { delete pC; }
 
   void bufSerReadStr() {
     size_t i = 0;
-    while (pSerial->available()) {
-      int c = pSerial->read();
+    while (Serial.available()) {
+      int c = Serial.read();
       if (c < 0) {
         break;
       }
@@ -38,7 +34,6 @@ class Cover_test : public ::testing::Test {
   }
 
   char strBuf[256];
-  BufferSerial* pSerial;
   Cover* pC;
 };
 
@@ -151,7 +146,7 @@ TEST_F(Cover_test, print_when_state_is_closed) {
   const char* expectStr = "Cover: closed";
   pC->setState(CoverState::closed);
 
-  size_t printedChars = pC->print(*pSerial);
+  size_t printedChars = pC->print(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -162,7 +157,7 @@ TEST_F(Cover_test, print_when_state_is_opening) {
   const char* expectStr = "Cover: opening";
   pC->setState(CoverState::opening);
 
-  size_t printedChars = pC->print(*pSerial);
+  size_t printedChars = pC->print(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -173,7 +168,7 @@ TEST_F(Cover_test, print_when_state_is_open) {
   const char* expectStr = "Cover: open";
   pC->setState(CoverState::open);
 
-  size_t printedChars = pC->print(*pSerial);
+  size_t printedChars = pC->print(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -184,7 +179,7 @@ TEST_F(Cover_test, print_when_state_is_closing) {
   const char* expectStr = "Cover: closing";
   pC->setState(CoverState::closing);
 
-  size_t printedChars = pC->print(*pSerial);
+  size_t printedChars = pC->print(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -196,7 +191,7 @@ TEST_F(Cover_test, print_when_state_is_closed_and_service_open_is_called) {
   pC->setState(CoverState::closed);
 
   size_t printedChars =
-      pC->print(*pSerial, static_cast<uint8_t>(CoverService::open));
+      pC->print(Serial, static_cast<uint8_t>(CoverService::open));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -208,7 +203,7 @@ TEST_F(Cover_test, print_when_state_is_open_and_service_close_is_called) {
   pC->setState(CoverState::open);
 
   size_t printedChars =
-      pC->print(*pSerial, static_cast<uint8_t>(CoverService::close));
+      pC->print(Serial, static_cast<uint8_t>(CoverService::close));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -220,7 +215,7 @@ TEST_F(Cover_test, print_when_state_is_opening_and_service_stop_is_called) {
   pC->setState(CoverState::opening);
 
   size_t printedChars =
-      pC->print(*pSerial, static_cast<uint8_t>(CoverService::stop));
+      pC->print(Serial, static_cast<uint8_t>(CoverService::stop));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -232,7 +227,7 @@ TEST_F(Cover_test, print_when_state_is_closing_and_service_toggle_is_called) {
   pC->setState(CoverState::closing);
 
   size_t printedChars =
-      pC->print(*pSerial, static_cast<uint8_t>(CoverService::toggle));
+      pC->print(Serial, static_cast<uint8_t>(CoverService::toggle));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -244,7 +239,7 @@ TEST_F(Cover_test, print_when_state_is_closed_and_service_unknown_is_called) {
   pC->setState(CoverState::closed);
 
   size_t printedChars =
-      pC->print(*pSerial, static_cast<uint8_t>(CoverService::unknown));
+      pC->print(Serial, static_cast<uint8_t>(CoverService::unknown));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);

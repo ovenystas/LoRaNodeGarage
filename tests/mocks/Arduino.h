@@ -9,6 +9,7 @@
 #include <ctime>
 
 // #include "HardwareSerial.h"
+#include "BufferSerial.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,6 +64,9 @@ void yield(void);
 
 #define lowByte(w) (static_cast<uint8_t>((w)&0xff))
 #define highByte(w) (static_cast<uint8_t>((w) >> 8))
+
+extern BufferSerial bufSerial;
+#define Serial bufSerial
 
 typedef uint8_t boolean;
 typedef uint8_t byte;

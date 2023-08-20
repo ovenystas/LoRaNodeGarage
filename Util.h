@@ -36,9 +36,12 @@ inline int16_t ntoh(int16_t v) { return ntohs(v); }
 inline uint32_t ntoh(uint32_t v) { return ntohl(v); }
 inline int32_t ntoh(int32_t v) { return ntohl(v); }
 
-void printMillis(Print& stream);
-void printUptime(Print& stream);
-void printVersion(Print& stream, uint8_t major, uint8_t minor, uint8_t patch);
-void printHex(Print& stream, uint8_t value, bool prefix = false);
-void printHex(Print& stream, uint16_t value, bool prefix = false);
-void printHex(Print& stream, uint32_t value, bool prefix = false);
+void printMillis(Print& printer);
+void printUptime(Print& printer);
+void printVersion(Print& printer, uint8_t major, uint8_t minor, uint8_t patch);
+void printHex(Print& printer, uint8_t value, bool prefix = false);
+void printHex(Print& printer, uint16_t value, bool prefix = false);
+void printHex(Print& printer, uint32_t value, bool prefix = false);
+
+void printArray(Print& printer, const uint8_t* buf, size_t len, int base = DEC,
+                bool prefix = false);

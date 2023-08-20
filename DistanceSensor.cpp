@@ -80,10 +80,7 @@ bool DistanceSensor::setConfigItemValues(const ConfigItemValueT* items,
 }
 
 void DistanceSensor::loadConfigValues() {
-  mConfig.reportHysteresis.load(
-      DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
-  mConfig.measureInterval.load(
-      DistanceSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT);
-  mConfig.reportInterval.load(
-      DistanceSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
+  mConfig.reportHysteresis.load();
+  mConfig.measureInterval.load();
+  mConfig.reportInterval.load();
 }

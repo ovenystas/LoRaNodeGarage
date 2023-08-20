@@ -12,7 +12,6 @@ class GarageCover_test : public ::testing::Test {
  protected:
   void SetUp() override {
     strBuf[0] = '\0';
-    pSerial = new BufferSerial(256);
     pArduinoMock = arduinoMockInstance();
     EXPECT_CALL(*pArduinoMock, pinMode(11, INPUT_PULLUP));
     EXPECT_CALL(*pArduinoMock, pinMode(12, INPUT_PULLUP));
@@ -25,14 +24,13 @@ class GarageCover_test : public ::testing::Test {
 
   void TearDown() override {
     delete pGc;
-    delete pSerial;
     releaseArduinoMock();
   }
 
   void bufSerReadStr() {
     size_t i = 0;
-    while (pSerial->available()) {
-      int c = pSerial->read();
+    while (Serial.available()) {
+      int c = Serial.read();
       if (c < 0) {
         break;
       }
@@ -42,7 +40,6 @@ class GarageCover_test : public ::testing::Test {
   }
 
   char strBuf[256];
-  BufferSerial* pSerial;
   ArduinoMock* pArduinoMock;
   GarageCover* pGc;
 };
@@ -217,6 +214,31 @@ TEST_F(GarageCover_test, getValueItem) {
   EXPECT_EQ(item.value, 0);
 }
 
+TEST_F(GarageCover_test, loadConfigValues_wrong_crc_shall_set_default_values) {
+  pGc->loadConfigValues();
+
+  ConfigItemValueT items[1];
+  EXPECT_EQ(pGc->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
+            1);
+  EXPECT_EQ(items[0].value,
+            GarageCoverConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
+}
+
+TEST_F(GarageCover_test, loadConfigValues_OK) {
+  (void)EEPROM.put(EE_ADDRESS_CONFIG_GARAGECOVER_0,
+                   GarageCoverConstants::CONFIG_REPORT_INTERVAL_DEFAULT + 1);
+  eeprom_write_byte(EE_ADDRESS_CONFIG_GARAGECOVER_0 + sizeof(uint16_t),
+                    0xD6);  // Correct CRC8 of value
+
+  pGc->loadConfigValues();
+
+  ConfigItemValueT items[1];
+  EXPECT_EQ(pGc->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
+            1);
+  EXPECT_EQ(items[0].value,
+            GarageCoverConstants::CONFIG_REPORT_INTERVAL_DEFAULT + 1);
+}
+
 TEST_F(GarageCover_test, print) {
   const char* expectStr = "GarageCover: closed";
   EXPECT_CALL(*pArduinoMock, pinMode(11, INPUT_PULLUP));
@@ -225,7 +247,7 @@ TEST_F(GarageCover_test, print) {
   EXPECT_CALL(*pArduinoMock, digitalWrite(13, LOW));
   GarageCover gc = GarageCover(91, "GarageCover", 11, 12, 13);
 
-  EXPECT_EQ(gc.print(*pSerial), 19);
+  EXPECT_EQ(gc.print(Serial), 19);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -240,16 +262,33 @@ TEST_F(GarageCover_test, print_service_open) {
   EXPECT_CALL(*pArduinoMock, digitalWrite(13, LOW));
   GarageCover gc = GarageCover(91, "GarageCover", 11, 12, 13);
 
-  EXPECT_EQ(gc.print(*pSerial, static_cast<uint8_t>(CoverService::open)), 53);
+  EXPECT_EQ(gc.print(Serial, static_cast<uint8_t>(CoverService::open)), 53);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
 }
 
-// No config items
 TEST_F(GarageCover_test, setConfigs) {
-  const ConfigItemValueT item = {1, 0xABBACAFE};
-  EXPECT_FALSE(pGc->setConfigItemValues(&item, 1));
+  ConfigItemValueT inItems[1] = {{0, 1000}};
+
+  EXPECT_TRUE(pGc->setConfigItemValues(inItems, 1));
+
+  ConfigItemValueT items[1];
+  EXPECT_EQ(pGc->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
+            1);
+  EXPECT_EQ(items[0].value, 1000);
+}
+
+TEST_F(GarageCover_test, setConfigs_too_many) {
+  ConfigItemValueT inItems[2] = {{0, 1000}, {1, 1001}};
+
+  EXPECT_FALSE(pGc->setConfigItemValues(inItems, 2));
+}
+
+TEST_F(GarageCover_test, setConfigs_out_of_range) {
+  ConfigItemValueT inItems[1] = {{1, 3001}};
+
+  EXPECT_FALSE(pGc->setConfigItemValues(inItems, 1));
 }
 
 TEST_F(GarageCover_test, setReported) {

@@ -1,3 +1,6 @@
 [submodule "libraries/CRC"]
 	path = libraries/CRC
 	url = https://github.com/RobTillaart/CRC
+[submodule "libraries/arduinolibs"]
+	path = libraries/arduinolibs
+	url = https://github.com/rweather/arduinolibs.git

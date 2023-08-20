@@ -80,6 +80,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <Cipher.h>
 #include <LoRa.h>
 #include <Stream.h>
 
@@ -92,33 +93,89 @@
 #define LORA_FREQUENCY 868e6
 #define LORA_MAX_MESSAGE_LENGTH 51
 
-#define FLAGS_REQ_ACK 0x40
-#define FLAGS_ACK 0x80
+#define LORA_HEADER_LENGTH 5
+#define LORA_MAX_PAYLOAD_LENGTH (LORA_MAX_MESSAGE_LENGTH - LORA_HEADER_LENGTH)
+
+#define FLAGS_ACK_MASK 0x80
+#define FLAGS_ACK_SHIFT 7
+#define FLAGS_REQ_ACK_MASK 0x40
+#define FLAGS_REQ_ACK_SHIFT 6
+#define FLAGS_MSG_TYPE_MASK 0x0F
+#define FLAGS_MSG_TYPE_SHIFT 0
 
 #define AIRTIME_LIMIT_PERCENT 1
 #define AIRTIME_LIMIT_PPM (AIRTIME_LIMIT_PERCENT * 10000)
 
-struct LoRaHeaderT {
-  uint8_t dst;
-  uint8_t src;
-  uint8_t id;
-  uint8_t flags;
-  uint8_t len;
-} __attribute__((packed, aligned(1)));
+enum class LoRaMsgType {
+  ping_req,
+  ping_msg,
+  discovery_req,
+  discovery_msg,
+  value_req,
+  value_msg,
+  config_req,
+  config_msg,
+  configSet_req,
+  service_req
+};
 
-#define LORA_HEADER_LENGTH sizeof(LoRaHeaderT)
-#define LORA_MAX_PAYLOAD_LENGTH (LORA_MAX_MESSAGE_LENGTH - LORA_HEADER_LENGTH)
+struct LoRaHeaderFlagsT {
+  bool ack_response{false};
+  bool ack_request{false};
+  LoRaMsgType msgType{LoRaMsgType::ping_req};
+
+  uint8_t fromByte(const uint8_t b) {
+    ack_response = (b & FLAGS_ACK_MASK) != 0;
+    ack_request = (b & FLAGS_REQ_ACK_MASK) != 0;
+    msgType = static_cast<LoRaMsgType>(b & FLAGS_MSG_TYPE_MASK);
+    return 1;
+  }
+
+  uint8_t toByte(uint8_t* b) const {
+    uint8_t lb = (ack_response << FLAGS_ACK_SHIFT);
+    lb |= (ack_request << FLAGS_REQ_ACK_SHIFT);
+    lb |= (static_cast<uint8_t>(msgType) << FLAGS_MSG_TYPE_SHIFT);
+    *b = lb;
+    return 1;
+  }
+};
+
+struct LoRaHeaderT {
+  uint8_t dst{};
+  uint8_t src{};
+  uint8_t id{};
+  LoRaHeaderFlagsT flags;
+  uint8_t len{};
+
+  uint8_t fromByteArray(const uint8_t* buf) {
+    dst = buf[0];
+    src = buf[1];
+    id = buf[2];
+    flags.fromByte(buf[3]);
+    len = buf[4];
+    return 5;
+  }
+
+  uint8_t toByteArray(uint8_t* buf) const {
+    buf[0] = dst;
+    buf[1] = src;
+    buf[2] = id;
+    flags.toByte(&buf[3]);
+    buf[4] = len;
+    return 5;
+  }
+};
 
 struct LoRaTxMessageT {
   LoRaHeaderT header;
-  uint8_t payload[LORA_MAX_PAYLOAD_LENGTH];
-} __attribute__((packed, aligned(1)));
+  uint8_t payload[LORA_MAX_PAYLOAD_LENGTH]{};
+};
 
 struct LoRaRxMessageT {
   LoRaHeaderT header;
-  int8_t rssi;
-  uint8_t payload[LORA_MAX_PAYLOAD_LENGTH];
-} __attribute__((packed, aligned(1)));
+  // cppcheck-suppress unusedStructMember // false positive
+  int16_t rssi{};
+};
 
 struct LoRaValuePayloadT {
   uint8_t numberOfEntities;
@@ -176,29 +233,12 @@ struct LoRaServiceItemT {
 
 class LoRaHandler {
  public:
-  enum class MsgType {
-    ping_req,
-    ping_msg,
-    discovery_req,
-    discovery_msg,
-    value_req,
-    value_msg,
-    config_req,
-    config_msg,
-    configSet_req,
-    service_req
-  };
-
-  LoRaHandler(LoRaClass& loRa, Stream& stream, uint8_t gatewayAddress,
-              uint8_t myAddress)
+  LoRaHandler(LoRaClass& loRa, uint8_t gatewayAddress, uint8_t myAddress,
+              Cipher* cipher = nullptr)
       : mLoRa{loRa},
-        mStream{stream},
         mGatewayAddress{gatewayAddress},
-        mMyAddress{myAddress} {}
-
-  friend inline uint8_t& operator|=(uint8_t& a, const MsgType b) {
-    return (a |= static_cast<uint8_t>(b));
-  }
+        mMyAddress{myAddress},
+        mCipher{cipher} {}
 
   using OnDiscoveryReqMsgFunc = void (*)(uint8_t);
   using OnValueReqMsgFunc = void (*)(uint8_t);
@@ -225,17 +265,15 @@ class LoRaHandler {
 
   void endMsg();
 
-  void setDefaultHeader(LoRaHeaderT* header);
+  void setDefaultHeader(LoRaHeaderT& header);
 
  private:
   void printMessage(const LoRaTxMessageT* msg);
-  void printHeader(const LoRaHeaderT* header);
-  void printPayload(const uint8_t* payload, uint8_t len);
 
-  int8_t parseMsg(const LoRaRxMessageT& rxMsg);
+  int8_t parseMsg(const LoRaRxMessageT& rxMsg, uint8_t* payload);
 
   bool isAckRequested(const LoRaHeaderT* rxHeader) const {
-    return (rxHeader->flags & FLAGS_REQ_ACK) != 0;
+    return rxHeader->flags.ack_request != 0;
   }
 
   void sendAck(const LoRaHeaderT* rx_header);
@@ -243,12 +281,13 @@ class LoRaHandler {
   void sendPing(const uint8_t toAddr, int8_t rssi);
 
   LoRaClass& mLoRa;
-  Stream& mStream;
   const uint8_t mGatewayAddress;
   const uint8_t mMyAddress;
+  Cipher* mCipher;
   uint8_t mSeqId{};
   LoRaTxMessageT mMsgTx{};
   AirTime airTime{AirTime(AIRTIME_LIMIT_PPM)};
+  uint8_t msgBuf[LORA_MAX_MESSAGE_LENGTH]{};
 
   OnDiscoveryReqMsgFunc mOnDiscoveryReqMsgFunc{nullptr};
   OnValueReqMsgFunc mOnValueReqMsgFunc{nullptr};

@@ -11,8 +11,6 @@ using ::testing::Return;
 
 using HumidityT = uint8_t;  // percent
 
-BufferSerial Serial = BufferSerial(256);
-
 class HumiditySensor_test : public ::testing::Test {
  protected:
   void SetUp() override {

@@ -56,7 +56,7 @@ int BufferSerial::availableForWrite(void) {
   return tail - head - 1;
 }
 
-void BufferSerial::flush() {}
+void BufferSerial::flush() { _buffer_head = _buffer_tail; }
 
 size_t BufferSerial::write(uint8_t c) {
   size_t i = (_buffer_head + 1) % _buffer_size;

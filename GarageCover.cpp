@@ -147,7 +147,4 @@ bool GarageCover::setConfigItemValues(const ConfigItemValueT* items,
   return true;
 }
 
-void GarageCover::loadConfigValues() {
-  mConfig.reportInterval.load(
-      GarageCoverConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
-}
+void GarageCover::loadConfigValues() { mConfig.reportInterval.load(); }

@@ -23,9 +23,8 @@ class ConfigItem {
                       uint8_t precision = 0)
       : mConfigId{configId},
         mValueItem{ValueItem<T>(unitType, precision, defaultValue)},
-        mEeAddress{eeAddress} {
-    load(defaultValue);
-  }
+        mDefaultValue{defaultValue},
+        mEeAddress{eeAddress} {}
 
   uint8_t getPrecision() const { return mValueItem.getPrecision(); }
 
@@ -64,7 +63,7 @@ class ConfigItem {
     return 0;
   }
 
-  void load(T defaultValue) {
+  void load() {
     if (mEeAddress >= EEPROM.length()) {
       return;
     }
@@ -80,7 +79,7 @@ class ConfigItem {
     if (eeCrc == valueCrc) {
       mValueItem.setValue(value);
     } else {
-      mValueItem.setValue(defaultValue);
+      mValueItem.setValue(mDefaultValue);
       save();
     }
   }
@@ -110,5 +109,6 @@ class ConfigItem {
 
   const uint8_t mConfigId;
   ValueItem<T> mValueItem;
+  T mDefaultValue;
   const uint16_t mEeAddress;
 };

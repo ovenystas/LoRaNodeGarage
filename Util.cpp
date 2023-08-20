@@ -113,3 +113,27 @@ void printHex(Print& printer, uint32_t value, bool prefix) {
   }
   printer.print(value, HEX);
 }
+
+void printArray(Print& printer, const uint8_t* buf, size_t len, int base,
+                bool prefix) {
+  for (size_t i = 0; i < len; i++) {
+    if (base == HEX) {
+      printHex(printer, buf[i], prefix);
+    } else {
+      if (prefix) {
+        if (base == BIN) {
+          printer.print('b');
+        } else if (base == OCT) {
+          printer.print('o');
+        } else if (base == DEC) {
+          printer.print('d');
+        }
+      }
+      printer.print(buf[i], base);
+    }
+
+    if (i < len - 1) {
+      printer.print(' ');
+    }
+  }
+}

@@ -1,23 +1,35 @@
-/*
- *  Created on: 26 feb. 2021
- *      Author: oveny
+/**
+ * LoraNodeGarage
  *
- * Board: Arduino Pro Mini, 8 MHz, 3.3 V
- * Libraries: DHT sensor library by Adafruit v1.4.4
- *            NewPing by Tim Eckel v1.9.7
- *            LoRa by Sandeep Mistry v0.8.0
- *            CRC xxx by xxx vxxx
+ * A LoRa wireless device that can sense if a Car is present in a garage,
+ * sense the state of the garage door (open, closed, opening and closing),
+ * sense temperature and humitity levels.
+ *
+ * Aauthor:
+ *   Ove Nystås
+ *
+ * Arduino board:
+ *   Arduino Pro Mini, 8 MHz, 3.3 V
+ *
+ * External libraries used:
+ *   DHT sensor library by Adafruit v1.4.4
+ *   LoRa by Sandeep Mistry v0.8.0
+ *   NewPing by Tim Eckel v1.9.7
+ *   CRC by Rob Tillaart v1.0.0
+ *   Crypto by Rhys Weatherley v0.4.0
  */
 
 /* TODO:
  * - Handle millis() wrap-around
- * - Add encryption of messages
- * - Reload configuration after erasing EEPROM
+ * - Improve encryption of messages
  * - Use configuration measurment interval to update sensors (or remove that
  *   config)
+ * - Use message sequence id in LoRa header
  */
 
+#include <AES.h>  // Crypto by Rhys Weatherley
 #include <Arduino.h>
+#include <CTR.h>  // Crypto by Rhys Weatherley
 #include <DHT.h>  // DHT sensor library by Adafruit
 #include <EEPROM.h>
 #include <NewPing.h>  // NewPing by Tim Eckel
@@ -103,7 +115,15 @@ IComponent* components[NUMBER_OF_COMPONENTS] = {
 
 Node node = Node(components, sizeof(components) / sizeof(components[0]));
 
-LoRaHandler lora(LoRa, Serial, LORA_GATEWAY_ADDRESS, LORA_MY_ADDRESS);
+CTR<AES128> ctrAes128;
+
+LoRaHandler lora(LoRa, LORA_GATEWAY_ADDRESS, LORA_MY_ADDRESS, &ctrAes128);
+
+static const byte AES_KEY[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05,
+                                 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+                                 0x0C, 0x0D, 0x0E, 0x0F};
+static const byte CTR_IV[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 
 void setup() {
   Serial.begin(115200);
@@ -133,6 +153,11 @@ void setup() {
   loadConfigValuesForAllComponents();
 
   dht.begin();
+
+  ctrAes128.clear();
+  ctrAes128.setCounterSize(4);
+  ctrAes128.setKey(AES_KEY, ctrAes128.keySize());
+  ctrAes128.setIV(CTR_IV, ctrAes128.ivSize());
 
   if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onConfigReqMsg,
                   &onConfigSetReqMsg, &onServiceReqMsg)) {

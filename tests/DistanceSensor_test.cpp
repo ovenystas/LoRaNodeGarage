@@ -21,7 +21,6 @@ class DistanceSensor_test : public ::testing::Test {
   void SetUp() override {
     pArduinoMock = arduinoMockInstance();
     pSonarMock = new NewPingMock();
-    pSerial = new BufferSerial(256);
     strBuf[0] = '\0';
     eeprom_clear();
 
@@ -31,14 +30,13 @@ class DistanceSensor_test : public ::testing::Test {
   void TearDown() override {
     delete pDs;
     delete pSonarMock;
-    delete pSerial;
     releaseArduinoMock();
   }
 
   void bufSerReadStr() {
     size_t i = 0;
-    while (pSerial->available()) {
-      int c = pSerial->read();
+    while (Serial.available()) {
+      int c = Serial.read();
       if (c < 0) {
         break;
       }
@@ -50,7 +48,6 @@ class DistanceSensor_test : public ::testing::Test {
   char strBuf[256];
   ArduinoMock* pArduinoMock;
   NewPingMock* pSonarMock;
-  BufferSerial* pSerial;
   DistanceSensor* pDs;
 };
 
@@ -129,12 +126,56 @@ TEST_F(DistanceSensor_test, getValueItem) {
   EXPECT_EQ(item.value, 0);
 }
 
+TEST_F(DistanceSensor_test,
+       loadConfigValues_wrong_crc_shall_set_default_values) {
+  pDs->loadConfigValues();
+
+  ConfigItemValueT items[3];
+  EXPECT_EQ(pDs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
+            3);
+  EXPECT_EQ(items[0].value,
+            DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
+  EXPECT_EQ(items[1].value,
+            DistanceSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT);
+  EXPECT_EQ(items[2].value,
+            DistanceSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
+}
+
+TEST_F(DistanceSensor_test, loadConfigValues_OK) {
+  (void)EEPROM.put(
+      EE_ADDRESS_CONFIG_DISTANCESENSOR_0,
+      DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT + 1);
+  eeprom_write_byte(EE_ADDRESS_CONFIG_DISTANCESENSOR_0 + sizeof(DistanceT),
+                    0x31);  // Correct CRC8 of value
+  (void)EEPROM.put(
+      EE_ADDRESS_CONFIG_DISTANCESENSOR_1,
+      DistanceSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT + 1);
+  eeprom_write_byte(EE_ADDRESS_CONFIG_DISTANCESENSOR_1 + sizeof(DistanceT),
+                    0xB3);  // Correct CRC8 of value
+  (void)EEPROM.put(EE_ADDRESS_CONFIG_DISTANCESENSOR_2,
+                   DistanceSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT + 1);
+  eeprom_write_byte(EE_ADDRESS_CONFIG_DISTANCESENSOR_2 + sizeof(DistanceT),
+                    0xD6);  // Correct CRC8 of value
+
+  pDs->loadConfigValues();
+
+  ConfigItemValueT items[3];
+  EXPECT_EQ(pDs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
+            3);
+  EXPECT_EQ(items[0].value,
+            DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT + 1);
+  EXPECT_EQ(items[1].value,
+            DistanceSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT + 1);
+  EXPECT_EQ(items[2].value,
+            DistanceSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT + 1);
+}
+
 TEST_F(DistanceSensor_test, print) {
   const char* expectStr = "DistanceSensor: 0 cm";
   NewPingMock sonarMock;
   DistanceSensor ds = DistanceSensor(7, "DistanceSensor", sonarMock);
 
-  EXPECT_EQ(ds.print(*pSerial), strlen(expectStr));
+  EXPECT_EQ(ds.print(Serial), strlen(expectStr));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -143,7 +184,7 @@ TEST_F(DistanceSensor_test, print) {
 TEST_F(DistanceSensor_test, print_service_shall_do_nothing) {
   NewPingMock sonarMock;
   DistanceSensor ds = DistanceSensor(7, "DistanceSensor", sonarMock);
-  EXPECT_EQ(ds.print(*pSerial, 0), 0);
+  EXPECT_EQ(ds.print(Serial, 0), 0);
 }
 
 TEST_F(DistanceSensor_test, setConfigs_all_in_order) {

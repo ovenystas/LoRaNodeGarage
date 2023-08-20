@@ -43,14 +43,17 @@ include(CodeCoverage)
 
 include_directories(.. mocks)
 
-add_executable(AirTime_test EXCLUDE_FROM_ALL AirTime_test.cpp ../AirTime.cpp
-                                             mocks/Arduino.cpp)
+add_executable(
+  AirTime_test EXCLUDE_FROM_ALL
+  AirTime_test.cpp ../AirTime.cpp mocks/Arduino.cpp mocks/BufferSerial.cpp
+  mocks/Print.cpp)
 target_link_libraries(AirTime_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(AirTime_test)
 
 add_executable(
-  BaseComponent_test EXCLUDE_FROM_ALL BaseComponent_test.cpp ../Util.cpp
-                                      mocks/Arduino.cpp mocks/Print.cpp)
+  BaseComponent_test EXCLUDE_FROM_ALL
+  BaseComponent_test.cpp ../Util.cpp mocks/Arduino.cpp mocks/BufferSerial.cpp
+  mocks/Print.cpp)
 target_link_libraries(BaseComponent_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(BaseComponent_test)
 
@@ -63,14 +66,10 @@ gtest_discover_tests(BinarySensor_test)
 
 add_executable(
   ConfigItem_test EXCLUDE_FROM_ALL
-  ConfigItem_test.cpp
-  ../Util.cpp
-  ../libraries/CRC/src/CRC8.cpp
-  ../libraries/CRC/src/CrcFastReverse.cpp
-  mocks/Arduino.cpp
-  mocks/Print.cpp
-  mocks/EEPROM.cpp)
-target_link_libraries(ConfigItem_test GTest::gtest_main GTest::gmock_main)
+  ConfigItem_test.cpp ../Util.cpp mocks/Arduino.cpp mocks/BufferSerial.cpp
+  mocks/Print.cpp mocks/EEPROM.cpp)
+target_link_libraries(ConfigItem_test GTest::gtest_main GTest::gmock_main
+                      crc_crc8)
 target_include_directories(ConfigItem_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(ConfigItem_test)
 
@@ -86,13 +85,12 @@ add_executable(
   DistanceSensor_test.cpp
   ../DistanceSensor.cpp
   ../Util.cpp
-  ../libraries/CRC/src/CRC8.cpp
-  ../libraries/CRC/src/CrcFastReverse.cpp
   mocks/Arduino.cpp
   mocks/Print.cpp
   mocks/BufferSerial.cpp
   mocks/EEPROM.cpp)
-target_link_libraries(DistanceSensor_test GTest::gtest_main GTest::gmock_main)
+target_link_libraries(DistanceSensor_test GTest::gtest_main GTest::gmock_main
+                      crc_crc8)
 target_include_directories(DistanceSensor_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(DistanceSensor_test)
 
@@ -102,13 +100,12 @@ add_executable(
   ../GarageCover.cpp
   ../Cover.cpp
   ../Util.cpp
-  ../libraries/CRC/src/CRC8.cpp
-  ../libraries/CRC/src/CrcFastReverse.cpp
   mocks/Arduino.cpp
   mocks/Print.cpp
   mocks/BufferSerial.cpp
   mocks/EEPROM.cpp)
-target_link_libraries(GarageCover_test GTest::gtest_main GTest::gmock_main)
+target_link_libraries(GarageCover_test GTest::gtest_main GTest::gmock_main
+                      crc_crc8)
 target_include_directories(GarageCover_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(GarageCover_test)
 
@@ -117,13 +114,12 @@ add_executable(
   HeightSensor_test.cpp
   ../HeightSensor.cpp
   ../Util.cpp
-  ../libraries/CRC/src/CRC8.cpp
-  ../libraries/CRC/src/CrcFastReverse.cpp
   mocks/Arduino.cpp
   mocks/Print.cpp
   mocks/BufferSerial.cpp
   mocks/EEPROM.cpp)
-target_link_libraries(HeightSensor_test GTest::gtest_main GTest::gmock_main)
+target_link_libraries(HeightSensor_test GTest::gtest_main GTest::gmock_main
+                      crc_crc8)
 target_include_directories(HeightSensor_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(HeightSensor_test)
 
@@ -132,13 +128,12 @@ add_executable(
   HumiditySensor_test.cpp
   ../HumiditySensor.cpp
   ../Util.cpp
-  ../libraries/CRC/src/CRC8.cpp
-  ../libraries/CRC/src/CrcFastReverse.cpp
   mocks/Arduino.cpp
   mocks/Print.cpp
   mocks/BufferSerial.cpp
   mocks/EEPROM.cpp)
-target_link_libraries(HumiditySensor_test GTest::gtest_main GTest::gmock_main)
+target_link_libraries(HumiditySensor_test GTest::gtest_main GTest::gmock_main
+                      crc_crc8)
 target_include_directories(HumiditySensor_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(HumiditySensor_test)
 
@@ -149,9 +144,13 @@ add_executable(
   ../Util.cpp
   ../AirTime.cpp
   mocks/Arduino.cpp
-  mocks/Print.cpp
-  mocks/BufferSerial.cpp)
-target_link_libraries(LoRaHandler_test GTest::gtest_main GTest::gmock_main)
+  mocks/BufferSerial.cpp
+  mocks/Print.cpp)
+target_link_libraries(LoRaHandler_test GTest::gtest_main GTest::gmock_main
+                      crypto_ctr_aes128)
+target_include_directories(LoRaHandler_test SYSTEM
+                           PRIVATE ../libraries/arduinolibs/libraries/Crypto)
+# target_compile_options(LoRaHandler_test PRIVATE -Wold-style-cast)
 gtest_discover_tests(LoRaHandler_test)
 
 add_executable(Node_test EXCLUDE_FROM_ALL
@@ -165,20 +164,17 @@ add_executable(
   ../PresenceBinarySensor.cpp
   ../Util.cpp
   ../BinarySensor.cpp
-  ../libraries/CRC/src/CRC8.cpp
-  ../libraries/CRC/src/CrcFastReverse.cpp
   mocks/Arduino.cpp
   mocks/Print.cpp
   mocks/BufferSerial.cpp
   mocks/EEPROM.cpp)
 target_link_libraries(PresenceBinarySensor_test GTest::gtest_main
-                      GTest::gmock_main)
+                      GTest::gmock_main crc_crc8)
 target_include_directories(PresenceBinarySensor_test
                            PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(PresenceBinarySensor_test)
 
-add_executable(RingBuffer_test EXCLUDE_FROM_ALL RingBuffer_test.cpp
-                                                mocks/Arduino.cpp)
+add_executable(RingBuffer_test EXCLUDE_FROM_ALL RingBuffer_test.cpp)
 target_link_libraries(RingBuffer_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(RingBuffer_test)
 
@@ -193,24 +189,24 @@ add_executable(
   TemperatureSensor_test.cpp
   ../TemperatureSensor.cpp
   ../Util.cpp
-  ../libraries/CRC/src/CRC8.cpp
-  ../libraries/CRC/src/CrcFastReverse.cpp
   mocks/Arduino.cpp
   mocks/Print.cpp
   mocks/BufferSerial.cpp
   mocks/EEPROM.cpp)
 target_link_libraries(TemperatureSensor_test GTest::gtest_main
-                      GTest::gmock_main)
+                      GTest::gmock_main crc_crc8)
 target_include_directories(TemperatureSensor_test PRIVATE ../libraries/CRC/src)
 gtest_discover_tests(TemperatureSensor_test)
 
-add_executable(Types_test EXCLUDE_FROM_ALL Types_test.cpp ../Util.cpp
-                                           mocks/Arduino.cpp mocks/Print.cpp)
+add_executable(
+  Types_test EXCLUDE_FROM_ALL Types_test.cpp ../Util.cpp mocks/Arduino.cpp
+                              mocks/BufferSerial.cpp mocks/Print.cpp)
 target_link_libraries(Types_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(Types_test)
 
-add_executable(Unit_test EXCLUDE_FROM_ALL Unit_test.cpp mocks/Print.cpp
-                                          mocks/BufferSerial.cpp)
+add_executable(
+  Unit_test EXCLUDE_FROM_ALL Unit_test.cpp mocks/Arduino.cpp mocks/Print.cpp
+                             mocks/BufferSerial.cpp)
 target_link_libraries(Unit_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(Unit_test)
 
@@ -220,8 +216,9 @@ add_executable(
 target_link_libraries(Util_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(Util_test)
 
-add_executable(ValueItem_test EXCLUDE_FROM_ALL
-               ValueItem_test.cpp mocks/Print.cpp mocks/BufferSerial.cpp)
+add_executable(
+  ValueItem_test EXCLUDE_FROM_ALL ValueItem_test.cpp mocks/Arduino.cpp
+                                  mocks/Print.cpp mocks/BufferSerial.cpp)
 target_link_libraries(ValueItem_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(ValueItem_test)
 
@@ -245,4 +242,5 @@ add_custom_target(
           TemperatureSensor_test
           Types_test
           Unit_test
-          Util_test)
+          Util_test
+          ValueItem_test)

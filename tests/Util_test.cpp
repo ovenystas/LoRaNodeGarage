@@ -9,10 +9,10 @@ using ::testing::Return;
 
 char strBuf[256];
 
-void bufSerReadStr(Stream* pSerial) {
+void bufSerReadStr() {
   size_t i = 0;
-  while (pSerial->available()) {
-    int c = pSerial->read();
+  while (Serial.available()) {
+    int c = Serial.read();
     if (c < 0) {
       break;
     }
@@ -65,140 +65,125 @@ TEST(Util_test, ntoh) {
 }
 
 TEST(Util_test, printUptime_millis_0) {
-  BufferSerial bufSer = BufferSerial(32);
   ArduinoMock* pArduinoMock = arduinoMockInstance();
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(0));
 
-  printUptime(bufSer);
+  printUptime(Serial);
 
-  bufSerReadStr(&bufSer);
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "[0:00:00.000] ");
   releaseArduinoMock();
 }
 
 TEST(Util_test, printUptime_millis_1000_59_59_999) {
-  BufferSerial bufSer = BufferSerial(32);
   ArduinoMock* pArduinoMock = arduinoMockInstance();
   EXPECT_CALL(*pArduinoMock, millis())
       .WillOnce(Return(1000L * 3600000L + 59L * 60000L + 59L * 1000L + 999L));
 
-  printUptime(bufSer);
+  printUptime(Serial);
 
-  bufSerReadStr(&bufSer);
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "[1000:59:59.999] ");
   releaseArduinoMock();
 }
 
 TEST(Util_test, printUptime_millis_UINT32_MAX) {
-  BufferSerial bufSer = BufferSerial(32);
   ArduinoMock* pArduinoMock = arduinoMockInstance();
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(UINT32_MAX));
 
-  printUptime(bufSer);
+  printUptime(Serial);
 
-  bufSerReadStr(&bufSer);
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "[1193:02:47.295] ");
   releaseArduinoMock();
 }
 
 TEST(Util_test, printMillis_0) {
-  BufferSerial bufSer = BufferSerial(32);
   ArduinoMock* pArduinoMock = arduinoMockInstance();
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(0));
 
-  printMillis(bufSer);
+  printMillis(Serial);
 
-  bufSerReadStr(&bufSer);
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "[0] ");
   releaseArduinoMock();
 }
 
 TEST(Util_test, printMillis_UINT32_MAX) {
-  BufferSerial bufSer = BufferSerial(32);
   ArduinoMock* pArduinoMock = arduinoMockInstance();
   EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(UINT32_MAX));
 
-  printMillis(bufSer);
+  printMillis(Serial);
 
-  bufSerReadStr(&bufSer);
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "[4294967295] ");
   releaseArduinoMock();
 }
 
 TEST(Util_test, printVersion_0_0_0) {
-  BufferSerial bufSer = BufferSerial(32);
+  printVersion(Serial, 0, 0, 0);
 
-  printVersion(bufSer, 0, 0, 0);
-
-  bufSerReadStr(&bufSer);
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "0.0.0");
 }
 
 TEST(Util_test, printVersion_255_255_255) {
-  BufferSerial bufSer = BufferSerial(32);
+  printVersion(Serial, UINT8_MAX, UINT8_MAX, UINT8_MAX);
 
-  printVersion(bufSer, UINT8_MAX, UINT8_MAX, UINT8_MAX);
-
-  bufSerReadStr(&bufSer);
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "255.255.255");
 }
 
 TEST(Util_test, printHex_uint8) {
-  BufferSerial bufSer = BufferSerial(32);
-
-  printHex(bufSer, static_cast<uint8_t>(0));
-  bufSerReadStr(&bufSer);
+  printHex(Serial, static_cast<uint8_t>(0));
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "00");
 
-  printHex(bufSer, static_cast<uint8_t>(0), true);
-  bufSerReadStr(&bufSer);
+  printHex(Serial, static_cast<uint8_t>(0), true);
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "0x00");
 
-  printHex(bufSer, static_cast<uint8_t>(UINT8_MAX));
-  bufSerReadStr(&bufSer);
+  printHex(Serial, static_cast<uint8_t>(UINT8_MAX));
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "FF");
 
-  printHex(bufSer, static_cast<uint8_t>(UINT8_MAX), true);
-  bufSerReadStr(&bufSer);
+  printHex(Serial, static_cast<uint8_t>(UINT8_MAX), true);
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "0xFF");
 }
 
 TEST(Util_test, printHex_uint16) {
-  BufferSerial bufSer = BufferSerial(32);
-
-  printHex(bufSer, static_cast<uint16_t>(0));
-  bufSerReadStr(&bufSer);
+  printHex(Serial, static_cast<uint16_t>(0));
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "0000");
 
-  printHex(bufSer, static_cast<uint16_t>(0), true);
-  bufSerReadStr(&bufSer);
+  printHex(Serial, static_cast<uint16_t>(0), true);
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "0x0000");
 
-  printHex(bufSer, static_cast<uint16_t>(UINT16_MAX));
-  bufSerReadStr(&bufSer);
+  printHex(Serial, static_cast<uint16_t>(UINT16_MAX));
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "FFFF");
 
-  printHex(bufSer, static_cast<uint16_t>(UINT16_MAX), true);
-  bufSerReadStr(&bufSer);
+  printHex(Serial, static_cast<uint16_t>(UINT16_MAX), true);
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "0xFFFF");
 }
 
 TEST(Util_test, printHex_uint32) {
-  BufferSerial bufSer = BufferSerial(32);
-
-  printHex(bufSer, static_cast<uint32_t>(0));
-  bufSerReadStr(&bufSer);
+  printHex(Serial, static_cast<uint32_t>(0));
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "00000000");
 
-  printHex(bufSer, static_cast<uint32_t>(0), true);
-  bufSerReadStr(&bufSer);
+  printHex(Serial, static_cast<uint32_t>(0), true);
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "0x00000000");
 
-  printHex(bufSer, static_cast<uint32_t>(UINT32_MAX));
-  bufSerReadStr(&bufSer);
+  printHex(Serial, static_cast<uint32_t>(UINT32_MAX));
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "FFFFFFFF");
 
-  printHex(bufSer, static_cast<uint32_t>(UINT32_MAX), true);
-  bufSerReadStr(&bufSer);
+  printHex(Serial, static_cast<uint32_t>(UINT32_MAX), true);
+  bufSerReadStr();
   EXPECT_STREQ(strBuf, "0xFFFFFFFF");
 }

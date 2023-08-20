@@ -13,20 +13,16 @@ using ::testing::Return;
 class BinarySensor_test : public ::testing::Test {
  protected:
   void SetUp() override {
-    pSerial = new BufferSerial(256);
     pBS = new BinarySensor(34, "BinarySensor");
     strBuf[0] = '\0';
   }
 
-  void TearDown() override {
-    delete pBS;
-    delete pSerial;
-  }
+  void TearDown() override { delete pBS; }
 
   void bufSerReadStr() {
     size_t i = 0;
-    while (pSerial->available()) {
-      int c = pSerial->read();
+    while (Serial.available()) {
+      int c = Serial.read();
       if (c < 0) {
         break;
       }
@@ -36,7 +32,6 @@ class BinarySensor_test : public ::testing::Test {
   }
 
   char strBuf[256];
-  BufferSerial* pSerial;
   BinarySensor* pBS;
 };
 
@@ -284,7 +279,7 @@ TEST_F(BinarySensor_test, print_deviceclass_none_state_false) {
   const char* expectStr = "BinarySensor: off";
   pBS->setState(false);
 
-  size_t printedChars = pBS->print(*pSerial);
+  size_t printedChars = pBS->print(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -295,7 +290,7 @@ TEST_F(BinarySensor_test, print_deviceclass_none_state_true) {
   const char* expectStr = "BinarySensor: on";
   pBS->setState(true);
 
-  size_t printedChars = pBS->print(*pSerial);
+  size_t printedChars = pBS->print(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
