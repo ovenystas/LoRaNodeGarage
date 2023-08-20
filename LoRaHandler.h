@@ -1,15 +1,15 @@
 // clang-format off
 /*
  * Header:
- *   Byte 0:  dst - Destination address
- *   Byte 1:  src - Source address
- *   Byte 2:  id  - Message sequence id
- *   Byte 3:  flags
- *     Bit7: Acknowledge response
- *     Bit6: Acknowledge request
- *     Bit5: Reserved
- *     Bit4: Reserved
- *     Bit3-0: Message type
+ *   Byte 0:   dst   - Destination address
+ *   Byte 1-2: frCnt - Frame counter
+ *   Byte 3:   src   - Source address
+ *   Byte 4:   flags
+ *     Bit 7:    Acknowledge response
+ *     Bit 6:    Acknowledge request
+ *     Bit 5:    Reserved
+ *     Bit 4:    Reserved
+ *     Bit 3-0:  Message type
  *       0: ping_req
  *       1: ping_msg
  *       2: discovery_req
@@ -21,7 +21,7 @@
  *       8: configSet_req
  *       9: service_req
  *       10-15: Reserved
- *   Byte 4:  len - Length of payload in bytes
+ *   Byte 5:   len   - Length of payload in bytes
  *
  * Payloads:
  *   Ping request:
@@ -75,6 +75,9 @@
  *   Service request
  *     Byte 0:    EntityId
  *     Byte 1:    Service
+ *
+ * For encrypted messages, header byte 0-2 (dst and frCnt) are sent in plain text
+ * while byte 3-5 and whole payload is encrypted.
  */
 // clang-format on
 #pragma once
@@ -93,7 +96,7 @@
 #define LORA_FREQUENCY 868e6
 #define LORA_MAX_MESSAGE_LENGTH 51
 
-#define LORA_HEADER_LENGTH 5
+#define LORA_HEADER_LENGTH 6
 #define LORA_MAX_PAYLOAD_LENGTH (LORA_MAX_MESSAGE_LENGTH - LORA_HEADER_LENGTH)
 
 #define FLAGS_ACK_MASK 0x80
@@ -142,27 +145,27 @@ struct LoRaHeaderFlagsT {
 
 struct LoRaHeaderT {
   uint8_t dst{};
+  uint16_t frCnt{};
   uint8_t src{};
-  uint8_t id{};
   LoRaHeaderFlagsT flags;
   uint8_t len{};
 
   uint8_t fromByteArray(const uint8_t* buf) {
     dst = buf[0];
-    src = buf[1];
-    id = buf[2];
-    flags.fromByte(buf[3]);
-    len = buf[4];
-    return 5;
+    frCnt = ntoh(*reinterpret_cast<const uint16_t*>(&buf[1]));
+    src = buf[3];
+    flags.fromByte(buf[4]);
+    len = buf[5];
+    return 6;
   }
 
   uint8_t toByteArray(uint8_t* buf) const {
     buf[0] = dst;
-    buf[1] = src;
-    buf[2] = id;
-    flags.toByte(&buf[3]);
-    buf[4] = len;
-    return 5;
+    *reinterpret_cast<uint16_t*>(&buf[1]) = hton(frCnt);
+    buf[3] = src;
+    flags.toByte(&buf[4]);
+    buf[5] = len;
+    return 6;
   }
 };
 
@@ -284,7 +287,8 @@ class LoRaHandler {
   const uint8_t mGatewayAddress;
   const uint8_t mMyAddress;
   Cipher* mCipher;
-  uint8_t mSeqId{};
+  uint32_t mUplinkFrCnt{};
+  uint32_t mDownlinkFrCnt{};
   LoRaTxMessageT mMsgTx{};
   AirTime airTime{AirTime(AIRTIME_LIMIT_PPM)};
   uint8_t msgBuf[LORA_MAX_MESSAGE_LENGTH]{};

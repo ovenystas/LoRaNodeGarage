@@ -160,14 +160,14 @@ TEST_F(LoRaHandler_test, configsValueMsg) {
   bufSerReadStr();
   // clang-format off
   EXPECT_STREQ(strBuf,
-    "[61500] LoRaTx: H: 01 02 00 47 0C P: 37 02 01 00 00 00 11 02 11 22 33 44\r\n[61602] AirTime: 100 ms, 28 ppm\r\n");
+    "[61500] LoRaTx: H: 01 00 00 02 47 0C P: 37 02 01 00 00 00 11 02 11 22 33 44\r\n[61602] AirTime: 100 ms, 28 ppm\r\n");
   // clang-format on
 
   EXPECT_EQ(writeSize, expectedMsgSize);
 
   EXPECT_EQ(loraTxMsg.header.dst, 1);
   EXPECT_EQ(loraTxMsg.header.src, 2);
-  EXPECT_EQ(loraTxMsg.header.id, 0);
+  EXPECT_EQ(loraTxMsg.header.frCnt, 0);
   EXPECT_TRUE(loraTxMsg.header.flags.ack_request);
   EXPECT_EQ(loraTxMsg.header.flags.msgType, LoRaMsgType::config_msg);
   EXPECT_EQ(loraTxMsg.header.len, payloadSize);
@@ -200,14 +200,14 @@ TEST_F(LoRaHandler_test, discoveryMsg) {
   bufSerReadStr();
   // clang-format off
   EXPECT_STREQ(strBuf,
-    "[100] LoRaTx: H: 01 02 00 43 0C P: 7B 01 02 03 1B 02 06 10 1B 07 11 06\r\n[202] AirTime: 100 ms, 28 ppm\r\n");
+    "[100] LoRaTx: H: 01 00 00 02 43 0C P: 7B 01 02 03 1B 02 06 10 1B 07 11 06\r\n[202] AirTime: 100 ms, 28 ppm\r\n");
   // clang-format on
 
   EXPECT_EQ(writeSize, expectedMsgSize);
 
   EXPECT_EQ(loraTxMsg.header.dst, 1);
   EXPECT_EQ(loraTxMsg.header.src, 2);
-  EXPECT_EQ(loraTxMsg.header.id, 0);
+  EXPECT_EQ(loraTxMsg.header.frCnt, 0);
   EXPECT_TRUE(loraTxMsg.header.flags.ack_request);
   EXPECT_EQ(loraTxMsg.header.flags.msgType, LoRaMsgType::discovery_msg);
   EXPECT_EQ(loraTxMsg.header.len, payloadSize);
@@ -230,8 +230,9 @@ TEST_F(LoRaHandler_test, loraRx_other_dst_shall_do_nothing) {
   EXPECT_CALL(*pLoRaMock, parsePacket(0)).WillOnce(Return(LORA_HEADER_LENGTH));
   EXPECT_CALL(*pLoRaMock, read())
       .WillOnce(Return(LORA_MY_ADDRESS + 1))  // dst
+      .WillOnce(Return(0))                    // frCnt
+      .WillOnce(Return(0))                    // frCnt
       .WillOnce(Return(LORA_GATEWAY))         // src
-      .WillOnce(Return(0))                    // id
       .WillOnce(Return(0))                    // flags
       .WillOnce(Return(0));                   // len
   EXPECT_CALL(*pLoRaMock, packetRssi()).WillOnce(Return(-111));
@@ -246,8 +247,9 @@ TEST_F(LoRaHandler_test, loraRx_unknown_msgType_shall_do_nothing) {
   EXPECT_CALL(*pLoRaMock, parsePacket(0)).WillOnce(Return(LORA_HEADER_LENGTH));
   EXPECT_CALL(*pLoRaMock, read())
       .WillOnce(Return(LORA_MY_ADDRESS))  // dst
+      .WillOnce(Return(0))                // frCnt
+      .WillOnce(Return(0))                // frCnt
       .WillOnce(Return(LORA_GATEWAY))     // src
-      .WillOnce(Return(0))                // id
       .WillOnce(Return(0x0F))             // flags
       .WillOnce(Return(0));               // len
   EXPECT_CALL(*pLoRaMock, packetRssi()).WillOnce(Return(-111));
@@ -265,8 +267,9 @@ TEST_F(LoRaHandler_test, loraRx_ping_req_no_ack_shall_send_ping_msg) {
   EXPECT_CALL(*pLoRaMock, parsePacket(0)).WillOnce(Return(LORA_HEADER_LENGTH));
   EXPECT_CALL(*pLoRaMock, read())
       .WillOnce(Return(LORA_MY_ADDRESS))                              // dst
+      .WillOnce(Return(0))                                            // frCnt
+      .WillOnce(Return(0))                                            // frCnt
       .WillOnce(Return(LORA_GATEWAY))                                 // src
-      .WillOnce(Return(0))                                            // id
       .WillOnce(Return(static_cast<uint8_t>(LoRaMsgType::ping_req)))  // flags
       .WillOnce(Return(0));                                           // len
   EXPECT_CALL(*pLoRaMock, packetRssi()).WillOnce(Return(rssi));
@@ -289,13 +292,13 @@ TEST_F(LoRaHandler_test, loraRx_ping_req_no_ack_shall_send_ping_msg) {
 
   bufSerReadStr();
   EXPECT_THAT(strBuf,
-              IsSupersetOf("[100] LoRaTx: H: 01 02 00 41 01 P: 91\r\n[202] "
+              IsSupersetOf("[100] LoRaTx: H: 01 00 00 02 41 01 P: 91\r\n[202] "
                            "AirTime: 100 ms, 28 ppm\r\n"));
 
   // Check TX header
   EXPECT_EQ(loraTxMsg.header.dst, LORA_GATEWAY);
+  EXPECT_EQ(loraTxMsg.header.frCnt, 0);
   EXPECT_EQ(loraTxMsg.header.src, LORA_MY_ADDRESS);
-  EXPECT_EQ(loraTxMsg.header.id, 0);
   EXPECT_TRUE(loraTxMsg.header.flags.ack_request);
   EXPECT_EQ(loraTxMsg.header.flags.msgType, LoRaMsgType::ping_msg);
   EXPECT_EQ(loraTxMsg.header.len, expectedPayloadSize);
@@ -318,8 +321,9 @@ TEST_F(LoRaHandler_test,
   EXPECT_CALL(*pLoRaMock, read())
       // Header
       .WillOnce(Return(LORA_MY_ADDRESS))  // dst
+      .WillOnce(Return(0))                // frCnt
+      .WillOnce(Return(0))                // frCnt
       .WillOnce(Return(LORA_GATEWAY))     // src
-      .WillOnce(Return(0))                // id
       .WillOnce(
           Return(static_cast<uint8_t>(LoRaMsgType::discovery_req)))  // flags
       .WillOnce(Return(1))                                           // len
@@ -352,8 +356,9 @@ TEST_F(
   EXPECT_CALL(*pLoRaMock, read())
       // Header
       .WillOnce(Return(LORA_MY_ADDRESS))  // dst
+      .WillOnce(Return(0))                // frCnt
+      .WillOnce(Return(0))                // frCnt
       .WillOnce(Return(LORA_GATEWAY))     // src
-      .WillOnce(Return(0))                // id
       .WillOnce(
           Return(1 << FLAGS_REQ_ACK_SHIFT |
                  static_cast<uint8_t>(LoRaMsgType::discovery_req)))  // flags
@@ -382,13 +387,13 @@ TEST_F(
 
   bufSerReadStr();
   EXPECT_THAT(strBuf,
-              IsSupersetOf("[100] LoRaTx: H: 01 02 00 82 00 P: --\r\n[202] "
+              IsSupersetOf("[100] LoRaTx: H: 01 00 00 02 82 00 P: --\r\n[202] "
                            "AirTime: 100 ms, 28 ppm\r\n"));
 
   // Check TX header
   EXPECT_EQ(loraTxMsg.header.dst, LORA_GATEWAY);
+  EXPECT_EQ(loraTxMsg.header.frCnt, 0);
   EXPECT_EQ(loraTxMsg.header.src, LORA_MY_ADDRESS);
-  EXPECT_EQ(loraTxMsg.header.id, 0);
   EXPECT_FALSE(loraTxMsg.header.flags.ack_request);
   EXPECT_TRUE(loraTxMsg.header.flags.ack_response);
   EXPECT_EQ(loraTxMsg.header.flags.msgType, LoRaMsgType::discovery_req);
@@ -412,8 +417,9 @@ TEST_F(LoRaHandler_test, loraRx_value_req_no_ack_shall_call_OnValueReqMsgFunc) {
   EXPECT_CALL(*pLoRaMock, read())
       // Header
       .WillOnce(Return(LORA_MY_ADDRESS))                               // dst
+      .WillOnce(Return(0))                                             // frCnt
+      .WillOnce(Return(0))                                             // frCnt
       .WillOnce(Return(LORA_GATEWAY))                                  // src
-      .WillOnce(Return(0))                                             // id
       .WillOnce(Return(static_cast<uint8_t>(LoRaMsgType::value_req)))  // flags
       .WillOnce(Return(1))                                             // len
       // Payload
@@ -444,8 +450,9 @@ TEST_F(LoRaHandler_test,
   EXPECT_CALL(*pLoRaMock, read())
       // Header
       .WillOnce(Return(LORA_MY_ADDRESS))                                // dst
+      .WillOnce(Return(0))                                              // frCnt
+      .WillOnce(Return(0))                                              // frCnt
       .WillOnce(Return(LORA_GATEWAY))                                   // src
-      .WillOnce(Return(0))                                              // id
       .WillOnce(Return(static_cast<uint8_t>(LoRaMsgType::config_req)))  // flags
       .WillOnce(Return(1))                                              // len
       // Payload
@@ -476,8 +483,9 @@ TEST_F(LoRaHandler_test,
   EXPECT_CALL(*pLoRaMock, read())
       // Header
       .WillOnce(Return(LORA_MY_ADDRESS))  // dst
+      .WillOnce(Return(0))                // frCnt
+      .WillOnce(Return(0))                // frCnt
       .WillOnce(Return(LORA_GATEWAY))     // src
-      .WillOnce(Return(0))                // id
       .WillOnce(
           Return(static_cast<uint8_t>(LoRaMsgType::configSet_req)))  // flags
       .WillOnce(Return(7))                                           // len
@@ -520,8 +528,9 @@ TEST_F(LoRaHandler_test,
   EXPECT_CALL(*pLoRaMock, read())
       // Header
       .WillOnce(Return(LORA_MY_ADDRESS))  // dst
+      .WillOnce(Return(0))                // frCnt
+      .WillOnce(Return(0))                // frCnt
       .WillOnce(Return(LORA_GATEWAY))     // src
-      .WillOnce(Return(0))                // id
       .WillOnce(
           Return(static_cast<uint8_t>(LoRaMsgType::service_req)))  // flags
       .WillOnce(Return(sizeof(item)))                              // len
@@ -549,8 +558,8 @@ TEST_F(LoRaHandler_test, setDefaultHeader) {
   pLH->setDefaultHeader(header);
 
   EXPECT_EQ(header.dst, 1);
+  EXPECT_EQ(header.frCnt, 0);
   EXPECT_EQ(header.src, 2);
-  EXPECT_EQ(header.id, 0);
   EXPECT_TRUE(header.flags.ack_request);
   EXPECT_EQ(header.len, 0);
 }
@@ -585,14 +594,14 @@ TEST_F(LoRaHandler_test, valueMsg) {
   // clang-format off
   EXPECT_STREQ(
       strBuf,
-      "[61500] LoRaTx: H: 01 02 00 45 0B P: 02 7B 00 00 00 01 7C 11 22 33 44\r\n[61602] AirTime: 100 ms, 28 ppm\r\n");
+      "[61500] LoRaTx: H: 01 00 00 02 45 0B P: 02 7B 00 00 00 01 7C 11 22 33 44\r\n[61602] AirTime: 100 ms, 28 ppm\r\n");
   // clang-format off
 
   EXPECT_EQ(writeSize, expectedMsgSize);
 
   EXPECT_EQ(loraTxMsg.header.dst, 1);
+  EXPECT_EQ(loraTxMsg.header.frCnt, 0);
   EXPECT_EQ(loraTxMsg.header.src, 2);
-  EXPECT_EQ(loraTxMsg.header.id, 0);
   EXPECT_TRUE(loraTxMsg.header.flags.ack_request);
   EXPECT_EQ(loraTxMsg.header.flags.msgType, LoRaMsgType::value_msg);
   EXPECT_EQ(loraTxMsg.header.len, payloadSize);
@@ -623,9 +632,10 @@ TEST_F(LoRaHandler_test, encrypted_msg) {
   LoRaHandler lora(*pLoRaMock, LORA_GATEWAY, LORA_MY_ADDRESS, &ctrAes128);
 
   const uint8_t pingReqMsg[LORA_HEADER_LENGTH] =
-    {LORA_MY_ADDRESS, LORA_GATEWAY, 0, static_cast<uint8_t>(LoRaMsgType::ping_req), 0};
+    {LORA_MY_ADDRESS, 0, 0, LORA_GATEWAY, static_cast<uint8_t>(LoRaMsgType::ping_req), 0};
   EncryptedMsg encryptedPingReqMsg;
-  ctrAes128_tester.encrypt(encryptedPingReqMsg.buffer.buf, pingReqMsg, LORA_HEADER_LENGTH);
+  memcpy(encryptedPingReqMsg.buffer.buf, pingReqMsg, 3);
+  ctrAes128_tester.encrypt(&encryptedPingReqMsg.buffer.buf[3], &pingReqMsg[3], LORA_HEADER_LENGTH-3);
   encryptedPingReqMsg.buffer.length = LORA_HEADER_LENGTH;
 
   // RX
@@ -649,23 +659,24 @@ TEST_F(LoRaHandler_test, encrypted_msg) {
   EXPECT_EQ(lora.loraRx(), LORA_HEADER_LENGTH);
 
   bufSerReadStr();
-  EXPECT_THAT(strBuf, IsSupersetOf("[0] LoRaTx: H: 01 02 00 41 01 P: 91\r\n[0] "
+  EXPECT_THAT(strBuf, IsSupersetOf("[0] LoRaTx: H: 01 00 00 02 41 01 P: 91\r\n[0] "
                                "AirTime: 0 ms, 0 ppm\r\n"));
 
   uint8_t decryptedPingRespMsg[LORA_MAX_MESSAGE_LENGTH];
-  ctrAes128_tester.decrypt(decryptedPingRespMsg, loraTxBuf.buf, loraTxBuf.length);
+  memcpy(decryptedPingRespMsg, loraTxBuf.buf, 3);
+  ctrAes128_tester.decrypt(&decryptedPingRespMsg[3], &loraTxBuf.buf[3], loraTxBuf.length-3);
 
   LoRaHeaderT header;
-  header.fromByteArray(&decryptedPingRespMsg[0]);
+  header.fromByteArray(decryptedPingRespMsg);
 
   // Check TX header
   EXPECT_EQ(header.dst, LORA_GATEWAY);
+  EXPECT_EQ(header.frCnt, 0);
   EXPECT_EQ(header.src, LORA_MY_ADDRESS);
-  EXPECT_EQ(header.id, 0);
   EXPECT_TRUE(header.flags.ack_request);
   EXPECT_EQ(header.flags.msgType, LoRaMsgType::ping_msg);
   EXPECT_EQ(header.len, expectedPayloadSize);
 
-  // Check TX item
-  EXPECT_EQ(static_cast<int8_t>(decryptedPingRespMsg[5]), rssi);
+  // Check TX item (in payload)
+  EXPECT_EQ(static_cast<int8_t>(decryptedPingRespMsg[LORA_HEADER_LENGTH]), rssi);
 }

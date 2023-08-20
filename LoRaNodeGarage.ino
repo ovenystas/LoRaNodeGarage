@@ -24,7 +24,7 @@
  * - Improve encryption of messages
  * - Use configuration measurment interval to update sensors (or remove that
  *   config)
- * - Use message sequence id in LoRa header
+ * - Use message sequence frCnt in LoRa header
  */
 
 #include <AES.h>  // Crypto by Rhys Weatherley

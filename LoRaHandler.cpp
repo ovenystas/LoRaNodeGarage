@@ -50,7 +50,7 @@ int16_t LoRaHandler::loraRx() {
 
   // Decrypt packet
   if (mCipher) {
-    mCipher->decrypt(buf, buf, packetSize);
+    mCipher->decrypt(&buf[3], &buf[3], packetSize - 3);
   }
 
   // Parse header
@@ -73,6 +73,15 @@ int16_t LoRaHandler::loraRx() {
     return 0;
   }
 
+  // Check frame counter
+  if (rxMsg.header.frCnt != mDownlinkFrCnt) {
+    Serial.print(F(", unexpected frame counter, received "));
+    Serial.print(rxMsg.header.frCnt);
+    Serial.print(F(" != expected "));
+    Serial.print(mDownlinkFrCnt);
+    return -1;
+  }
+
   // Send ack if requested
   if (isAckRequested(&rxMsg.header)) {
     Serial.println(F("', sending ACK"));
@@ -86,6 +95,8 @@ int16_t LoRaHandler::loraRx() {
     Serial.println(F("Error: Failed to parse msg"));
     return -1;
   }
+
+  mDownlinkFrCnt++;
 
   return packetSize;
 }
@@ -174,7 +185,7 @@ void LoRaHandler::sendMsg(const LoRaTxMessageT* msg) {
   n += msg->header.len;
 
   if (mCipher) {
-    mCipher->encrypt(buf, buf, n);
+    mCipher->encrypt(&buf[3], &buf[3], n - 3);
   }
 
   (void)mLoRa.beginPacket();
@@ -193,14 +204,14 @@ void LoRaHandler::sendMsg(const LoRaTxMessageT* msg) {
   Serial.print(airTime.getTime_ppm());
   Serial.println(F(" ppm"));
 
-  mSeqId++;
+  mUplinkFrCnt++;
 }
 
 void LoRaHandler::sendAck(const LoRaHeaderT* rxHeader) {
   LoRaTxMessageT msg;
   msg.header.dst = rxHeader->src;
   msg.header.src = mMyAddress;
-  msg.header.id = rxHeader->id;
+  msg.header.frCnt = static_cast<uint16_t>(mUplinkFrCnt & 0Xff);
   msg.header.flags.fromByte(0);
   msg.header.flags.ack_response = true;
   msg.header.flags.msgType = rxHeader->flags.msgType;
@@ -221,7 +232,7 @@ void LoRaHandler::sendPing(const uint8_t toAddr, int8_t rssi) {
 void LoRaHandler::setDefaultHeader(LoRaHeaderT& header) {
   header.dst = mGatewayAddress;
   header.src = mMyAddress;
-  header.id = mSeqId;
+  header.frCnt = static_cast<uint16_t>(mUplinkFrCnt & 0xFFFF);
   header.flags.fromByte(0);
   header.flags.ack_request = true;
   header.len = 0;
