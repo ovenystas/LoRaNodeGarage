@@ -1,38 +1,49 @@
 #include "AirTime.h"
 
 #include <Arduino.h>
+#include <assert.h>
 
 #include "RingBuffer.h"
 
 void AirTime::update() { update(millis()); }
 
 void AirTime::update(uint32_t time) {
-  while (time >= (mLastUpdate_ms + MS_PER_MINUTE)) {
-    mTime_ms -= mBuf.pop_back();
-    mBuf.push_front(0);
-    mLastUpdate_ms += MS_PER_MINUTE;
+  if (time - mLastUpdate_ms >= MS_PER_HOUR) {
+    mTime_ms = 0;
+    mBuf.clear();
+    mBuf.fill(0);
+  } else {
+    while (time - mLastUpdate_ms >= MS_PER_MINUTE) {
+      mTime_ms -= mBuf.pop_back();
+      mBuf.push_front(0);
+      mLastUpdate_ms += MS_PER_MINUTE;
+    }
   }
 }
 
+void AirTime::addToCurrentMinute(uint32_t t) {
+  assert(t <= MS_PER_MINUTE);
+  uint16_t currentMinute = mBuf.pop_front();
+  assert(currentMinute + t <= MS_PER_MINUTE);
+  currentMinute += t;
+  mBuf.push_front(currentMinute);
+}
+
 void AirTime::update(uint32_t start, uint32_t end) {
-  update(start);
-  uint32_t splitTime = (end / MS_PER_MINUTE) * MS_PER_MINUTE;
-  if (splitTime > start) {
-    uint32_t td1 = splitTime - start;
-    uint32_t td2 = end - splitTime;
-    mTime_ms = mTime_ms + td1 + td2;
-    uint16_t currentMinute = mBuf.pop_front();
-    currentMinute += td1;
-    mBuf.push_front(currentMinute);
-    update(splitTime);
-    mBuf.push_front(td2);
-  } else {
-    uint32_t td = end - start;
+  uint32_t t1 = start;
+
+  do {
+    update(t1);
+    uint32_t t2 = (t1 / MS_PER_MINUTE + 1) * MS_PER_MINUTE;  // Minute boundary
+    if (t2 > end) {
+      t2 = end;
+    }
+
+    uint32_t td = t2 - t1;
     mTime_ms += td;
-    uint16_t currentMinute = mBuf.pop_front();
-    currentMinute += td;
-    mBuf.push_front(currentMinute);
-  }
+    addToCurrentMinute(td);
+    t1 = t2;
+  } while (t1 < end);
 }
 
 uint32_t AirTime::getTime_ms() {

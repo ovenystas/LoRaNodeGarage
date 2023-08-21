@@ -86,15 +86,31 @@ TEST_F(
   auto at = AirTime(10000);
   EXPECT_CALL(*pArduinoMock, millis())
       .WillOnce(Return(MS_PER_MINUTE + 1))
-      .WillRepeatedly(Return(MS_PER_HOUR));
+      .WillOnce(Return(MS_PER_HOUR))
+      .WillOnce(Return(MS_PER_HOUR + MS_PER_MINUTE));
 
   at.update(MS_PER_MINUTE - 2, MS_PER_MINUTE + 1);
 
   EXPECT_EQ(at.getTime_ms(), 3);
-
-  at.update();
-
   EXPECT_EQ(at.getTime_ms(), 1);
+  EXPECT_EQ(at.getTime_ms(), 0);
+}
+
+TEST_F(AirTime_test,
+       update_of_time_over_two_minutes_shall_be_split_over_three_minutes) {
+  auto at = AirTime(10000);
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(MS_PER_MINUTE * 2 + 1))
+      .WillOnce(Return(MS_PER_HOUR))
+      .WillOnce(Return(MS_PER_HOUR + MS_PER_MINUTE))
+      .WillOnce(Return(MS_PER_HOUR + MS_PER_MINUTE * 2));
+
+  at.update(MS_PER_MINUTE - 1, MS_PER_MINUTE * 2 + 1);
+
+  EXPECT_EQ(at.getTime_ms(), MS_PER_MINUTE + 2);
+  EXPECT_EQ(at.getTime_ms(), MS_PER_MINUTE + 1);
+  EXPECT_EQ(at.getTime_ms(), 1);
+  EXPECT_EQ(at.getTime_ms(), 0);
 }
 
 TEST_F(
@@ -170,7 +186,12 @@ TEST_F(
     AirTime_test,
     for_airtime_ppm_above_UINT16_MAX_getTime_ppm_shall_be_limited_to_UINT16_MAX) {
   auto at = AirTime(10000);
-  EXPECT_CALL(*pArduinoMock, millis()).WillRepeatedly(Return(0));
+  EXPECT_CALL(*pArduinoMock, millis())
+      .WillOnce(Return(235924))
+      .WillOnce(Return(235925))
+      .WillOnce(Return(235928))
+      .WillOnce(Return(300000))
+      .WillOnce(Return(400000));
 
   at.update(0, 235924);
   EXPECT_EQ(at.getTime_ppm(), UINT16_MAX - 1);
@@ -186,4 +207,13 @@ TEST_F(
 
   at.update(300000, 400000);
   EXPECT_EQ(at.getTime_ppm(), UINT16_MAX);
+}
+
+TEST_F(AirTime_test, update_during_millis_rollover) {
+  auto at = AirTime(10000);
+  EXPECT_CALL(*pArduinoMock, millis()).WillOnce(Return(1));
+
+  at.update(UINT32_MAX, 1);
+
+  EXPECT_EQ(at.getTime_ms(), 2);
 }

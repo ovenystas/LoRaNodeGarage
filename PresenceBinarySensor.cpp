@@ -27,7 +27,7 @@ bool PresenceBinarySensor::update() {
 
   bool enteredNewStableState =
       !mStableState &&
-      timestamp >= mLastChangedTime + mConfig.minStableTime.getValue();
+      timestamp - mLastChangedTime >= mConfig.minStableTime.getValue();
 
   if (enteredNewStableState) {
     mStableState = true;

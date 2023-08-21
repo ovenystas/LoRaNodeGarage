@@ -27,6 +27,7 @@ class AirTime {
 
  private:
   void update(uint32_t time);
+  void addToCurrentMinute(uint32_t t);
 
   RingBuffer<uint16_t, MINUTES_PER_HOUR> mBuf;
   uint32_t mLastUpdate_ms{};
