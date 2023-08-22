@@ -97,7 +97,7 @@
 DHT dht(DHTPIN, DHTTYPE);
 NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 
-uint32_t nextRunTime = UPDATE_SENSORS_INTERVAL;
+uint32_t lastRunTime = 0;
 
 GarageCover garageCover =
     GarageCover(0, "Port", COVER_CLOSED_PIN, COVER_OPEN_PIN, COVER_RELAY_PIN);
@@ -172,8 +172,8 @@ void setup() {
 
 void loop() {
   auto curMillis = millis();
-  if (curMillis >= nextRunTime) {
-    nextRunTime += UPDATE_SENSORS_INTERVAL;
+  if (curMillis - lastRunTime >= UPDATE_SENSORS_INTERVAL) {
+    lastRunTime += UPDATE_SENSORS_INTERVAL;
 
     updateSensors();
     sendSensorValueForComponentsWhereReportIsDue();
@@ -239,7 +239,7 @@ static void updateSensors() {
 
     if (c->update()) {
       LOG_SENSOR(c);
-      // c->setReported();  // Tmp: Fake
+      c->setReported();
     }
   }
 }
