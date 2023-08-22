@@ -134,7 +134,7 @@ TEST_F(HeightSensor_test, print) {
       99, "Distance", SensorDeviceClass::distance, Unit::Type::cm);
   HeightSensor hs = HeightSensor(39, "HeightSensor", ds);
 
-  EXPECT_EQ(hs.print(Serial), 18);
+  EXPECT_EQ(hs.printTo(Serial), 18);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -144,7 +144,7 @@ TEST_F(HeightSensor_test, print_service_shall_do_nothing) {
   Sensor<DistanceT> ds = Sensor<DistanceT>(
       99, "Distance", SensorDeviceClass::distance, Unit::Type::cm);
   HeightSensor hs = HeightSensor(39, "HeightSensor", ds);
-  EXPECT_EQ(hs.print(Serial, 0), 0);
+  EXPECT_EQ(hs.printTo(Serial, 0), 0);
 }
 
 TEST_F(HeightSensor_test, setConfigs_all_in_order) {

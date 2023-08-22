@@ -247,7 +247,7 @@ TEST_F(GarageCover_test, print) {
   EXPECT_CALL(*pArduinoMock, digitalWrite(13, LOW));
   GarageCover gc = GarageCover(91, "GarageCover", 11, 12, 13);
 
-  EXPECT_EQ(gc.print(Serial), 19);
+  EXPECT_EQ(gc.printTo(Serial), 19);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -262,7 +262,7 @@ TEST_F(GarageCover_test, print_service_open) {
   EXPECT_CALL(*pArduinoMock, digitalWrite(13, LOW));
   GarageCover gc = GarageCover(91, "GarageCover", 11, 12, 13);
 
-  EXPECT_EQ(gc.print(Serial, static_cast<uint8_t>(CoverService::open)), 53);
+  EXPECT_EQ(gc.printTo(Serial, static_cast<uint8_t>(CoverService::open)), 53);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Print.h>
+#include <Printable.h>
 
 #include "BaseComponent.h"
 #include "Types.h"
@@ -60,7 +60,7 @@ enum class SensorDeviceClass {
 };
 
 template <class T>
-class Sensor {
+class Sensor : public Printable {
  public:
   Sensor() = delete;
 
@@ -72,6 +72,8 @@ class Sensor {
       : mBaseComponent{BaseComponent(entityId, name)},
         mDeviceClass{deviceClass},
         mValueItem{ValueItem<T>(unitType, precision)} {}
+
+  virtual ~Sensor() {}
 
   BaseComponent::Type getComponentType() const {
     return BaseComponent::Type::sensor;
@@ -108,11 +110,11 @@ class Sensor {
 
   bool isReportDue() const { return mBaseComponent.isReportDue(); }
 
-  size_t print(Print& printer) const {
+  size_t printTo(Print& p) const final {
     size_t n = 0;
-    n += printer.print(mBaseComponent.getName());
-    n += printer.print(": ");
-    n += mValueItem.print(printer);
+    n += p.print(mBaseComponent.getName());
+    n += p.print(": ");
+    n += mValueItem.printTo(p);
     return n;
   }
 

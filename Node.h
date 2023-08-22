@@ -5,12 +5,12 @@
 
 #pragma once
 
-#include <Print.h>
+#include <Printable.h>
 #include <stdint.h>
 
 #include "Component.h"
 
-class Node {
+class Node : Printable {
  public:
   Node() = delete;
 
@@ -22,7 +22,7 @@ class Node {
 
   uint8_t getSize() const { return mSize; }
 
-  size_t print(Print& printer);
+  size_t printTo(Print& p) const final;
 
  private:
   IComponent** mComponents;

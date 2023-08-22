@@ -89,7 +89,7 @@ TEST_F(ValueItem_test, print_uint32_max_val_precision_0_no_unit) {
   const char* expectStr = "4294967295";
   auto v = ValueItem<uint32_t>(Unit::Type::none, 0, UINT32_MAX);
 
-  size_t printedChars = v.print(Serial);
+  size_t printedChars = v.printTo(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -100,7 +100,7 @@ TEST_F(ValueItem_test, print_uint32_max_val_precision_3_unit_C) {
   const char* expectStr = "4294967.295 °C";
   auto v = ValueItem<uint32_t>(Unit::Type::C, 3, UINT32_MAX);
 
-  size_t printedChars = v.print(Serial);
+  size_t printedChars = v.printTo(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -111,7 +111,7 @@ TEST_F(ValueItem_test, print_int32_min_val_precision_2_unit_F) {
   const char* expectStr = "-21474836.48 °F";
   auto v = ValueItem<int32_t>(Unit::Type::F, 2, INT32_MIN);
 
-  size_t printedChars = v.print(Serial);
+  size_t printedChars = v.printTo(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -122,7 +122,7 @@ TEST_F(ValueItem_test, print_int8_val_minus_1_precision_3_unit_km) {
   const char* expectStr = "-0.001 km";
   auto v = ValueItem<int8_t>(Unit::Type::km, 3, -1);
 
-  size_t printedChars = v.print(Serial);
+  size_t printedChars = v.printTo(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -133,7 +133,7 @@ TEST_F(ValueItem_test, print_uint8_val_0_precision_3_unit_none) {
   const char* expectStr = "0.000";
   auto v = ValueItem<uint8_t>(Unit::Type::none, 3, 0);
 
-  size_t printedChars = v.print(Serial);
+  size_t printedChars = v.printTo(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);

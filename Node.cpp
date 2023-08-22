@@ -5,8 +5,6 @@
 
 #include "Node.h"
 
-#include <Print.h>
-
 IComponent* Node::getComponent(uint8_t idx) {
   if (idx >= mSize) {
     return nullptr;
@@ -23,14 +21,14 @@ IComponent* Node::getComponentByEntityId(uint8_t entityId) {
   return nullptr;
 }
 
-size_t Node::print(Print& printer) {
+size_t Node::printTo(Print& p) const {
   uint8_t i;
   size_t n = 0;
   for (i = 0; i < mSize - 1; i++) {
-    n += mComponents[i]->print(printer);
-    n += printer.print(", ");
+    n += mComponents[i]->printTo(p);
+    n += p.print(", ");
   }
-  n += mComponents[i]->print(printer);
-  n += printer.println();
+  n += mComponents[i]->printTo(p);
+  n += p.println();
   return n;
 }

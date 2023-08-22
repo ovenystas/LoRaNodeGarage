@@ -36,21 +36,21 @@ void Cover::getValueItem(ValueItemT* item) const {
   item->value = static_cast<uint32_t>(mState);
 }
 
-size_t Cover::print(Print& printer) const {
+size_t Cover::printTo(Print& p) const {
   size_t n = 0;
-  n += printer.print(mBaseComponent.getName());
-  n += printer.print(": ");
-  n += printer.print(CoverStateName[static_cast<uint8_t>(mState)]);
+  n += p.print(mBaseComponent.getName());
+  n += p.print(": ");
+  n += p.print(CoverStateName[static_cast<uint8_t>(mState)]);
   return n;
 }
 
-size_t Cover::print(Print& printer, uint8_t service) const {
+size_t Cover::printTo(Print& p, uint8_t service) const {
   size_t n = 0;
-  n += printer.print(mBaseComponent.getName());
-  n += printer.print(F(": Service "));
-  n += printer.print(getServiceName(static_cast<CoverService>(service)));
-  n += printer.print(F(" called when in state "));
-  n += printer.print(CoverStateName[static_cast<uint8_t>(mState)]);
+  n += p.print(mBaseComponent.getName());
+  n += p.print(F(": Service "));
+  n += p.print(getServiceName(static_cast<CoverService>(service)));
+  n += p.print(F(" called when in state "));
+  n += p.print(CoverStateName[static_cast<uint8_t>(mState)]);
   return n;
 }
 

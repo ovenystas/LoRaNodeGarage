@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Print.h>
+#include <Printable.h>
 #include <WString.h>
 
 #include "BaseComponent.h"
@@ -38,7 +38,7 @@ enum class BinarySensorDeviceClass {
   window
 };
 
-class BinarySensor {
+class BinarySensor : public Printable {
  public:
   BinarySensor() = delete;
 
@@ -49,6 +49,8 @@ class BinarySensor {
       : mBaseComponent{BaseComponent(entityId, name)},
         mDeviceClass{deviceClass},
         mUnit{Unit(unitType)} {}
+
+  virtual ~BinarySensor() {}
 
   BaseComponent::Type getComponentType() const {
     return BaseComponent::Type::binarySensor;
@@ -70,7 +72,7 @@ class BinarySensor {
 
   bool isReportDue() const { return mBaseComponent.isReportDue(); }
 
-  size_t print(Print& printer) const;
+  size_t printTo(Print& p) const final;
 
   void setIsReportDue(bool isDue) { mBaseComponent.setIsReportDue(isDue); }
 

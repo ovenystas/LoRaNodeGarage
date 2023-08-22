@@ -128,7 +128,7 @@ TEST_F(HumiditySensor_test, print) {
   const char* expectStr = "HumiditySensor: 0 %";
   HumiditySensor hs = HumiditySensor(51, "HumiditySensor", *pDhtMock);
 
-  EXPECT_EQ(hs.print(Serial), strlen(expectStr));
+  EXPECT_EQ(hs.printTo(Serial), strlen(expectStr));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -136,7 +136,7 @@ TEST_F(HumiditySensor_test, print) {
 
 TEST_F(HumiditySensor_test, print_service_shall_do_nothing) {
   HumiditySensor hs = HumiditySensor(51, "HumiditySensor", *pDhtMock);
-  EXPECT_EQ(hs.print(Serial, 0), 0);
+  EXPECT_EQ(hs.printTo(Serial, 0), 0);
 }
 
 TEST_F(HumiditySensor_test, setConfigs_all_in_order) {

@@ -59,18 +59,18 @@
 #define DEBUG_SERVICE
 
 #ifdef DEBUG_SENSOR_REPORT
-#define LOG_SENSOR(sensor) \
-  printMillis(Serial);     \
-  (sensor)->print(Serial); \
+#define LOG_SENSOR(sensor)   \
+  printMillis(Serial);       \
+  (sensor)->printTo(Serial); \
   Serial.println()
 #else
 #define LOG_SENSOR(sensor)
 #endif
 
 #ifdef DEBUG_SERVICE
-#define LOG_SERVICE(component, service)  \
-  printMillis(Serial);                   \
-  (component)->print(Serial, (service)); \
+#define LOG_SERVICE(component, service)    \
+  printMillis(Serial);                     \
+  (component)->printTo(Serial, (service)); \
   Serial.println()
 #else
 #define LOG_SERVICE(component, service)
@@ -362,5 +362,5 @@ void printWelcomeMsg() {
 }
 
 #ifdef DEBUG_SENSOR_VALUES
-static void printAllSensors(Print& printer) { node.print(printer); }
+static void printAllSensors(Print& p) { node.printTo(p); }
 #endif

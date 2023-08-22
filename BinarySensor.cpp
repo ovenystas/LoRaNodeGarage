@@ -68,10 +68,10 @@ void BinarySensor::getValueItem(ValueItemT* item) const {
   item->value = static_cast<uint32_t>(mState);
 }
 
-size_t BinarySensor::print(Print& printer) const {
+size_t BinarySensor::printTo(Print& p) const {
   size_t n = 0;
-  n += printer.print(mBaseComponent.getName());
-  n += printer.print(": ");
-  n += printer.print(getStateName());
+  n += p.print(mBaseComponent.getName());
+  n += p.print(": ");
+  n += p.print(getStateName());
   return n;
 }

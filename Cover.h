@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Print.h>
+#include <Printable.h>
 
 #include "BaseComponent.h"
 #include "Types.h"
@@ -25,7 +25,7 @@ enum class CoverState { closed, open, opening, closing };
 
 enum class CoverService { open, close, stop, toggle, unknown };
 
-class Cover {
+class Cover : public Printable {
  public:
   Cover() = delete;
 
@@ -33,6 +33,8 @@ class Cover {
         CoverDeviceClass deviceClass = CoverDeviceClass::none)
       : mBaseComponent{BaseComponent(entityId, name)},
         mDeviceClass{deviceClass} {}
+
+  virtual ~Cover() {}
 
   BaseComponent::Type getComponentType() const {
     return BaseComponent::Type::cover;
@@ -58,9 +60,9 @@ class Cover {
 
   bool isReportDue() const { return mBaseComponent.isReportDue(); }
 
-  size_t print(Print& printer) const;
+  size_t printTo(Print& p) const final;
 
-  size_t print(Print& printer, uint8_t service) const;
+  size_t printTo(Print& p, uint8_t service) const;
 
   CoverService serviceDecode(uint8_t service) const;
 

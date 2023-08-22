@@ -136,7 +136,7 @@ TEST_F(PresenceBinarySensor_test, print) {
   PresenceBinarySensor pbs =
       PresenceBinarySensor(89, "PresenceBinarySensor", hs);
 
-  EXPECT_EQ(pbs.print(Serial), strlen(expectStr));
+  EXPECT_EQ(pbs.printTo(Serial), strlen(expectStr));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -147,7 +147,7 @@ TEST_F(PresenceBinarySensor_test, print_service_shall_do_nothing) {
       99, "Height", SensorDeviceClass::distance, Unit::Type::cm);
   PresenceBinarySensor pbs =
       PresenceBinarySensor(89, "PresenceBinarySensor", hs);
-  EXPECT_EQ(pbs.print(Serial, 0), 0);
+  EXPECT_EQ(pbs.printTo(Serial, 0), 0);
 }
 
 TEST_F(PresenceBinarySensor_test, setConfigs_all_in_order) {

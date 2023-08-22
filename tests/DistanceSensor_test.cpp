@@ -175,7 +175,7 @@ TEST_F(DistanceSensor_test, print) {
   NewPingMock sonarMock;
   DistanceSensor ds = DistanceSensor(7, "DistanceSensor", sonarMock);
 
-  EXPECT_EQ(ds.print(Serial), strlen(expectStr));
+  EXPECT_EQ(ds.printTo(Serial), strlen(expectStr));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -184,7 +184,7 @@ TEST_F(DistanceSensor_test, print) {
 TEST_F(DistanceSensor_test, print_service_shall_do_nothing) {
   NewPingMock sonarMock;
   DistanceSensor ds = DistanceSensor(7, "DistanceSensor", sonarMock);
-  EXPECT_EQ(ds.print(Serial, 0), 0);
+  EXPECT_EQ(ds.printTo(Serial, 0), 0);
 }
 
 TEST_F(DistanceSensor_test, setConfigs_all_in_order) {

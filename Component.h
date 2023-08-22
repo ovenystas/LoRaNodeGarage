@@ -1,12 +1,12 @@
 #pragma once
 
-#include <Print.h>
+#include <Printable.h>
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "Types.h"
 
-class IComponent {
+class IComponent : public Printable {
  public:
   /**
    * @brief Call a service.
@@ -39,9 +39,9 @@ class IComponent {
 
   virtual void loadConfigValues() = 0;
 
-  virtual size_t print(Print& printer) const = 0;
+  virtual size_t printTo(Print& p) const = 0;
 
-  virtual size_t print(Print& printer, uint8_t service) const = 0;
+  virtual size_t printTo(Print& p, uint8_t service) const = 0;
 
   virtual bool setConfigItemValues(const ConfigItemValueT* items,
                                    uint8_t length) = 0;

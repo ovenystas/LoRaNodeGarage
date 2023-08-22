@@ -132,7 +132,7 @@ TEST_F(TemperatureSensor_test, print) {
   const char *expectStr = "TemperatureSensor: 0.0 °C";
   TemperatureSensor ts = TemperatureSensor(15, "TemperatureSensor", *pDhtMock);
 
-  EXPECT_EQ(ts.print(Serial), strlen(expectStr));
+  EXPECT_EQ(ts.printTo(Serial), strlen(expectStr));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -140,7 +140,7 @@ TEST_F(TemperatureSensor_test, print) {
 
 TEST_F(TemperatureSensor_test, print_service_shall_do_nothing) {
   TemperatureSensor ts = TemperatureSensor(15, "TemperatureSensor", *pDhtMock);
-  EXPECT_EQ(ts.print(Serial, 0), 0);
+  EXPECT_EQ(ts.printTo(Serial, 0), 0);
 }
 
 TEST_F(TemperatureSensor_test, setConfigs_all_in_order) {

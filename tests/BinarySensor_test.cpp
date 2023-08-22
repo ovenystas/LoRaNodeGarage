@@ -279,7 +279,7 @@ TEST_F(BinarySensor_test, print_deviceclass_none_state_false) {
   const char* expectStr = "BinarySensor: off";
   pBS->setState(false);
 
-  size_t printedChars = pBS->print(Serial);
+  size_t printedChars = pBS->printTo(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
@@ -290,7 +290,7 @@ TEST_F(BinarySensor_test, print_deviceclass_none_state_true) {
   const char* expectStr = "BinarySensor: on";
   pBS->setState(true);
 
-  size_t printedChars = pBS->print(Serial);
+  size_t printedChars = pBS->printTo(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);

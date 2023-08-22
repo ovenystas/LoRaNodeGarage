@@ -29,10 +29,10 @@ class ComponentChild : public IComponent {
 
   void loadConfigValues() final {}
 
-  size_t print(Print& printer) const final { return printer.print(mEntityId); }
+  size_t printTo(Print& p) const final { return p.print(mEntityId); }
 
-  size_t print(Print& printer, uint8_t service) const final {
-    (void)printer;
+  size_t printTo(Print& p, uint8_t service) const final {
+    (void)p;
     (void)service;
     return 0;
   }
@@ -102,7 +102,7 @@ TEST_F(Node_test, getComponentByEntityId) {
 TEST_F(NodePrint_test, print) {
   const char* expectedStr = "10, 11\r\n";
 
-  EXPECT_EQ(n.print(*pSerial), strlen(expectedStr));
+  EXPECT_EQ(n.printTo(*pSerial), strlen(expectedStr));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectedStr);

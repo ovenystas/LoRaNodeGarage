@@ -44,10 +44,10 @@ class TemperatureSensor : public IComponent {
 
   bool isReportDue() const final { return mSensor.isReportDue(); }
 
-  size_t print(Print &printer) const final { return mSensor.print(printer); };
+  size_t printTo(Print &p) const final { return mSensor.printTo(p); };
 
-  size_t print(Print &printer, uint8_t service) const final {
-    (void)printer;
+  size_t printTo(Print &p, uint8_t service) const final {
+    (void)p;
     (void)service;
     return 0;
   };
