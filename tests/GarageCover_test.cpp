@@ -201,6 +201,8 @@ TEST_F(GarageCover_test, getDiscoveryItem) {
   EXPECT_FALSE(item.configItems[0].isSigned);
   EXPECT_EQ(item.configItems[0].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[0].precision, 0);
+  EXPECT_EQ(item.configItems[0].minValue, 0);
+  EXPECT_EQ(item.configItems[0].maxValue, Util::TWELVE_HOURS_IN_SECONDS);
 }
 
 TEST_F(GarageCover_test, getEntityId) { EXPECT_EQ(pGc->getEntityId(), 91); }

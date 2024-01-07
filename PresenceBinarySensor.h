@@ -5,6 +5,7 @@
 #include "ConfigItem.h"
 #include "EeAdressMap.h"
 #include "HeightSensor.h"
+#include "Util.h"
 
 namespace PresenceBinarySensorConstants {
 static const HeightT CONFIG_LOW_LIMIT_DEFAULT = 180;
@@ -15,8 +16,6 @@ static const uint16_t CONFIG_REPORT_INTERVAL_DEFAULT = 300;
 
 class PresenceBinarySensor : public IComponent {
  public:
-  virtual ~PresenceBinarySensor() = default;
-
   PresenceBinarySensor() = delete;
 
   PresenceBinarySensor(uint8_t entityId, const char* name,
@@ -63,23 +62,23 @@ class PresenceBinarySensor : public IComponent {
 
     ConfigItem<HeightT> lowLimit = {ConfigItem<HeightT>(
         0, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_0,
-        PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT,
-        Unit::Type::cm)};
+        PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT, 0,
+        MAX_SENSOR_DISTANCE, Unit::Type::cm)};
 
     ConfigItem<HeightT> highLimit = {ConfigItem<HeightT>(
         1, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_1,
-        PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT,
-        Unit::Type::cm)};
+        PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT, 0,
+        MAX_SENSOR_DISTANCE, Unit::Type::cm)};
 
     ConfigItem<uint16_t> minStableTime = {ConfigItem<uint16_t>(
         2, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_2,
-        PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT,
-        Unit::Type::ms)};
+        PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT, 0,
+        Util::ONE_MINUTE_IN_MILLISECONDS, Unit::Type::ms)};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
         3, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_3,
-        PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT,
-        Unit::Type::s)};
+        PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, 0,
+        Util::TWELVE_HOURS_IN_SECONDS, Unit::Type::s)};
   };
 
   BinarySensor mBinarySensor;

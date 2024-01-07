@@ -89,27 +89,37 @@ TEST_F(HeightSensor_test, getDiscoveryItem) {
 
   EXPECT_EQ(item.configItems[0].configId, 0);
   EXPECT_EQ(item.configItems[0].unit, static_cast<uint8_t>(Unit::Type::cm));
-  EXPECT_TRUE(item.configItems[0].isSigned);
-  EXPECT_EQ(item.configItems[0].sizeCode, sizeof(HeightT) / 2);
+  EXPECT_FALSE(item.configItems[0].isSigned);
+  EXPECT_EQ(item.configItems[0].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[0].precision, 0);
+  EXPECT_EQ(item.configItems[0].minValue, 0);
+  EXPECT_EQ(item.configItems[0].maxValue, MAX_SENSOR_DISTANCE);
 
   EXPECT_EQ(item.configItems[1].configId, 1);
   EXPECT_EQ(item.configItems[1].unit, static_cast<uint8_t>(Unit::Type::s));
   EXPECT_FALSE(item.configItems[1].isSigned);
   EXPECT_EQ(item.configItems[1].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[1].precision, 0);
+  EXPECT_EQ(item.configItems[1].minValue, 0);
+  EXPECT_EQ(item.configItems[1].maxValue,
+            HeightSensorConstants::ONE_HOUR_IN_SECONDS);
 
   EXPECT_EQ(item.configItems[2].configId, 2);
   EXPECT_EQ(item.configItems[2].unit, static_cast<uint8_t>(Unit::Type::ms));
   EXPECT_FALSE(item.configItems[2].isSigned);
   EXPECT_EQ(item.configItems[2].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[2].precision, 0);
+  EXPECT_EQ(item.configItems[2].minValue, 0);
+  EXPECT_EQ(item.configItems[2].maxValue,
+            HeightSensorConstants::ONE_MINUTE_IN_MILLISECONDS);
 
   EXPECT_EQ(item.configItems[3].configId, 3);
   EXPECT_EQ(item.configItems[3].unit, static_cast<uint8_t>(Unit::Type::cm));
   EXPECT_TRUE(item.configItems[3].isSigned);
   EXPECT_EQ(item.configItems[3].sizeCode, sizeof(HeightT) / 2);
   EXPECT_EQ(item.configItems[3].precision, 0);
+  EXPECT_EQ(item.configItems[3].minValue, -MAX_SENSOR_DISTANCE);
+  EXPECT_EQ(item.configItems[3].maxValue, MAX_SENSOR_DISTANCE);
 }
 
 TEST_F(HeightSensor_test, getEntityId) { EXPECT_EQ(pHs->getEntityId(), 39); }
@@ -148,34 +158,34 @@ TEST_F(HeightSensor_test, print_service_shall_do_nothing) {
 }
 
 TEST_F(HeightSensor_test, setConfigs_all_in_order) {
-  ConfigItemValueT inItems[4] = {{0, 1000}, {1, 1001}, {2, 1002}, {3, 1003}};
+  ConfigItemValueT inItems[4] = {{0, 100}, {1, 1001}, {2, 1002}, {3, 103}};
   EXPECT_TRUE(pHs->setConfigItemValues(inItems, 4));
 
   ConfigItemValueT items[4];
   EXPECT_EQ(pHs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
             4);
 
-  EXPECT_EQ(items[0].value, 1000);
+  EXPECT_EQ(items[0].value, 100);
   EXPECT_EQ(items[1].value, 1001);
   EXPECT_EQ(items[2].value, 1002);
-  EXPECT_EQ(items[3].value, 1003);
+  EXPECT_EQ(items[3].value, 103);
 }
 
 TEST_F(HeightSensor_test, setConfigs_all_out_of_order) {
-  ConfigItemValueT inItems[4] = {{3, 2003}, {2, 2002}, {1, 2001}, {0, 2000}};
+  ConfigItemValueT inItems[4] = {{3, 203}, {2, 2002}, {1, 2001}, {0, 200}};
   EXPECT_TRUE(pHs->setConfigItemValues(inItems, 4));
 
   ConfigItemValueT items[4];
   EXPECT_EQ(pHs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
             4);
-  EXPECT_EQ(items[0].value, 2000);
+  EXPECT_EQ(items[0].value, 200);
   EXPECT_EQ(items[1].value, 2001);
   EXPECT_EQ(items[2].value, 2002);
-  EXPECT_EQ(items[3].value, 2003);
+  EXPECT_EQ(items[3].value, 203);
 }
 
 TEST_F(HeightSensor_test, setConfigs_one) {
-  ConfigItemValueT inItems[1] = {{3, 3003}};
+  ConfigItemValueT inItems[1] = {{3, 303}};
   EXPECT_TRUE(pHs->setConfigItemValues(inItems, 1));
 
   ConfigItemValueT items[4];
@@ -186,12 +196,12 @@ TEST_F(HeightSensor_test, setConfigs_one) {
   EXPECT_EQ(items[1].value,
             HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
   EXPECT_EQ(items[2].value, HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT);
-  EXPECT_EQ(items[3].value, 3003);
+  EXPECT_EQ(items[3].value, 303);
 }
 
 TEST_F(HeightSensor_test, setConfigs_too_many) {
   ConfigItemValueT inItems[5] = {
-      {0, 1000}, {1, 1001}, {2, 1002}, {3, 1003}, {4, 1004}};
+      {0, 100}, {1, 1001}, {2, 1002}, {3, 1003}, {4, 1004}};
   EXPECT_FALSE(pHs->setConfigItemValues(inItems, 5));
 }
 

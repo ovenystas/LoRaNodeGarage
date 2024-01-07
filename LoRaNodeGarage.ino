@@ -49,12 +49,12 @@
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 0
-#define VERSION_PATCH 6
+#define VERSION_PATCH 7
 
 // Increment when breaking changes of configuration are made.
 #define CONFIG_MAGIC 0x00
 
-#define DEBUG_SENSOR_VALUES
+//#define DEBUG_SENSOR_VALUES
 #define DEBUG_SENSOR_REPORT
 #define DEBUG_SERVICE
 
@@ -117,13 +117,14 @@ Node node = Node(components, sizeof(components) / sizeof(components[0]));
 
 CTR<AES128> ctrAes128;
 
-LoRaHandler lora(LoRa, LORA_GATEWAY_ADDRESS, LORA_MY_ADDRESS, &ctrAes128);
+LoRaHandler lora(LoRa, LORA_GATEWAY_ADDRESS, LORA_MY_ADDRESS /*, &ctrAes128*/);
 
-static const byte AES_KEY[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05,
-                                 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
-                                 0x0C, 0x0D, 0x0E, 0x0F};
-static const byte CTR_IV[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+const byte PROGMEM AES_KEY[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05,
+                                  0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+                                  0x0C, 0x0D, 0x0E, 0x0F};
+const byte PROGMEM CTR_IV[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                 0x00, 0x00, 0x00, 0x01};
 
 void setup() {
   Serial.begin(115200);
@@ -137,7 +138,7 @@ void setup() {
   if (configMagicEe != CONFIG_MAGIC) {
     Serial.print(F("Config magic word in EEPROM "));
     printHex(Serial, configMagicEe);
-    Serial.print(" != ");
+    Serial.print(F(" != "));
     printHex(Serial, static_cast<uint8_t>(CONFIG_MAGIC));
     Serial.println('!');
     Serial.print(F("Erasing EEPROM"));
@@ -149,8 +150,8 @@ void setup() {
     }
     Serial.println(F("Done!"));
   }
-
   loadConfigValuesForAllComponents();
+  EEPROM.write(EE_ADDRESS_CONFIG_MAGIC, CONFIG_MAGIC);
 
   dht.begin();
 
@@ -176,7 +177,10 @@ void loop() {
     lastRunTime += UPDATE_SENSORS_INTERVAL;
 
     updateSensors();
-    sendSensorValueForComponentsWhereReportIsDue();
+
+    if (isReportDue()) {
+      sendSensorValueForAllComponents();
+    }
 
 #ifdef DEBUG_SENSOR_VALUES
     printMillis(Serial);
@@ -195,13 +199,7 @@ void onDiscoveryReqMsg(uint8_t entityId) {
   sendDiscoveryMsgForEntity(entityId);
 }
 
-void onValueReqMsg(uint8_t entityId) {
-  if (entityId == 255) {
-    sendSensorValueForAllComponents();
-    return;
-  }
-  sendSensorValueForEntity(entityId);
-}
+void onValueReqMsg(void) { sendSensorValueForAllComponents(); }
 
 void onConfigReqMsg(uint8_t entityId) {
   if (entityId == 255) {
@@ -239,9 +237,19 @@ static void updateSensors() {
 
     if (c->update()) {
       LOG_SENSOR(c);
-      c->setReported();
+      // c->setReported(); // Tmp: Fake already reported
     }
   }
+}
+
+static bool isReportDue() {
+  for (uint8_t i = 0; i < node.getSize(); i++) {
+    IComponent* c = node.getComponent(i);
+    if (c != nullptr && c->isReportDue()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 static void sendSensorValue(IComponent* component) {
@@ -319,6 +327,7 @@ static void sendConfigValuesForAllComponents() {
   for (uint8_t i = 0; i < node.getSize(); i++) {
     IComponent* c = node.getComponent(i);
     sendConfigValues(c);
+    delay(500);
   }
 }
 
@@ -344,6 +353,7 @@ static void sendDiscoveryMsgForAllComponents() {
   for (uint8_t i = 0; i < node.getSize(); i++) {
     IComponent* c = node.getComponent(i);
     sendDiscoveryMsg(c);
+    delay(500);
   }
 }
 

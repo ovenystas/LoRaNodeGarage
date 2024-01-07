@@ -36,7 +36,10 @@ int16_t LoRaHandler::loraRx() {
   }
 
   // received a packet
-  Serial.print(F("Received packet '"));
+#ifdef DEBUG_LORA_MESSAGE
+  printMillis(Serial);
+  Serial.print(F("LoRaRx: '"));
+#endif
 
   // read packet
   uint8_t buf[LORA_MAX_MESSAGE_LENGTH];
@@ -48,60 +51,84 @@ int16_t LoRaHandler::loraRx() {
     buf[i] = b;
   }
 
+  uint8_t payload_length = packetSize - LORA_HEADER_LENGTH;
+
   // Decrypt packet
   if (mCipher) {
-    mCipher->decrypt(&buf[3], &buf[3], packetSize - 3);
+    mCipher->decrypt(&buf[LORA_HEADER_LENGTH - 1], &buf[LORA_HEADER_LENGTH - 1],
+                     payload_length + 1);
   }
 
   // Parse header
   LoRaRxMessageT rxMsg;
   rxMsg.header.fromByteArray(buf);
+  rxMsg.payload_length = payload_length;
 
+#ifdef DEBUG_LORA_MESSAGE
   // Print message as HEX
   printArray(Serial, buf, LORA_HEADER_LENGTH, HEX);
-  Serial.print(',');
-  printArray(Serial, &buf[LORA_HEADER_LENGTH], rxMsg.header.len, HEX);
+  Serial.print(", ");
+  printArray(Serial, &buf[LORA_HEADER_LENGTH], rxMsg.payload_length, HEX);
 
   // print RSSI of packet
-  Serial.print(F(" with RSSI "));
+  Serial.print(F("' with RSSI "));
+#endif
   rxMsg.rssi = static_cast<int16_t>(mLoRa.packetRssi());
+#ifdef DEBUG_LORA_MESSAGE
   Serial.print(rxMsg.rssi);
+#endif
 
   // Check if it is addressed to me
   if (rxMsg.header.dst != mMyAddress) {
+#ifdef DEBUG_LORA_MESSAGE
     Serial.println(F(", not for me, drop msg."));
+#endif
     return 0;
   }
 
-  // Check frame counter
-  if (rxMsg.header.frCnt != mDownlinkFrCnt) {
-    Serial.print(F(", unexpected frame counter, received "));
-    Serial.print(rxMsg.header.frCnt);
-    Serial.print(F(" != expected "));
-    Serial.print(mDownlinkFrCnt);
-    return -1;
-  }
+  // Check msg id
+  // mMsgIdDown += 1;
+  // if (rxMsg.header.id != mMsgIdDown) {
+  //   Serial.print(F(", unexpected msg id "));
+  //   Serial.print(rxMsg.header.id);
+  //   Serial.print(F(" != "));
+  //   Serial.println(mMsgIdDown);
+  //   return -1;
+  // }
 
   // Send ack if requested
-  if (isAckRequested(&rxMsg.header)) {
-    Serial.println(F("', sending ACK"));
+  if (isAckRequest(&rxMsg.header)) {
+#ifdef DEBUG_LORA_MESSAGE
+    Serial.println(F(", sending ACK"));
+#endif
     sendAck(&rxMsg.header);
-  } else {
-    Serial.println('\'');
+  }
+
+  if (isAckResponse(&rxMsg.header)) {
+#ifdef DEBUG_LORA_MESSAGE
+    Serial.println(F(", ACK response"));
+#endif
+    return 0;
   }
 
   // Parse message
   if (parseMsg(rxMsg, &buf[LORA_HEADER_LENGTH]) == -1) {
-    Serial.println(F("Error: Failed to parse msg"));
+#ifdef DEBUG_LORA_MESSAGE
+    Serial.println(F(", Error: Failed to parse msg"));
+#endif
     return -1;
   }
 
-  mDownlinkFrCnt++;
+  // Serial.println();
 
   return packetSize;
 }
 
 int8_t LoRaHandler::parseMsg(const LoRaRxMessageT& rxMsg, uint8_t* payload) {
+  // printMillis(Serial);
+  // Serial.print(F("Parsing msg type="));
+  // Serial.println(static_cast<uint8_t>(rxMsg.header.flags.msgType));
+
   switch (rxMsg.header.flags.msgType) {
     case LoRaMsgType::ping_req:
       sendPing(rxMsg.header.src, rxMsg.rssi);
@@ -116,8 +143,7 @@ int8_t LoRaHandler::parseMsg(const LoRaRxMessageT& rxMsg, uint8_t* payload) {
 
     case LoRaMsgType::value_req:
       if (mOnValueReqMsgFunc) {
-        uint8_t entityId = payload[0];
-        mOnValueReqMsgFunc(entityId);
+        mOnValueReqMsgFunc();
       }
       break;
 
@@ -131,18 +157,25 @@ int8_t LoRaHandler::parseMsg(const LoRaRxMessageT& rxMsg, uint8_t* payload) {
     case LoRaMsgType::configSet_req:
       if (mOnConfigSetReqMsgFunc) {
         ConfigValuePayloadT cfgValPayload;
-        cfgValPayload.fromByteArray(payload, rxMsg.header.len);
+        cfgValPayload.fromByteArray(payload, rxMsg.payload_length);
         mOnConfigSetReqMsgFunc(cfgValPayload);
       }
       break;
 
+      // s 1 0 0
+      // DEBUG: Sending b'\x00\x00' to 1 (lora.py:197)
+      // send b'\x00\x00' to 1
+
+      // [66926] LoRaRx: '01 00 0D 49, 00 00 70 74 88 77' with RSSI -47, sending
+      // ACK [66930] LoRaTx: H: 00 01 0D 89 P: (ACK) [67010] AirTime: 897 ms,
+      // 249 ppm [67012] Parsing msg type=9 DBG srvReq: wrong length, len=6,
+      // exp=2
+
     case LoRaMsgType::service_req:
       if (mOnServiceReqMsgFunc) {
-        if (rxMsg.header.len == sizeof(LoRaServiceItemT)) {
-          LoRaServiceItemT serviceItem;
-          serviceItem.fromByteArray(payload, rxMsg.header.len);
-          mOnServiceReqMsgFunc(serviceItem);
-        }
+        LoRaServiceItemT serviceItem;
+        serviceItem.fromByteArray(payload, rxMsg.payload_length);
+        mOnServiceReqMsgFunc(serviceItem);
       }
       break;
 
@@ -159,10 +192,12 @@ void LoRaHandler::printMessage(const LoRaTxMessageT* msg) {
   printArray(Serial, buf, LORA_HEADER_LENGTH, HEX);
 
   Serial.print(F(" P: "));
-  if (msg->header.len == 0) {
-    Serial.print("--");
+  if (msg->payload_length == 0) {
+    Serial.print(F("--"));
+  } else if (msg->header.flags.ack_response and msg->payload_length == '!') {
+    Serial.print(F("(ACK)"));
   } else {
-    printArray(Serial, msg->payload, msg->header.len, HEX);
+    printArray(Serial, msg->payload, msg->payload_length, HEX);
   }
   Serial.println();
 }
@@ -174,18 +209,19 @@ void LoRaHandler::sendMsg(const LoRaTxMessageT* msg) {
   printMessage(msg);
 #endif
 
-  if (airTime.isLimitReached()) {
+  if (mAirTime.isLimitReached()) {
     Serial.println(F("AirTime limit reached! Not sending."));
     return;
   }
 
   uint8_t buf[LORA_MAX_MESSAGE_LENGTH];
   uint8_t n = msg->header.toByteArray(buf);
-  memcpy(&buf[n], msg->payload, msg->header.len);
-  n += msg->header.len;
+  memcpy(&buf[n], msg->payload, msg->payload_length);
+  n += msg->payload_length;
 
   if (mCipher) {
-    mCipher->encrypt(&buf[3], &buf[3], n - 3);
+    mCipher->encrypt(&buf[LORA_HEADER_LENGTH - 1], &buf[LORA_HEADER_LENGTH - 1],
+                     n - LORA_HEADER_LENGTH + 1);
   }
 
   (void)mLoRa.beginPacket();
@@ -195,70 +231,77 @@ void LoRaHandler::sendMsg(const LoRaTxMessageT* msg) {
   (void)mLoRa.endPacket();
   uint32_t sendEndTime = millis();
 
-  airTime.update(sendStartTime, sendEndTime);
+  mAirTime.update(sendStartTime, sendEndTime);
 
   printMillis(Serial);
   Serial.print(F("AirTime: "));
-  Serial.print(airTime.getTime_ms());
+  Serial.print(mAirTime.getTime_ms());
   Serial.print(F(" ms, "));
-  Serial.print(airTime.getTime_ppm());
+  Serial.print(mAirTime.getTime_ppm());
   Serial.println(F(" ppm"));
-
-  mUplinkFrCnt++;
 }
 
 void LoRaHandler::sendAck(const LoRaHeaderT* rxHeader) {
   LoRaTxMessageT msg;
   msg.header.dst = rxHeader->src;
   msg.header.src = mMyAddress;
-  msg.header.frCnt = static_cast<uint16_t>(mUplinkFrCnt & 0Xff);
+  msg.header.id = rxHeader->id;
   msg.header.flags.fromByte(0);
   msg.header.flags.ack_response = true;
   msg.header.flags.msgType = rxHeader->flags.msgType;
-  msg.header.len = 0;
+  msg.payload_length = 1;
+  msg.payload[0] = '!';  // ACK is special and has an ! as payload.
   sendMsg(&msg);
 }
 
-void LoRaHandler::sendPing(const uint8_t toAddr, int8_t rssi) {
+void LoRaHandler::sendPing(const uint8_t toAddr, int16_t rssi) {
   LoRaTxMessageT msg;
   setDefaultHeader(msg.header);
+  msg.payload_length = 0;
   msg.header.dst = toAddr;
+  msg.header.id = ++mMsgIdUp;
   msg.header.flags.msgType = LoRaMsgType::ping_msg;
-  msg.payload[0] = rssi;
-  msg.header.len++;
+  int16_t* pValue_n = reinterpret_cast<int16_t*>(&msg.payload[0]);
+  *pValue_n = hton(rssi);
+  msg.payload_length += 2;
   sendMsg(&msg);
 }
 
 void LoRaHandler::setDefaultHeader(LoRaHeaderT& header) {
   header.dst = mGatewayAddress;
   header.src = mMyAddress;
-  header.frCnt = static_cast<uint16_t>(mUplinkFrCnt & 0xFFFF);
+  header.id = 0;
   header.flags.fromByte(0);
   header.flags.ack_request = true;
-  header.len = 0;
 }
 
 void LoRaHandler::beginDiscoveryMsg() {
   setDefaultHeader(mMsgTx.header);
+  mMsgTx.payload_length = 0;
   mMsgTx.header.flags.msgType = LoRaMsgType::discovery_msg;
 }
 
-void LoRaHandler::endMsg() { sendMsg(&mMsgTx); }
+void LoRaHandler::endMsg() {
+  mMsgTx.header.id = ++mMsgIdUp;
+  sendMsg(&mMsgTx);
+}
 
 void LoRaHandler::addDiscoveryItem(const DiscoveryItemT* item) {
-  size_t length = item->toByteArray(&mMsgTx.payload[mMsgTx.header.len],
-                                    sizeof(mMsgTx.payload) - mMsgTx.header.len);
-  mMsgTx.header.len += length;
+  size_t length =
+      item->toByteArray(&mMsgTx.payload[mMsgTx.payload_length],
+                        sizeof(mMsgTx.payload) - mMsgTx.payload_length);
+  mMsgTx.payload_length += length;
 }
 
 void LoRaHandler::beginValueMsg() {
   setDefaultHeader(mMsgTx.header);
+  mMsgTx.payload_length = 0;
   mMsgTx.header.flags.msgType = LoRaMsgType::value_msg;
 
   LoRaValuePayloadT payload;
   payload.numberOfEntities = 0;
 
-  mMsgTx.header.len =
+  mMsgTx.payload_length =
       payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
 }
 
@@ -267,13 +310,14 @@ void LoRaHandler::addValueItem(const ValueItemT* item) {
   payload.fromByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
 
   payload.valueItems[payload.numberOfEntities++] = *item;
-  mMsgTx.header.len += item->size();
+  mMsgTx.payload_length += item->size();
 
   payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
 }
 
 void LoRaHandler::beginConfigsValueMsg(uint8_t entityId) {
   setDefaultHeader(mMsgTx.header);
+  mMsgTx.payload_length = 0;
   mMsgTx.header.flags.msgType = LoRaMsgType::config_msg;
 
   ConfigValuePayloadT payload;
@@ -282,7 +326,7 @@ void LoRaHandler::beginConfigsValueMsg(uint8_t entityId) {
 
   payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
 
-  mMsgTx.header.len += 2;
+  mMsgTx.payload_length += 2;
 }
 
 void LoRaHandler::addConfigItemValues(const ConfigItemValueT* items,
@@ -293,7 +337,7 @@ void LoRaHandler::addConfigItemValues(const ConfigItemValueT* items,
   for (uint8_t i = 0; i < length; i++) {
     payload.configValues[i] = items[i];
     payload.numberOfConfigs++;
-    mMsgTx.header.len += payload.configValues[0].size();
+    mMsgTx.payload_length += payload.configValues[0].size();
   }
 
   payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));

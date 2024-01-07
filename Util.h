@@ -47,3 +47,9 @@ void printHex(Print& printer, uint32_t value, bool prefix = false);
 
 void printArray(Print& printer, const uint8_t* buf, size_t len, int base = DEC,
                 bool prefix = false);
+
+namespace Util {
+constexpr uint16_t ONE_HOUR_IN_SECONDS = 1 * 60 * 60;
+constexpr uint16_t ONE_MINUTE_IN_MILLISECONDS = 60 * 1000;
+constexpr uint16_t TWELVE_HOURS_IN_SECONDS = 12 * 60 * 60;
+}  // namespace Util

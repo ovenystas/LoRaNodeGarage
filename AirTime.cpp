@@ -12,12 +12,15 @@ void AirTime::update(uint32_t time) {
     mTime_ms = 0;
     mBuf.clear();
     mBuf.fill(0);
-  } else {
-    while (time - mLastUpdate_ms >= MS_PER_MINUTE) {
-      mTime_ms -= mBuf.pop_back();
-      mBuf.push_front(0);
-      mLastUpdate_ms += MS_PER_MINUTE;
+    while (time - mLastUpdate_ms >= MS_PER_HOUR) {
+      mLastUpdate_ms += MS_PER_HOUR;
     }
+  }
+
+  while (time - mLastUpdate_ms >= MS_PER_MINUTE) {
+    mTime_ms -= mBuf.pop_back();
+    mBuf.push_front(0);
+    mLastUpdate_ms += MS_PER_MINUTE;
   }
 }
 

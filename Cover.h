@@ -7,7 +7,7 @@
 #include "Util.h"
 
 // From https://www.home-assistant.io/integrations/cover/ at 2021-03-21
-enum class CoverDeviceClass {
+enum class CoverDeviceClass : uint8_t {
   none,
   awning,
   blind,
@@ -21,9 +21,9 @@ enum class CoverDeviceClass {
   window
 };
 
-enum class CoverState { closed, open, opening, closing };
+enum class CoverState : uint8_t { closed, open, opening, closing };
 
-enum class CoverService { open, close, stop, toggle, unknown };
+enum class CoverService : uint8_t { open, close, stop, toggle, unknown };
 
 class Cover : public Printable {
  public:
@@ -33,8 +33,6 @@ class Cover : public Printable {
         CoverDeviceClass deviceClass = CoverDeviceClass::none)
       : mBaseComponent{BaseComponent(entityId, name)},
         mDeviceClass{deviceClass} {}
-
-  virtual ~Cover() {}
 
   BaseComponent::Type getComponentType() const {
     return BaseComponent::Type::cover;

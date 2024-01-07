@@ -3,13 +3,17 @@
 #include <gtest/gtest.h>
 
 #include "mocks/Arduino.h"
+#include "mocks/BufferSerial.h"
 
 using ::testing::Return;
 using ::testing::ReturnPointee;
 
 class AirTime_test : public ::testing::Test {
  protected:
-  void SetUp() override { pArduinoMock = arduinoMockInstance(); }
+  void SetUp() override {
+    pArduinoMock = arduinoMockInstance();
+    bufSerial.flush();
+  }
 
   void TearDown() override { releaseArduinoMock(); }
 
@@ -124,6 +128,7 @@ TEST_F(
 
   // Add values each minute over an hour
   for (uint8_t i = 0; i < MINUTES_PER_HOUR; i++) {
+    Serial.flush();
     at.update(start, end);
 
     expected_ms += (end - start);
@@ -140,6 +145,7 @@ TEST_F(
 
   // Add no values over an hour to decay airtime
   for (uint8_t i = 0; i < MINUTES_PER_HOUR; i++) {
+    Serial.flush();
     at.update();
 
     t += MS_PER_MINUTE;
@@ -193,18 +199,23 @@ TEST_F(
       .WillOnce(Return(300000))
       .WillOnce(Return(400000));
 
+  Serial.flush();
   at.update(0, 235924);
   EXPECT_EQ(at.getTime_ppm(), UINT16_MAX - 1);
 
+  Serial.flush();
   at.update(235924, 235925);
   EXPECT_EQ(at.getTime_ppm(), UINT16_MAX);
 
+  Serial.flush();
   at.update(235925, 235928);
   EXPECT_EQ(at.getTime_ppm(), UINT16_MAX);
 
+  Serial.flush();
   at.update(235928, 300000);
   EXPECT_EQ(at.getTime_ppm(), UINT16_MAX);
 
+  Serial.flush();
   at.update(300000, 400000);
   EXPECT_EQ(at.getTime_ppm(), UINT16_MAX);
 }

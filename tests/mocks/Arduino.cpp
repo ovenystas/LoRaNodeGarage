@@ -6,7 +6,7 @@
 
 #define SECS_YR_2000 ((time_t)(946684800UL))  // the time at the start of y2k
 
-BufferSerial bufSerial = BufferSerial(256);
+BufferSerial bufSerial = BufferSerial(1024);
 
 static ArduinoMock* arduinoMock = NULL;
 ArduinoMock* arduinoMockInstance() {

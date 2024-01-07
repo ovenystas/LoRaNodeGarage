@@ -45,8 +45,8 @@ include_directories(.. mocks)
 
 add_executable(
   AirTime_test EXCLUDE_FROM_ALL
-  AirTime_test.cpp ../AirTime.cpp mocks/Arduino.cpp mocks/BufferSerial.cpp
-  mocks/Print.cpp)
+  AirTime_test.cpp ../AirTime.cpp ../Util.cpp mocks/Arduino.cpp
+  mocks/BufferSerial.cpp mocks/Print.cpp)
 target_link_libraries(AirTime_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(AirTime_test)
 

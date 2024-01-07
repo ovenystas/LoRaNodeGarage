@@ -14,10 +14,16 @@ extern BufferSerial Serial;
 
 bool HumiditySensor::update() {
   if (mDht.read()) {
-    HumidityT newValue =
+    int16_t newValue =
         round(mDht.readHumidity()) + mConfig.compensation.getValue();
+    if (newValue < 0) {
+      newValue = 0;
+    }
+    if (newValue > 100) {
+      newValue = 100;
+    }
 
-    mSensor.setValue(newValue);
+    mSensor.setValue(static_cast<HumidityT>(newValue));
   } else {
     printMillis(Serial);
     Serial.println(F("WARN: DHT checksum fail"));

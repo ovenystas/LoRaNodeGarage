@@ -93,21 +93,29 @@ TEST_F(DistanceSensor_test, getDiscoveryItem) {
 
   EXPECT_EQ(item.configItems[0].configId, 0);
   EXPECT_EQ(item.configItems[0].unit, static_cast<uint8_t>(Unit::Type::cm));
-  EXPECT_TRUE(item.configItems[0].isSigned);
-  EXPECT_EQ(item.configItems[0].sizeCode, sizeof(DistanceT) / 2);
+  EXPECT_FALSE(item.configItems[0].isSigned);
+  EXPECT_EQ(item.configItems[0].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[0].precision, 0);
+  EXPECT_EQ(item.configItems[0].minValue, 0);
+  EXPECT_EQ(item.configItems[0].maxValue, MAX_SENSOR_DISTANCE);
 
   EXPECT_EQ(item.configItems[1].configId, 1);
   EXPECT_EQ(item.configItems[1].unit, static_cast<uint8_t>(Unit::Type::s));
   EXPECT_FALSE(item.configItems[1].isSigned);
   EXPECT_EQ(item.configItems[1].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[1].precision, 0);
+  EXPECT_EQ(item.configItems[1].minValue, 0);
+  EXPECT_EQ(item.configItems[1].maxValue,
+            DistanceSensorConstants::ONE_HOUR_IN_SECONDS);
 
   EXPECT_EQ(item.configItems[2].configId, 2);
   EXPECT_EQ(item.configItems[2].unit, static_cast<uint8_t>(Unit::Type::s));
   EXPECT_FALSE(item.configItems[2].isSigned);
   EXPECT_EQ(item.configItems[2].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[2].precision, 0);
+  EXPECT_EQ(item.configItems[2].minValue, 0);
+  EXPECT_EQ(item.configItems[2].maxValue,
+            DistanceSensorConstants::TWELVE_HOURS_IN_SECONDS);
 }
 
 TEST_F(DistanceSensor_test, getEntityId) { EXPECT_EQ(pDs->getEntityId(), 7); }
@@ -188,27 +196,27 @@ TEST_F(DistanceSensor_test, print_service_shall_do_nothing) {
 }
 
 TEST_F(DistanceSensor_test, setConfigs_all_in_order) {
-  ConfigItemValueT inItems[3] = {{0, 1000}, {1, 1001}, {2, 1002}};
+  ConfigItemValueT inItems[3] = {{0, 100}, {1, 1001}, {2, 1002}};
 
   EXPECT_TRUE(pDs->setConfigItemValues(inItems, 3));
 
   ConfigItemValueT items[3];
   EXPECT_EQ(pDs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
             3);
-  EXPECT_EQ(items[0].value, 1000);
+  EXPECT_EQ(items[0].value, 100);
   EXPECT_EQ(items[1].value, 1001);
   EXPECT_EQ(items[2].value, 1002);
 }
 
 TEST_F(DistanceSensor_test, setConfigs_all_out_of_order) {
-  ConfigItemValueT inItems[3] = {{2, 2002}, {1, 2001}, {0, 2000}};
+  ConfigItemValueT inItems[3] = {{2, 2002}, {1, 2001}, {0, 200}};
 
   EXPECT_TRUE(pDs->setConfigItemValues(inItems, 3));
 
   ConfigItemValueT items[3];
   EXPECT_EQ(pDs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
             3);
-  EXPECT_EQ(items[0].value, 2000);
+  EXPECT_EQ(items[0].value, 200);
   EXPECT_EQ(items[1].value, 2001);
   EXPECT_EQ(items[2].value, 2002);
 }
@@ -229,7 +237,7 @@ TEST_F(DistanceSensor_test, setConfigs_one) {
 }
 
 TEST_F(DistanceSensor_test, setConfigs_too_many) {
-  ConfigItemValueT inItems[4] = {{0, 1000}, {1, 1001}, {2, 1002}, {3, 1003}};
+  ConfigItemValueT inItems[4] = {{0, 100}, {1, 1001}, {2, 1002}, {3, 1003}};
 
   EXPECT_FALSE(pDs->setConfigItemValues(inItems, 4));
 }

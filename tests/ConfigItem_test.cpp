@@ -129,6 +129,28 @@ TEST_F(ConfigItem_test, setValue) {
   EXPECT_EQ(eeprom_read_byte(EE_ADDR + 1), 0x0A);  // CRC8 of value
 }
 
+TEST_F(ConfigItem_test, setValue_lower_than_min_value) {
+  ConfigItem<uint8_t> cfgItm = ConfigItem<uint8_t>(33, EE_ADDR, 170, 111, 200);
+
+  cfgItm.setValue(110);
+
+  EXPECT_EQ(cfgItm.getValue(), 111);
+
+  EXPECT_EQ(eeprom_read_byte(EE_ADDR), 111);       // Value
+  EXPECT_EQ(eeprom_read_byte(EE_ADDR + 1), 0x0A);  // CRC8 of value
+}
+
+TEST_F(ConfigItem_test, setValue_higher_than_max_value) {
+  ConfigItem<uint8_t> cfgItm = ConfigItem<uint8_t>(33, EE_ADDR, 45, 20, 111);
+
+  cfgItm.setValue(112);
+
+  EXPECT_EQ(cfgItm.getValue(), 111);
+
+  EXPECT_EQ(eeprom_read_byte(EE_ADDR), 111);       // Value
+  EXPECT_EQ(eeprom_read_byte(EE_ADDR + 1), 0x0A);  // CRC8 of value
+}
+
 TEST_F(ConfigItem_test, getDiscoveryConfigItem_default) {
   ConfigItem<int32_t> cfgItm = ConfigItem<int32_t>(99, EE_ADDR);
   DiscoveryConfigItemT item;
@@ -140,6 +162,8 @@ TEST_F(ConfigItem_test, getDiscoveryConfigItem_default) {
   EXPECT_TRUE(item.isSigned);
   EXPECT_EQ(item.sizeCode, sizeof(int32_t) / 2);
   EXPECT_EQ(item.precision, 0);
+  EXPECT_EQ(item.minValue, INT32_MIN);
+  EXPECT_EQ(item.maxValue, INT32_MAX);
 }
 
 TEST_F(ConfigItem_test, getDiscoveryConfigItem_Type_km_precision_3) {
@@ -154,11 +178,14 @@ TEST_F(ConfigItem_test, getDiscoveryConfigItem_Type_km_precision_3) {
   EXPECT_FALSE(item.isSigned);
   EXPECT_EQ(item.sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.precision, 3);
+  EXPECT_EQ(item.minValue, 0);
+  EXPECT_EQ(item.maxValue, UINT16_MAX);
 }
 
-TEST_F(ConfigItem_test, getDiscoveryConfigItem_Type_C_precision_1) {
+TEST_F(ConfigItem_test,
+       getDiscoveryConfigItem_Type_C_precision_1_min_minus1000_max_plus2000) {
   ConfigItem<int16_t> cfgItm =
-      ConfigItem<int16_t>(79, EE_ADDR, 0, Unit::Type::C, 1);
+      ConfigItem<int16_t>(79, EE_ADDR, 0, -1000, 2000, Unit::Type::C, 1);
   DiscoveryConfigItemT item;
 
   cfgItm.getDiscoveryConfigItem(&item);
@@ -168,6 +195,8 @@ TEST_F(ConfigItem_test, getDiscoveryConfigItem_Type_C_precision_1) {
   EXPECT_TRUE(item.isSigned);
   EXPECT_EQ(item.sizeCode, sizeof(int16_t) / 2);
   EXPECT_EQ(item.precision, 1);
+  EXPECT_EQ(item.minValue, -1000);
+  EXPECT_EQ(item.maxValue, 2000);
 }
 
 TEST_F(ConfigItem_test, getConfigItemValue_default) {

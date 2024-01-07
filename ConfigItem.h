@@ -18,13 +18,21 @@
 template <class T>
 class ConfigItem {
  public:
-  explicit ConfigItem(uint8_t configId, uint16_t eeAddress, T defaultValue = 0,
-                      Unit::Type unitType = Unit::Type::none,
-                      uint8_t precision = 0)
+  ConfigItem(uint8_t configId, uint16_t eeAddress, T defaultValue = 0,
+             Unit::Type unitType = Unit::Type::none, uint8_t precision = 0)
       : mConfigId{configId},
         mValueItem{ValueItem<T>(unitType, precision, defaultValue)},
         mDefaultValue{defaultValue},
         mEeAddress{eeAddress} {}
+
+  ConfigItem(uint8_t configId, uint16_t eeAddress, T defaultValue, T minValue,
+             T maxValue, Unit::Type unitType = Unit::Type::none,
+             uint8_t precision = 0)
+      : mValueItem{ValueItem<T>(unitType, precision, defaultValue, minValue,
+                                maxValue)},
+        mDefaultValue{defaultValue},
+        mEeAddress{eeAddress},
+        mConfigId{configId} {}
 
   uint8_t getPrecision() const { return mValueItem.getPrecision(); }
 
@@ -47,6 +55,8 @@ class ConfigItem {
     item->isSigned = mValueItem.isSigned();
     item->sizeCode = static_cast<uint8_t>(mValueItem.getValueSize()) / 2;
     item->precision = mValueItem.getPrecision();
+    item->minValue = mValueItem.getMinValue();
+    item->maxValue = mValueItem.getMaxValue();
   }
 
   void getConfigItemValue(ConfigItemValueT* item) const {
@@ -107,8 +117,8 @@ class ConfigItem {
     EEPROM.put(mEeAddress + sizeof(T), valueCrc);
   }
 
-  const uint8_t mConfigId;
   ValueItem<T> mValueItem;
-  T mDefaultValue;
+  const T mDefaultValue;
   const uint16_t mEeAddress;
+  const uint8_t mConfigId;
 };

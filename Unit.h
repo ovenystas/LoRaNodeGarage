@@ -9,13 +9,13 @@
 #include <stdint.h>
 
 namespace UnitConstants {
-static const char UnitName[][4] = {"",   "°C", "°F", "K",  "%", "km", "m",
-                                   "dm", "cm", "mm", "μm", "s", "ms"};
+static const char PROGMEM UnitName[][4] = {
+    "", "°C", "°F", "K", "%", "km", "m", "dm", "cm", "mm", "μm", "s", "ms"};
 }
 
 class Unit {
  public:
-  enum class Type {
+  enum class Type : uint8_t {
     none,
     C,
     F,

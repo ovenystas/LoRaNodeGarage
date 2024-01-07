@@ -13,7 +13,7 @@
 using HeightT = int16_t;  // cm
 
 namespace HeightSensorConstants {
-static const HeightT CONFIG_REPORT_HYSTERESIS_DEFAULT = 10;
+static const uint16_t CONFIG_REPORT_HYSTERESIS_DEFAULT = 10;
 static const uint16_t CONFIG_REPORT_INTERVAL_DEFAULT = 300;
 static const uint16_t CONFIG_STABLE_TIME_DEFAULT = 5000;
 static const HeightT CONFIG_ZERO_VALUE_DEFAULT = 60;
@@ -21,8 +21,6 @@ static const HeightT CONFIG_ZERO_VALUE_DEFAULT = 60;
 
 class HeightSensor : public IComponent {
  public:
-  virtual ~HeightSensor() = default;
-
   HeightSensor() = delete;
 
   HeightSensor(uint8_t entityId, const char* name,
@@ -69,22 +67,25 @@ class HeightSensor : public IComponent {
     // cppcheck-suppress unusedStructMember
     const uint8_t numberOfConfigItems = {4};
 
-    ConfigItem<HeightT> reportHysteresis = {ConfigItem<HeightT>(
+    ConfigItem<uint16_t> reportHysteresis = {ConfigItem<uint16_t>(
         0, EE_ADDRESS_CONFIG_HEIGHTSENSOR_0,
-        HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT,
-        Unit::Type::cm)};
+        HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT, 0,
+        MAX_SENSOR_DISTANCE, Unit::Type::cm)};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
         1, EE_ADDRESS_CONFIG_HEIGHTSENSOR_1,
-        HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, Unit::Type::s)};
+        HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, 0,
+        Util::ONE_HOUR_IN_SECONDS, Unit::Type::s)};
 
     ConfigItem<uint16_t> stableTime = {ConfigItem<uint16_t>(
         2, EE_ADDRESS_CONFIG_HEIGHTSENSOR_2,
-        HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT, Unit::Type::ms)};
+        HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT, 0,
+        Util::ONE_MINUTE_IN_MILLISECONDS, Unit::Type::ms)};
 
     ConfigItem<HeightT> zeroValue = {ConfigItem<HeightT>(
         3, EE_ADDRESS_CONFIG_HEIGHTSENSOR_3,
-        HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT, Unit::Type::cm)};
+        HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT, -MAX_SENSOR_DISTANCE,
+        MAX_SENSOR_DISTANCE, Unit::Type::cm)};
   };
 
   Sensor<HeightT> mSensor;

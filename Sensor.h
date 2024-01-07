@@ -9,7 +9,7 @@
 #include "ValueItem.h"
 
 // From https://www.home-assistant.io/integrations/sensor/ at 2023-01-17
-enum class SensorDeviceClass {
+enum class SensorDeviceClass : uint8_t {
   none,
   apparent_power,
   aqi,
@@ -72,8 +72,6 @@ class Sensor : public Printable {
       : mBaseComponent{BaseComponent(entityId, name)},
         mDeviceClass{deviceClass},
         mValueItem{ValueItem<T>(unitType, precision)} {}
-
-  virtual ~Sensor() {}
 
   BaseComponent::Type getComponentType() const {
     return BaseComponent::Type::sensor;

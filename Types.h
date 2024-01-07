@@ -39,6 +39,22 @@ struct DiscoveryEntityItemT {
     buf[4] = (isSigned << 4) | (sizeCode << 2) | precision;
     return size();
   }
+
+  size_t fromByteArray(const uint8_t* buf, size_t length) {
+    if (length < size()) {
+      return 0;
+    }
+
+    entityId = buf[0];
+    componentType = buf[1];
+    deviceClass = buf[2];
+    unit = buf[3];
+    isSigned = (buf[4] & 0x10) >> 4;
+    sizeCode = (buf[4] & 0x0C) >> 2;
+    precision = (buf[4] & 0x03);
+
+    return size();
+  }
 };
 
 struct DiscoveryConfigItemT {
@@ -48,13 +64,16 @@ struct DiscoveryConfigItemT {
   uint8_t sizeCode : 2;
   uint8_t isSigned : 1;
   uint8_t reserved : 3;
+  uint32_t minValue;
+  uint32_t maxValue;
 
-  static constexpr size_t size() { return 3; }
+  static constexpr size_t size() { return 11; }
 
   bool operator==(const DiscoveryConfigItemT& rhs) const {
     return configId == rhs.configId && unit == rhs.unit &&
            isSigned == rhs.isSigned && sizeCode == rhs.sizeCode &&
-           precision == rhs.precision;
+           precision == rhs.precision && minValue == rhs.minValue &&
+           maxValue == rhs.maxValue;
   }
 
   bool operator!=(const DiscoveryConfigItemT& rhs) const {
@@ -69,6 +88,24 @@ struct DiscoveryConfigItemT {
     buf[0] = configId;
     buf[1] = unit;
     buf[2] = (isSigned << 4) | (sizeCode << 2) | precision;
+    *(reinterpret_cast<uint32_t*>(&buf[3])) = hton(minValue);
+    *(reinterpret_cast<uint32_t*>(&buf[7])) = hton(maxValue);
+
+    return size();
+  }
+
+  size_t fromByteArray(const uint8_t* buf, size_t length) {
+    if (length < size()) {
+      return 0;
+    }
+
+    configId = buf[0];
+    unit = buf[1];
+    isSigned = (buf[2] & 0x10) >> 4;
+    sizeCode = (buf[2] & 0x0C) >> 2;
+    precision = (buf[2] & 0x03);
+    minValue = ntoh(*(reinterpret_cast<const uint32_t*>(&buf[3])));
+    maxValue = ntoh(*(reinterpret_cast<const uint32_t*>(&buf[7])));
 
     return size();
   }
@@ -122,6 +159,20 @@ struct DiscoveryItemT {
 
     return n;
   }
+
+  size_t fromByteArray(const uint8_t* buf, size_t length) {
+    if (length < size()) {
+      return 0;
+    }
+
+    size_t n = entity.fromByteArray(&buf[0], length);
+    numberOfConfigItems = buf[n++];
+    for (uint8_t i = 0; i < numberOfConfigItems; i++) {
+      n += configItems[i].fromByteArray(&buf[n], length - n);
+    }
+
+    return size();
+  }
 };
 
 struct ValueItemT {
@@ -145,8 +196,7 @@ struct ValueItemT {
     }
 
     buf[0] = entityId;
-    uint32_t* pValue_n = reinterpret_cast<uint32_t*>(&buf[1]);
-    *pValue_n = hton(value);
+    *(reinterpret_cast<uint32_t*>(&buf[1])) = hton(value);
 
     return size();
   }
@@ -157,8 +207,7 @@ struct ValueItemT {
     }
 
     entityId = buf[0];
-    const uint32_t* pValue_n = reinterpret_cast<const uint32_t*>(&buf[1]);
-    value = ntoh(*pValue_n);
+    value = ntoh(*(reinterpret_cast<const uint32_t*>(&buf[1])));
     return size();
   }
 };
@@ -180,8 +229,7 @@ struct ConfigItemValueT {
       return 0;
     }
     buf[0] = configId;
-    uint32_t* pValue_n = reinterpret_cast<uint32_t*>(&buf[1]);
-    *pValue_n = hton(value);
+    *(reinterpret_cast<uint32_t*>(&buf[1])) = hton(value);
     return size();
   }
 };
@@ -223,8 +271,8 @@ struct ConfigValuePayloadT {
     size_t idx = 2;
     for (uint8_t i = 0; i < numberOfConfigs; i++) {
       configValues[i].configId = buf[idx++];
-      const uint32_t* pValue_n = reinterpret_cast<const uint32_t*>(&buf[idx]);
-      configValues[i].value = ntoh(*pValue_n);
+      configValues[i].value =
+          ntoh(*(reinterpret_cast<const uint32_t*>(&buf[idx])));
       idx += 4;
     }
     return 1;

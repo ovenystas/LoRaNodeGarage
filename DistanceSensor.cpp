@@ -12,21 +12,21 @@
 #include "Util.h"
 
 bool DistanceSensor::update() {
-  DistanceT newValue = static_cast<DistanceT>(mSonar.ping_cm());
+  const DistanceT newValue = static_cast<DistanceT>(mSonar.ping_cm());
 
   mSensor.setValue(newValue);
 
-  bool largeChange = mConfig.reportHysteresis.getValue() > 0
-                         ? mSensor.absDiffLastReportedValue() >=
-                               mConfig.reportHysteresis.getValue()
-                         : false;
+  const bool largeChange = mConfig.reportHysteresis.getValue() > 0
+                               ? mSensor.absDiffLastReportedValue() >=
+                                     mConfig.reportHysteresis.getValue()
+                               : false;
 
-  bool timeToReport =
+  const bool timeToReport =
       mConfig.reportInterval.getValue() > 0
           ? mSensor.timeSinceLastReport() >= mConfig.reportInterval.getValue()
           : false;
 
-  bool isReportDue = largeChange || timeToReport;
+  const bool isReportDue = largeChange || timeToReport;
   mSensor.setIsReportDue(isReportDue);
 
   return isReportDue;

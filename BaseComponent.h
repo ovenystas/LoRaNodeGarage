@@ -6,14 +6,14 @@
 
 class BaseComponent {
  public:
-  enum class Type { binarySensor, sensor, cover };
+  enum class Type : uint8_t { binarySensor, sensor, cover };
 
   BaseComponent() = delete;
 
   explicit BaseComponent(uint8_t entityId) : mEntityId{entityId} {}
 
   BaseComponent(uint8_t entityId, const char* name)
-      : mEntityId{entityId}, mName{name} {}
+      : mName{name}, mEntityId{entityId} {}
 
   bool isReportDue() const { return mIsReportDue; }
 
@@ -31,8 +31,8 @@ class BaseComponent {
   const char* getName() const { return mName; }
 
  private:
-  bool mIsReportDue{true};
   uint32_t mLastReportTime{};  // s
-  const uint8_t mEntityId{};
   const char* mName{""};
+  const uint8_t mEntityId{};
+  bool mIsReportDue{true};
 };

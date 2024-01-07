@@ -20,7 +20,7 @@ void GarageCover::activateRelay(uint8_t times) {
 }
 
 void GarageCover::callService(uint8_t service) {
-  CoverState state = mCover.getState();
+  const CoverState state = mCover.getState();
 
   switch (mCover.serviceDecode(service)) {
     case CoverService::open:
@@ -59,8 +59,8 @@ void GarageCover::callService(uint8_t service) {
 }
 
 CoverState GarageCover::determineState() {
-  bool closedSensor = digitalRead(mPinClosed);
-  bool openSensor = digitalRead(mPinOpen);
+  const bool closedSensor = digitalRead(mPinClosed);
+  const bool openSensor = digitalRead(mPinOpen);
 
   if (isClosed(closedSensor, openSensor)) {
     return CoverState::closed;
@@ -117,8 +117,8 @@ bool GarageCover::isOpening(bool closedSensor, bool openSensor) {
 }
 
 bool GarageCover::update() {
-  CoverState newState = determineState();
-  bool hasChanged = newState != mCover.getState();
+  const CoverState newState = determineState();
+  const bool hasChanged = (newState != mCover.getState());
 
   mCover.setState(newState);
 

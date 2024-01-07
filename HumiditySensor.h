@@ -20,8 +20,6 @@ static const HumidityT CONFIG_COMPENSATION_DEFAULT = 0;
 
 class HumiditySensor : public IComponent {
  public:
-  virtual ~HumiditySensor() = default;
-
   HumiditySensor() = delete;
 
   HumiditySensor(uint8_t entityId, const char* name, DHT& dht)
@@ -67,23 +65,23 @@ class HumiditySensor : public IComponent {
 
     ConfigItem<HumidityT> reportHysteresis = {ConfigItem<HumidityT>(
         0, EE_ADDRESS_CONFIG_HUMIDITYSENSOR_0,
-        HumiditySensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT,
+        HumiditySensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT, 0, 100,
         Unit::Type::percent)};
 
     ConfigItem<uint16_t> measureInterval = {ConfigItem<uint16_t>(
         1, EE_ADDRESS_CONFIG_HUMIDITYSENSOR_1,
-        HumiditySensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT,
-        Unit::Type::s)};
+        HumiditySensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT, 0,
+        Util::ONE_HOUR_IN_SECONDS, Unit::Type::s)};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
         2, EE_ADDRESS_CONFIG_HUMIDITYSENSOR_2,
-        HumiditySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT,
-        Unit::Type::s)};
+        HumiditySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, 0,
+        Util::TWELVE_HOURS_IN_SECONDS, Unit::Type::s)};
 
-    ConfigItem<HumidityT> compensation = {ConfigItem<HumidityT>(
-        3, EE_ADDRESS_CONFIG_HUMIDITYSENSOR_3,
-        HumiditySensorConstants::CONFIG_COMPENSATION_DEFAULT,
-        Unit::Type::percent)};
+    ConfigItem<int8_t> compensation = {
+        ConfigItem<int8_t>(3, EE_ADDRESS_CONFIG_HUMIDITYSENSOR_3,
+                           HumiditySensorConstants::CONFIG_COMPENSATION_DEFAULT,
+                           -100, 100, Unit::Type::percent)};
   };
 
   Sensor<HumidityT> mSensor;

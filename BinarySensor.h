@@ -10,7 +10,7 @@
 
 // From https://www.home-assistant.io/integrations/binary_sensor/ at
 // 2021-03-21
-enum class BinarySensorDeviceClass {
+enum class BinarySensorDeviceClass : uint8_t {
   none,
   battery,
   batteryCharging,
@@ -49,8 +49,6 @@ class BinarySensor : public Printable {
       : mBaseComponent{BaseComponent(entityId, name)},
         mDeviceClass{deviceClass},
         mUnit{Unit(unitType)} {}
-
-  virtual ~BinarySensor() {}
 
   BaseComponent::Type getComponentType() const {
     return BaseComponent::Type::binarySensor;
