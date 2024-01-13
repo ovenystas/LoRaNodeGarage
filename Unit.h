@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 namespace UnitConstants {
-static const char PROGMEM UnitName[][4] = {
+static const char UnitName[][4] PROGMEM = {
     "", "°C", "°F", "K", "%", "km", "m", "dm", "cm", "mm", "μm", "s", "ms"};
 }
 

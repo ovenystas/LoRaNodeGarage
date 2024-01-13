@@ -21,7 +21,7 @@
   (IS_SIGNED_TYPE(type) ? SIGNED_MAX(type) : UNSIGNED_MAX(type))
 
 namespace ValueItemConstants {
-static const uint16_t PROGMEM factors[4] = {1, 10, 100, 1000};
+static const uint16_t factors[4] PROGMEM = {1, 10, 100, 1000};
 }
 
 /**

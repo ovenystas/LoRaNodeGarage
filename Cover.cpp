@@ -3,10 +3,10 @@
 #include "BaseComponent.h"
 #include "Unit.h"
 
-static const char PROGMEM CoverStateName[][8] = {"closed", "open", "opening",
+static const char CoverStateName[][8] PROGMEM = {"closed", "open", "opening",
                                                  "closing"};
 
-static const char PROGMEM CoverServiceName[][8] = {"open", "close", "stop",
+static const char CoverServiceName[][8] PROGMEM = {"open", "close", "stop",
                                                    "toggle", "unknown"};
 
 const char* Cover::getServiceName(CoverService service) const {
