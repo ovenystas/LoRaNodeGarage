@@ -19,12 +19,12 @@ class BaseComponent {
 
   void setReported() {
     mIsReportDue = false;
-    mLastReportTime = seconds();
+    mLastReportTime = millis();
   }
 
   void setIsReportDue(bool isDue) { mIsReportDue = isDue; }
 
-  uint32_t timeSinceLastReport() const { return seconds() - mLastReportTime; }
+  uint32_t timeSinceLastReport() const { return millis() - mLastReportTime; }
 
   uint8_t getEntityId() const { return mEntityId; }
 

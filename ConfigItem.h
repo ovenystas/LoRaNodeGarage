@@ -1,9 +1,3 @@
-/*
- *  Created on: 21 apr. 2021
- *      Author: oveny
- */
-
-// TODO: Load/save config items in EEPROM
 #pragma once
 
 #include <CRC8.h>

@@ -21,22 +21,6 @@ void bufSerReadStr() {
   strBuf[i] = '\0';
 }
 
-TEST(Util_test, seconds) {
-  ArduinoMock* arduinoMock = arduinoMockInstance();
-  EXPECT_CALL(*arduinoMock, millis())
-      .WillOnce(Return(0))
-      .WillOnce(Return(999))
-      .WillOnce(Return(1000))
-      .WillOnce(Return(1999))
-      .WillOnce(Return(UINT32_MAX));
-  EXPECT_EQ(seconds(), 0);
-  EXPECT_EQ(seconds(), 0);
-  EXPECT_EQ(seconds(), 1);
-  EXPECT_EQ(seconds(), 1);
-  EXPECT_EQ(seconds(), UINT32_MAX / 1000);
-  releaseArduinoMock();
-}
-
 TEST(Util_test, lowWord) { EXPECT_EQ(lowWord(0x12345678ul), 0x5678ul); }
 TEST(Util_test, highWord) { EXPECT_EQ(highWord(0x12345678ul), 0x1234ul); }
 

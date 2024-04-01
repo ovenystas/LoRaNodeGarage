@@ -21,10 +21,10 @@ bool DistanceSensor::update() {
                                      mConfig.reportHysteresis.getValue()
                                : false;
 
-  const bool timeToReport =
-      mConfig.reportInterval.getValue() > 0
-          ? mSensor.timeSinceLastReport() >= mConfig.reportInterval.getValue()
-          : false;
+  const bool timeToReport = mConfig.reportInterval.getValue() > 0
+                                ? mSensor.timeSinceLastReport() >=
+                                      (mConfig.reportInterval.getValue() * 1000)
+                                : false;
 
   const bool isReportDue = largeChange || timeToReport;
   mSensor.setIsReportDue(isReportDue);

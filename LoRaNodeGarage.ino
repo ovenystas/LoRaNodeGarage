@@ -20,7 +20,6 @@
  */
 
 /* TODO:
- * - Handle millis() wrap-around
  * - Improve encryption of messages
  * - Use configuration measurment interval to update sensors (or remove that
  *   config)

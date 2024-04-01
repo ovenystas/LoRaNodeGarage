@@ -35,7 +35,7 @@ bool PresenceBinarySensor::update() {
 
   bool timeToReport = mConfig.reportInterval.getValue() > 0
                           ? mBinarySensor.timeSinceLastReport() >=
-                                mConfig.reportInterval.getValue()
+                                (mConfig.reportInterval.getValue() * 1000)
                           : false;
 
   bool isReportDue = enteredNewStableState || timeToReport;

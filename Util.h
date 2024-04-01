@@ -8,9 +8,6 @@
 #include <Arduino.h>
 #include <Print.h>
 
-// TODO: Handle wrap-around after 49 days.
-#define seconds() (millis() / 1000)
-
 #define lowWord(ul) (static_cast<uint16_t>((ul)&0xffff))
 #define highWord(ul) (static_cast<uint16_t>((ul) >> 16))
 

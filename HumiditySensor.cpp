@@ -34,10 +34,10 @@ bool HumiditySensor::update() {
                                mConfig.reportHysteresis.getValue()
                          : false;
 
-  bool timeToReport =
-      mConfig.reportInterval.getValue() > 0
-          ? mSensor.timeSinceLastReport() >= mConfig.reportInterval.getValue()
-          : false;
+  bool timeToReport = mConfig.reportInterval.getValue() > 0
+                          ? mSensor.timeSinceLastReport() >=
+                                (mConfig.reportInterval.getValue() * 1000)
+                          : false;
 
   bool isReportDue = largeChange || timeToReport;
   mSensor.setIsReportDue(isReportDue);
