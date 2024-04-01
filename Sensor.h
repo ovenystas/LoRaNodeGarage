@@ -95,8 +95,6 @@ class Sensor : public Printable {
     return abs(mValueItem.getValue() - mLastReportedValue);
   }
 
-  const char* getUnitName() const { return mValueItem.getUnit().name(); }
-
   Unit::Type getUnitType() const { return mValueItem.getUnit().type(); }
 
   T getValue() const { return mValueItem.getValue(); }
@@ -110,7 +108,7 @@ class Sensor : public Printable {
 
   size_t printTo(Print& p) const final {
     size_t n = 0;
-    n += p.print(mBaseComponent.getName());
+    n += mBaseComponent.printTo(p);
     n += p.print(": ");
     n += mValueItem.printTo(p);
     return n;

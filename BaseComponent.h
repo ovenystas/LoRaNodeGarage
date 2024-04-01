@@ -28,7 +28,11 @@ class BaseComponent {
 
   uint8_t getEntityId() const { return mEntityId; }
 
-  const char* getName() const { return mName; }
+  size_t printTo(Print& p) const {
+    size_t n = 0;
+    n += p.print(reinterpret_cast<const __FlashStringHelper*>(mName));
+    return n;
+  }
 
  private:
   uint32_t mLastReportTime{};  // s

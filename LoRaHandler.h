@@ -77,7 +77,7 @@
  *     Byte 0:    EntityId (0-254)
  *     Byte 1:    Service
  *
- * For encrypted messages, header byte 0-2 (dst, src and frCnt) are sent in plain text
+ * For encrypted messages, header byte 0-2 (dst, src and id) are sent in plain text
  * while byte 3-5 and whole payload is encrypted.
  */
 // clang-format on
@@ -95,7 +95,7 @@
 #define DEBUG_LORA_MESSAGE
 
 #define LORA_FREQUENCY 868e6
-#define LORA_MAX_MESSAGE_LENGTH 51
+#define LORA_MAX_MESSAGE_LENGTH 100
 
 #define LORA_HEADER_LENGTH 4
 #define LORA_MAX_PAYLOAD_LENGTH (LORA_MAX_MESSAGE_LENGTH - LORA_HEADER_LENGTH)

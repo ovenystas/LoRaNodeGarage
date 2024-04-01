@@ -99,15 +99,23 @@ NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 
 uint32_t lastRunTime = 0;
 
-GarageCover garageCover =
-    GarageCover(0, "Port", COVER_CLOSED_PIN, COVER_OPEN_PIN, COVER_RELAY_PIN);
-TemperatureSensor temperatureSensor = TemperatureSensor(1, "Temperature", dht);
-HumiditySensor humiditySensor = HumiditySensor(2, "Humidity", dht);
-DistanceSensor distanceSensor = DistanceSensor(3, "Distance", sonar);
+const char garageCoverName[] PROGMEM = "Port";
+const char temperatureSensorName[] PROGMEM = "Temperature";
+const char humiditySensorName[] PROGMEM = "Humidity";
+const char distanceSensorName[] PROGMEM = "Distance";
+const char heightSensorName[] PROGMEM = "Height";
+const char carPresenceSensorName[] PROGMEM = "CarPresence";
+
+GarageCover garageCover = GarageCover(0, garageCoverName, COVER_CLOSED_PIN,
+                                      COVER_OPEN_PIN, COVER_RELAY_PIN);
+TemperatureSensor temperatureSensor =
+    TemperatureSensor(1, temperatureSensorName, dht);
+HumiditySensor humiditySensor = HumiditySensor(2, humiditySensorName, dht);
+DistanceSensor distanceSensor = DistanceSensor(3, distanceSensorName, sonar);
 HeightSensor heightSensor =
-    HeightSensor(4, "Height", distanceSensor.getSensor());
+    HeightSensor(4, heightSensorName, distanceSensor.getSensor());
 PresenceBinarySensor carPresenceSensor =
-    PresenceBinarySensor(5, "CarPresence", heightSensor.getSensor());
+    PresenceBinarySensor(5, carPresenceSensorName, heightSensor.getSensor());
 
 IComponent* components[NUMBER_OF_COMPONENTS] = {
     &garageCover,    &temperatureSensor, &humiditySensor,
@@ -232,6 +240,7 @@ static void loadConfigValuesForAllComponents() {
 }
 
 static void updateSensors() {
+  Serial.print('.');
   for (uint8_t i = 0; i < node.getSize(); i++) {
     IComponent* c = node.getComponent(i);
 

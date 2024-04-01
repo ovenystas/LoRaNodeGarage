@@ -290,6 +290,9 @@ void LoRaHandler::addDiscoveryItem(const DiscoveryItemT* item) {
   size_t length =
       item->toByteArray(&mMsgTx.payload[mMsgTx.payload_length],
                         sizeof(mMsgTx.payload) - mMsgTx.payload_length);
+  if (length == 0) {
+    Serial.println(F("Err: DiscItemLen=0"));
+  }
   mMsgTx.payload_length += length;
 }
 

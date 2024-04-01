@@ -44,13 +44,7 @@ class Cover : public Printable {
 
   uint8_t getEntityId() const { return mBaseComponent.getEntityId(); }
 
-  const char* getServiceName(CoverService service) const;
-
   CoverState getState() const { return mState; }
-
-  const char* getStateName() const;
-
-  const char* getStateName(CoverState state) const;
 
   void getValueItem(ValueItemT* item) const;
 

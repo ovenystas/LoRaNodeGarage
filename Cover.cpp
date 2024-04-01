@@ -9,10 +9,6 @@ static const char CoverStateName[][8] PROGMEM = {"closed", "open", "opening",
 static const char CoverServiceName[][8] PROGMEM = {"open", "close", "stop",
                                                    "toggle", "unknown"};
 
-const char* Cover::getServiceName(CoverService service) const {
-  return CoverServiceName[static_cast<uint8_t>(service)];
-}
-
 void Cover::getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
   item->entityId = mBaseComponent.getEntityId();
   item->componentType = static_cast<uint8_t>(getComponentType());
@@ -23,14 +19,6 @@ void Cover::getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
   item->precision = 0;
 }
 
-const char* Cover::getStateName() const {
-  return CoverStateName[static_cast<uint8_t>(mState)];
-}
-
-const char* Cover::getStateName(CoverState state) const {
-  return CoverStateName[static_cast<uint8_t>(state)];
-}
-
 void Cover::getValueItem(ValueItemT* item) const {
   item->entityId = mBaseComponent.getEntityId();
   item->value = static_cast<uint32_t>(mState);
@@ -38,7 +26,7 @@ void Cover::getValueItem(ValueItemT* item) const {
 
 size_t Cover::printTo(Print& p) const {
   size_t n = 0;
-  n += p.print(mBaseComponent.getName());
+  n += mBaseComponent.printTo(p);
   n += p.print(": ");
   n += p.print(CoverStateName[static_cast<uint8_t>(mState)]);
   return n;
@@ -46,11 +34,13 @@ size_t Cover::printTo(Print& p) const {
 
 size_t Cover::printTo(Print& p, uint8_t service) const {
   size_t n = 0;
-  n += p.print(mBaseComponent.getName());
+  n += mBaseComponent.printTo(p);
   n += p.print(F(": Service "));
-  n += p.print(getServiceName(static_cast<CoverService>(service)));
+  n += p.print(reinterpret_cast<const __FlashStringHelper*>(
+      CoverServiceName[static_cast<uint8_t>(service)]));
   n += p.print(F(" called when in state "));
-  n += p.print(CoverStateName[static_cast<uint8_t>(mState)]);
+  n += p.print(reinterpret_cast<const __FlashStringHelper*>(
+      CoverStateName[static_cast<uint8_t>(mState)]));
   return n;
 }
 

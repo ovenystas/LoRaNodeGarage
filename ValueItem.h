@@ -21,7 +21,7 @@
   (IS_SIGNED_TYPE(type) ? SIGNED_MAX(type) : UNSIGNED_MAX(type))
 
 namespace ValueItemConstants {
-static const uint16_t factors[4] PROGMEM = {1, 10, 100, 1000};
+static const uint16_t factors[4] = {1, 10, 100, 1000};
 }
 
 /**
@@ -63,7 +63,7 @@ class ValueItem : public Printable {
   size_t printTo(Print& p) const final {
     size_t n = 0;
 
-    const uint16_t scaleFactor = ValueItemConstants::factors[mPrecision];
+    const uint16_t scaleFactor = getScaleFactor();
     // cppcheck-suppress unsignedLessThanZero
     // cppcheck-suppress unmatchedSuppression
     if (IS_SIGNED_TYPE(T) && mValue < 0) {

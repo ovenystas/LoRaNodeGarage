@@ -35,15 +35,12 @@ class Unit {
 
   Type type() const { return mType; }
 
-  const char* name() const {
-    return UnitConstants::UnitName[static_cast<uint8_t>(mType)];
-  }
-
   size_t print(Print& printer) const {
     size_t n = 0;
     if (mType != Unit::Type::none) {
       n += printer.print(' ');
-      n += printer.print(name());
+      n += printer.print(reinterpret_cast<const __FlashStringHelper*>(
+          UnitConstants::UnitName[static_cast<uint8_t>(mType)]));
     }
     return n;
   }
