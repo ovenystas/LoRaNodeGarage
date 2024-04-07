@@ -117,7 +117,7 @@ struct DiscoveryConfigItemT {
 struct DiscoveryItemT {
   DiscoveryEntityItemT entity;
   uint8_t numberOfConfigItems;
-  DiscoveryConfigItemT configItems[13];
+  DiscoveryConfigItemT configItems[4];
 
   size_t size() const {
     return entity.size() + sizeof(numberOfConfigItems) +
