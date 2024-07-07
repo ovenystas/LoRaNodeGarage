@@ -269,7 +269,7 @@ static void sendSensorValue(IComponent* component) {
 
   ValueItemT item;
   component->getValueItem(&item);
-  lora.addValueItem(&item);
+  lora.addValueItem(item);
   component->setReported();
 
   lora.endMsg();
@@ -283,7 +283,7 @@ static void sendSensorValueForAllComponents() {
     if (c != nullptr) {
       ValueItemT item;
       c->getValueItem(&item);
-      lora.addValueItem(&item);
+      lora.addValueItem(item);
       c->setReported();
     }
   }
@@ -300,7 +300,7 @@ static void sendSensorValueForComponentsWhereReportIsDue() {
     if (c != nullptr && c->isReportDue()) {
       ValueItemT item;
       c->getValueItem(&item);
-      lora.addValueItem(&item);
+      lora.addValueItem(item);
       itemsAdded++;
       c->setReported();
     }
@@ -353,7 +353,7 @@ static void sendDiscoveryMsg(IComponent* component) {
   component->getDiscoveryItem(&item);
 
   lora.beginDiscoveryMsg();
-  lora.addDiscoveryItem(&item);
+  lora.addDiscoveryItem(item);
   lora.endMsg();
 }
 

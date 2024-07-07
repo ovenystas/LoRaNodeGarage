@@ -169,7 +169,9 @@ struct LoRaHeaderT {
 
 struct LoRaTxMessageT {
   LoRaHeaderT header;
+  // cppcheck-suppress unusedStructMember // false positive
   uint8_t payload_length;
+  // cppcheck-suppress unusedStructMember // false positive
   uint8_t payload[LORA_MAX_PAYLOAD_LENGTH]{};
 };
 
@@ -259,10 +261,10 @@ class LoRaHandler {
   int16_t loraRx();
 
   void beginDiscoveryMsg();
-  void addDiscoveryItem(const DiscoveryItemT* item);
+  void addDiscoveryItem(const DiscoveryItemT& item);
 
   void beginValueMsg();
-  void addValueItem(const ValueItemT* item);
+  void addValueItem(const ValueItemT& item);
 
   void beginConfigsValueMsg(uint8_t entityId);
   void addConfigItemValues(const ConfigItemValueT* items, uint8_t length);
@@ -272,20 +274,20 @@ class LoRaHandler {
   void setDefaultHeader(LoRaHeaderT& header);
 
  private:
-  void printMessage(const LoRaTxMessageT* msg);
+  void printMessage(const LoRaTxMessageT& msg);
 
   int8_t parseMsg(const LoRaRxMessageT& rxMsg, uint8_t* payload);
 
-  bool isAckRequest(const LoRaHeaderT* rxHeader) const {
-    return rxHeader->flags.ack_request != 0;
+  bool isAckRequest(const LoRaHeaderT& rxHeader) const {
+    return rxHeader.flags.ack_request != 0;
   }
 
-  bool isAckResponse(const LoRaHeaderT* rxHeader) const {
-    return rxHeader->flags.ack_response != 0;
+  bool isAckResponse(const LoRaHeaderT& rxHeader) const {
+    return rxHeader.flags.ack_response != 0;
   }
 
-  void sendAck(const LoRaHeaderT* rx_header);
-  void sendMsg(const LoRaTxMessageT* msg);
+  void sendAck(const LoRaHeaderT& rx_header);
+  void sendMsg(const LoRaTxMessageT& msg);
   void sendPing(const uint8_t toAddr, int16_t rssi);
 
   LoRaClass& mLoRa;

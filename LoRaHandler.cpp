@@ -44,7 +44,7 @@ int16_t LoRaHandler::loraRx() {
   // read packet
   uint8_t buf[LORA_MAX_MESSAGE_LENGTH];
   for (int16_t i = 0; i < packetSize; i++) {
-    auto b = mLoRa.read();
+    int b = mLoRa.read();
     if (b < 0) {
       return -1;
     }
@@ -97,14 +97,14 @@ int16_t LoRaHandler::loraRx() {
   // }
 
   // Send ack if requested
-  if (isAckRequest(&rxMsg.header)) {
+  if (isAckRequest(rxMsg.header)) {
 #ifdef DEBUG_LORA_MESSAGE
     Serial.println(F(", sending ACK"));
 #endif
-    sendAck(&rxMsg.header);
+    sendAck(rxMsg.header);
   }
 
-  if (isAckResponse(&rxMsg.header)) {
+  if (isAckResponse(rxMsg.header)) {
 #ifdef DEBUG_LORA_MESSAGE
     Serial.println(F(", ACK response"));
 #endif
@@ -185,24 +185,24 @@ int8_t LoRaHandler::parseMsg(const LoRaRxMessageT& rxMsg, uint8_t* payload) {
   return 0;
 }
 
-void LoRaHandler::printMessage(const LoRaTxMessageT* msg) {
+void LoRaHandler::printMessage(const LoRaTxMessageT& msg) {
   Serial.print(F("H: "));
   uint8_t buf[LORA_HEADER_LENGTH];
-  msg->header.toByteArray(buf);
+  msg.header.toByteArray(buf);
   printArray(Serial, buf, LORA_HEADER_LENGTH, HEX);
 
   Serial.print(F(" P: "));
-  if (msg->payload_length == 0) {
+  if (msg.payload_length == 0) {
     Serial.print(F("--"));
-  } else if (msg->header.flags.ack_response and msg->payload_length == '!') {
+  } else if (msg.header.flags.ack_response and msg.payload_length == '!') {
     Serial.print(F("(ACK)"));
   } else {
-    printArray(Serial, msg->payload, msg->payload_length, HEX);
+    printArray(Serial, msg.payload, msg.payload_length, HEX);
   }
   Serial.println();
 }
 
-void LoRaHandler::sendMsg(const LoRaTxMessageT* msg) {
+void LoRaHandler::sendMsg(const LoRaTxMessageT& msg) {
 #ifdef DEBUG_LORA_MESSAGE
   printMillis(Serial);
   Serial.print(F("LoRaTx: "));
@@ -215,9 +215,9 @@ void LoRaHandler::sendMsg(const LoRaTxMessageT* msg) {
   }
 
   uint8_t buf[LORA_MAX_MESSAGE_LENGTH];
-  uint8_t n = msg->header.toByteArray(buf);
-  memcpy(&buf[n], msg->payload, msg->payload_length);
-  n += msg->payload_length;
+  uint8_t n = msg.header.toByteArray(buf);
+  memcpy(&buf[n], msg.payload, msg.payload_length);
+  n += msg.payload_length;
 
   if (mCipher) {
     mCipher->encrypt(&buf[LORA_HEADER_LENGTH - 1], &buf[LORA_HEADER_LENGTH - 1],
@@ -241,17 +241,17 @@ void LoRaHandler::sendMsg(const LoRaTxMessageT* msg) {
   Serial.println(F(" ppm"));
 }
 
-void LoRaHandler::sendAck(const LoRaHeaderT* rxHeader) {
+void LoRaHandler::sendAck(const LoRaHeaderT& rxHeader) {
   LoRaTxMessageT msg;
-  msg.header.dst = rxHeader->src;
+  msg.header.dst = rxHeader.src;
   msg.header.src = mMyAddress;
-  msg.header.id = rxHeader->id;
+  msg.header.id = rxHeader.id;
   msg.header.flags.fromByte(0);
   msg.header.flags.ack_response = true;
-  msg.header.flags.msgType = rxHeader->flags.msgType;
+  msg.header.flags.msgType = rxHeader.flags.msgType;
   msg.payload_length = 1;
   msg.payload[0] = '!';  // ACK is special and has an ! as payload.
-  sendMsg(&msg);
+  sendMsg(msg);
 }
 
 void LoRaHandler::sendPing(const uint8_t toAddr, int16_t rssi) {
@@ -264,7 +264,7 @@ void LoRaHandler::sendPing(const uint8_t toAddr, int16_t rssi) {
   int16_t* pValue_n = reinterpret_cast<int16_t*>(&msg.payload[0]);
   *pValue_n = hton(rssi);
   msg.payload_length += 2;
-  sendMsg(&msg);
+  sendMsg(msg);
 }
 
 void LoRaHandler::setDefaultHeader(LoRaHeaderT& header) {
@@ -283,13 +283,13 @@ void LoRaHandler::beginDiscoveryMsg() {
 
 void LoRaHandler::endMsg() {
   mMsgTx.header.id = ++mMsgIdUp;
-  sendMsg(&mMsgTx);
+  sendMsg(mMsgTx);
 }
 
-void LoRaHandler::addDiscoveryItem(const DiscoveryItemT* item) {
+void LoRaHandler::addDiscoveryItem(const DiscoveryItemT& item) {
   size_t length =
-      item->toByteArray(&mMsgTx.payload[mMsgTx.payload_length],
-                        sizeof(mMsgTx.payload) - mMsgTx.payload_length);
+      item.toByteArray(&mMsgTx.payload[mMsgTx.payload_length],
+                       sizeof(mMsgTx.payload) - mMsgTx.payload_length);
   if (length == 0) {
     Serial.println(F("Err: DiscItemLen=0"));
   }
@@ -308,12 +308,12 @@ void LoRaHandler::beginValueMsg() {
       payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
 }
 
-void LoRaHandler::addValueItem(const ValueItemT* item) {
+void LoRaHandler::addValueItem(const ValueItemT& item) {
   LoRaValuePayloadT payload;
   payload.fromByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
 
-  payload.valueItems[payload.numberOfEntities++] = *item;
-  mMsgTx.payload_length += item->size();
+  payload.valueItems[payload.numberOfEntities++] = item;
+  mMsgTx.payload_length += item.size();
 
   payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
 }
