@@ -3,9 +3,9 @@
  *
  * A LoRa wireless device that can sense if a Car is present in a garage,
  * sense the state of the garage door (open, closed, opening and closing),
- * sense temperature and humitity levels.
+ * sense temperature and humidity levels.
  *
- * Aauthor:
+ * Author:
  *   Ove Nystås
  *
  * Arduino board:
@@ -15,13 +15,13 @@
  *   DHT sensor library by Adafruit v1.4.4
  *   LoRa by Sandeep Mistry v0.8.0
  *   NewPing by Tim Eckel v1.9.7
- *   CRC by Rob Tillaart v1.0.0
+ *   CRC by Rob Tillaart v1.0.3
  *   Crypto by Rhys Weatherley v0.4.0
  */
 
 /* TODO:
  * - Improve encryption of messages
- * - Use configuration measurment interval to update sensors (or remove that
+ * - Use configuration measurement interval to update sensors (or remove that
  *   config)
  * - Use message sequence frCnt in LoRa header
  */
