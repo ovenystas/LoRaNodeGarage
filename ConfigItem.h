@@ -1,7 +1,5 @@
 #pragma once
 
-#define SAMD21
-
 #include <CRC8.h>
 #include <stdint.h>
 
@@ -74,7 +72,7 @@ class ConfigItem {
       return;
     }
 
-    T value;
+    T value = 0;
     (void)GenericEEPROM.get(mEeAddress, value);
     uint8_t eeCrc = GenericEEPROM.read(mEeAddress + sizeof(T));
 
