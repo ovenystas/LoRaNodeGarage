@@ -18,19 +18,19 @@ class GenericEEPROMClass : public EEPROMClass {
   template <typename T>
   T &get(int idx, T &t) {
     uint8_t *ptr = reinterpret_cast<uint8_t *>(&t);
-    for (int count = sizeof(T); count; --count, ++idx) {
-      *ptr++ = EEPROMClass::read(idx);
+    for (int count = sizeof(T); count > 0; count--) {
+      *ptr++ = EEPROMClass::read(idx++);
     }
-    return t;  // cppcheck-suppress uninitvar
+    return t;
   }
 
   template <typename T>
   const T &put(int idx, const T &t) {
     const uint8_t *ptr = reinterpret_cast<const uint8_t *>(&t);
-    for (int count = sizeof(T); count; --count, ++idx) {
-      EEPROMClass::update(idx, *ptr++);
+    for (int count = sizeof(T); count > 0; count--) {
+      EEPROMClass::update(idx++, *ptr++);
     }
-    return t;  // cppcheck-suppress uninitvar
+    return t;
   }
 
 #ifndef ARDUINO_ARCH_SAMD
