@@ -68,22 +68,22 @@ class HeightSensor : public IComponent {
     const uint8_t numberOfConfigItems = {4};
 
     ConfigItem<uint16_t> reportHysteresis = {ConfigItem<uint16_t>(
-        0, EE_ADDRESS_CONFIG_HEIGHTSENSOR_0,
+        0, EE_ADDRESS_CONFIG_HEIGHT_SENSOR_0,
         HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT, 0,
         MAX_SENSOR_DISTANCE, Unit::Type::cm)};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        1, EE_ADDRESS_CONFIG_HEIGHTSENSOR_1,
+        1, EE_ADDRESS_CONFIG_HEIGHT_SENSOR_1,
         HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, 0,
         Util::ONE_HOUR_IN_SECONDS, Unit::Type::s)};
 
     ConfigItem<uint16_t> stableTime = {ConfigItem<uint16_t>(
-        2, EE_ADDRESS_CONFIG_HEIGHTSENSOR_2,
+        2, EE_ADDRESS_CONFIG_HEIGHT_SENSOR_2,
         HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT, 0,
         Util::ONE_MINUTE_IN_MILLISECONDS, Unit::Type::ms)};
 
     ConfigItem<HeightT> zeroValue = {ConfigItem<HeightT>(
-        3, EE_ADDRESS_CONFIG_HEIGHTSENSOR_3,
+        3, EE_ADDRESS_CONFIG_HEIGHT_SENSOR_3,
         HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT, -MAX_SENSOR_DISTANCE,
         MAX_SENSOR_DISTANCE, Unit::Type::cm)};
   };

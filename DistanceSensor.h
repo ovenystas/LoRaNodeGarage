@@ -64,17 +64,17 @@ class DistanceSensor : public IComponent {
     static const uint8_t numberOfConfigItems = {3};
 
     ConfigItem<uint16_t> reportHysteresis = {ConfigItem<uint16_t>(
-        0, EE_ADDRESS_CONFIG_DISTANCESENSOR_0,
+        0, EE_ADDRESS_CONFIG_DISTANCE_SENSOR_0,
         DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT, 0,
         MAX_SENSOR_DISTANCE, Unit::Type::cm)};
 
     ConfigItem<uint16_t> measureInterval = {ConfigItem<uint16_t>(
-        1, EE_ADDRESS_CONFIG_DISTANCESENSOR_1,
+        1, EE_ADDRESS_CONFIG_DISTANCE_SENSOR_1,
         DistanceSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT, 0,
         Util::ONE_HOUR_IN_SECONDS, Unit::Type::s)};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        2, EE_ADDRESS_CONFIG_DISTANCESENSOR_2,
+        2, EE_ADDRESS_CONFIG_DISTANCE_SENSOR_2,
         DistanceSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, 0,
         Util::TWELVE_HOURS_IN_SECONDS, Unit::Type::s)};
   };

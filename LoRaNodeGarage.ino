@@ -12,7 +12,7 @@
  *   - Arduino Pro Mini, ATmega328P, 3.3 V, 8 MHz
  *   - SparkFun SAMD21 Mini
  *     Install:
- *       - Arduino SAMD Baoards
+ *       - Arduino SAMD Boards
  *       - SparkFun SAMD Boards
  *
  * External libraries used:
@@ -78,8 +78,8 @@
 #define LOG_SERVICE(component, service)
 #endif
 
-#define DHTPIN 4
-#define DHTTYPE DHT22
+#define DHT_PIN 4
+#define DHT_TYPE DHT22
 
 #define SONAR_TRIGGER_PIN 7
 #define SONAR_ECHO_PIN 6
@@ -98,7 +98,7 @@
 
 #define NUMBER_OF_COMPONENTS 6
 
-DHT dht(DHTPIN, DHTTYPE);
+DHT dht(DHT_PIN, DHT_TYPE);
 NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 
 uint32_t lastRunTime = 0;

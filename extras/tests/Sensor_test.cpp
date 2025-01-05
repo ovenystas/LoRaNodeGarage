@@ -306,7 +306,7 @@ TEST_F(SensorPrint_test, print_simple_constructed_sensor) {
   EXPECT_EQ(printedChars, strlen(expectStr));
 }
 
-TEST_F(SensorPrint_test, print_negative_value_scalefactor_1_unit_none) {
+TEST_F(SensorPrint_test, print_negative_value_scale_factor_1_unit_none) {
   const char* expectStr = "Sensor8: -123";
   Sensor<int8_t> sc = Sensor<int8_t>(108, "Sensor8");
   sc.setValue(-123);
@@ -318,7 +318,7 @@ TEST_F(SensorPrint_test, print_negative_value_scalefactor_1_unit_none) {
   EXPECT_EQ(printedChars, strlen(expectStr));
 }
 
-TEST_F(SensorPrint_test, print_positive_value_scalefactor_1000_unit_percent) {
+TEST_F(SensorPrint_test, print_positive_value_scale_factor_1000_unit_percent) {
   const char* expectStr = "Sensor8: 0.001 %";
   Sensor<int8_t> sc = Sensor<int8_t>(
       108, "Sensor8", SensorDeviceClass::humidity, Unit::Type::percent, 3);
@@ -331,7 +331,7 @@ TEST_F(SensorPrint_test, print_positive_value_scalefactor_1000_unit_percent) {
   EXPECT_EQ(printedChars, strlen(expectStr));
 }
 
-TEST_F(SensorPrint_test, print_negative_value_scalefactor_10_unit_mm) {
+TEST_F(SensorPrint_test, print_negative_value_scale_factor_10_unit_mm) {
   const char* expectStr = "Sensor16: 1234.5 mm";
   Sensor<uint16_t> sc = Sensor<uint16_t>(
       116, "Sensor16", SensorDeviceClass::distance, Unit::Type::mm, 1);
@@ -344,7 +344,7 @@ TEST_F(SensorPrint_test, print_negative_value_scalefactor_10_unit_mm) {
   EXPECT_EQ(printedChars, strlen(expectStr));
 }
 
-TEST_F(SensorPrint_test, print_negative_value_scalefactor_1000_unit_um) {
+TEST_F(SensorPrint_test, print_negative_value_scale_factor_1000_unit_um) {
   const char* expectStr = "Sensor32: -2147483.648 μm";
   Sensor<int32_t> sc = Sensor<int32_t>(
       116, "Sensor32", SensorDeviceClass::distance, Unit::Type::um, 3);

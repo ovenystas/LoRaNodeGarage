@@ -78,7 +78,7 @@ class GarageCover final : public IComponent {
     static const uint8_t numberOfConfigItems = {1};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        0, EE_ADDRESS_CONFIG_GARAGECOVER_0,
+        0, EE_ADDRESS_CONFIG_GARAGE_COVER_0,
         GarageCoverConstants::CONFIG_REPORT_INTERVAL_DEFAULT, 0,
         Util::TWELVE_HOURS_IN_SECONDS, Unit::Type::s)};
   };

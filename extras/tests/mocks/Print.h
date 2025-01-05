@@ -30,8 +30,7 @@
 #define DEC 10
 #define HEX 16
 #define OCT 8
-#ifdef BIN  // Prevent warnings if BIN is previously defined in "iotnx4.h" or
-            // similar
+#ifdef BIN  // Prevent warnings if BIN is previously defined
 #undef BIN
 #endif
 #define BIN 2

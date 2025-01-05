@@ -1,8 +1,3 @@
-/*
- *  Created on: 28 feb. 2021
- *      Author: oveny
- */
-
 #pragma once
 
 #include <Arduino.h>

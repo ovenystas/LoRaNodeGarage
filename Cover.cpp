@@ -18,7 +18,7 @@ const __FlashStringHelper* Cover::getStateName() const {
       return F("closing");
 
     default:
-      return F("unkown");
+      return F("unknown");
   }
 }
 
@@ -38,7 +38,7 @@ const __FlashStringHelper* Cover::getServiceName(CoverService service) const {
 
     case CoverService::unknown:
     default:
-      return F("unkown");
+      return F("unknown");
   }
 }
 

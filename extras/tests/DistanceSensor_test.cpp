@@ -149,18 +149,18 @@ TEST_F(DistanceSensor_test,
 
 TEST_F(DistanceSensor_test, loadConfigValues_OK) {
   (void)EEPROM.put(
-      EE_ADDRESS_CONFIG_DISTANCESENSOR_0,
+      EE_ADDRESS_CONFIG_DISTANCE_SENSOR_0,
       DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT + 1);
-  eeprom_write_byte(EE_ADDRESS_CONFIG_DISTANCESENSOR_0 + sizeof(DistanceT),
+  eeprom_write_byte(EE_ADDRESS_CONFIG_DISTANCE_SENSOR_0 + sizeof(DistanceT),
                     0x31);  // Correct CRC8 of value
   (void)EEPROM.put(
-      EE_ADDRESS_CONFIG_DISTANCESENSOR_1,
+      EE_ADDRESS_CONFIG_DISTANCE_SENSOR_1,
       DistanceSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT + 1);
-  eeprom_write_byte(EE_ADDRESS_CONFIG_DISTANCESENSOR_1 + sizeof(DistanceT),
+  eeprom_write_byte(EE_ADDRESS_CONFIG_DISTANCE_SENSOR_1 + sizeof(DistanceT),
                     0xB3);  // Correct CRC8 of value
-  (void)EEPROM.put(EE_ADDRESS_CONFIG_DISTANCESENSOR_2,
+  (void)EEPROM.put(EE_ADDRESS_CONFIG_DISTANCE_SENSOR_2,
                    DistanceSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT + 1);
-  eeprom_write_byte(EE_ADDRESS_CONFIG_DISTANCESENSOR_2 + sizeof(DistanceT),
+  eeprom_write_byte(EE_ADDRESS_CONFIG_DISTANCE_SENSOR_2 + sizeof(DistanceT),
                     0xD6);  // Correct CRC8 of value
 
   pDs->loadConfigValues();

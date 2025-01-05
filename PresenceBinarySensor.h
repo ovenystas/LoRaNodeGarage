@@ -61,22 +61,22 @@ class PresenceBinarySensor : public IComponent {
     static const uint8_t numberOfConfigItems = {4};
 
     ConfigItem<HeightT> lowLimit = {ConfigItem<HeightT>(
-        0, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_0,
+        0, EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_0,
         PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT, 0,
         MAX_SENSOR_DISTANCE, Unit::Type::cm)};
 
     ConfigItem<HeightT> highLimit = {ConfigItem<HeightT>(
-        1, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_1,
+        1, EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_1,
         PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT, 0,
         MAX_SENSOR_DISTANCE, Unit::Type::cm)};
 
     ConfigItem<uint16_t> minStableTime = {ConfigItem<uint16_t>(
-        2, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_2,
+        2, EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_2,
         PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT, 0,
         Util::ONE_MINUTE_IN_MILLISECONDS, Unit::Type::ms)};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        3, EE_ADDRESS_CONFIG_PRESENCEBINARYSENSOR_3,
+        3, EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_3,
         PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, 0,
         Util::TWELVE_HOURS_IN_SECONDS, Unit::Type::s)};
   };

@@ -181,8 +181,8 @@ struct ValueItemT {
 
   static constexpr size_t size() { return 5; }
 
-  ValueItemT(uint8_t _enitityId = 0, uint32_t _value = 0)
-      : entityId{_enitityId}, value{_value} {}
+  ValueItemT(uint8_t _entityId = 0, uint32_t _value = 0)
+      : entityId{_entityId}, value{_value} {}
 
   bool operator==(const ValueItemT& rhs) const {
     return entityId == rhs.entityId && value == rhs.value;

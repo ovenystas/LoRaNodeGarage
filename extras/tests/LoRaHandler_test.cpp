@@ -290,7 +290,7 @@ TEST_F(LoRaHandler_test, loraRx_ping_req_no_ack_shall_send_ping_msg) {
       .WillOnce(Return(203))         // Send end
       .WillRepeatedly(Return(204));  // Debug print of AirTime
 
-  // Recieve msg
+  // Receive msg
   EXPECT_EQ(pLH->loraRx(), LORA_HEADER_LENGTH);
 
   bufSerReadStr();
@@ -333,7 +333,7 @@ TEST_F(LoRaHandler_test,
   // RX-RSSI
   EXPECT_CALL(*pLoRaMock, packetRssi()).WillOnce(Return(rssi));
 
-  // Begin and recieve msg
+  // Begin and receive msg
   pLH->begin(FakeCallbackFunc, nullptr, nullptr, nullptr, nullptr);
   EXPECT_EQ(pLH->loraRx(), rxMsgSize);
 
@@ -383,7 +383,7 @@ TEST_F(
       .WillOnce(Return(103))         // Send start
       .WillRepeatedly(Return(203));  // Send end and debug print of AirTime
 
-  // Begin and recieve msg
+  // Begin and receive msg
   pLH->begin(FakeCallbackFunc, nullptr, nullptr, nullptr, nullptr);
   EXPECT_EQ(pLH->loraRx(), rxMsgSize);
 
@@ -425,7 +425,7 @@ TEST_F(LoRaHandler_test, loraRx_value_req_no_ack_shall_call_OnValueReqMsgFunc) {
   // RX-RSSI
   EXPECT_CALL(*pLoRaMock, packetRssi()).WillOnce(Return(rssi));
 
-  // Begin and recieve msg
+  // Begin and receive msg
   pLH->begin(nullptr, FakeValueReqCallbackFunc, nullptr, nullptr, nullptr);
   EXPECT_EQ(pLH->loraRx(), rxMsgSize);
 
@@ -456,7 +456,7 @@ TEST_F(LoRaHandler_test,
   // RX-RSSI
   EXPECT_CALL(*pLoRaMock, packetRssi()).WillOnce(Return(rssi));
 
-  // Begin and recieve msg
+  // Begin and receive msg
   pLH->begin(nullptr, nullptr, FakeCallbackFunc, nullptr, nullptr);
   EXPECT_EQ(pLH->loraRx(), rxMsgSize);
 
@@ -495,7 +495,7 @@ TEST_F(LoRaHandler_test,
   // RX-RSSI
   EXPECT_CALL(*pLoRaMock, packetRssi()).WillOnce(Return(rssi));
 
-  // Begin and recieve msg
+  // Begin and receive msg
   pLH->begin(nullptr, nullptr, nullptr, FakeConfigCallbackFunc, nullptr);
   EXPECT_EQ(pLH->loraRx(), rxMsgSize);
 
@@ -534,7 +534,7 @@ TEST_F(LoRaHandler_test,
   // RX-RSSI
   EXPECT_CALL(*pLoRaMock, packetRssi()).WillOnce(Return(rssi));
 
-  // Begin and recieve msg
+  // Begin and receive msg
   pLH->begin(nullptr, nullptr, nullptr, nullptr, FakeServiceCallbackFunc);
   EXPECT_EQ(pLH->loraRx(), rxMsgSize);
 
@@ -647,7 +647,7 @@ TEST_F(LoRaHandler_test, encrypted_msg) {
   EXPECT_CALL(*pArduinoMock, millis())
       .WillRepeatedly(Return(0));
 
-  // Recieve msg
+  // Receive msg
   EXPECT_EQ(lora.loraRx(), LORA_HEADER_LENGTH);
 
   bufSerReadStr();

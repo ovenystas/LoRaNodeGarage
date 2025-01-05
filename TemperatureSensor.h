@@ -64,22 +64,22 @@ class TemperatureSensor : public IComponent {
     const uint8_t numberOfConfigItems = {4};
 
     ConfigItem<TemperatureT> reportHysteresis = {ConfigItem<TemperatureT>(
-        0, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_0,
+        0, EE_ADDRESS_CONFIG_TEMPERATURE_SENSOR_0,
         TemperatureSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT, 0, 100,
         Unit::Type::C, 1)};
 
     ConfigItem<uint16_t> measureInterval = {ConfigItem<uint16_t>(
-        1, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_1,
+        1, EE_ADDRESS_CONFIG_TEMPERATURE_SENSOR_1,
         TemperatureSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT, 0,
         Util::ONE_HOUR_IN_SECONDS, Unit::Type::s)};
 
     ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        2, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_2,
+        2, EE_ADDRESS_CONFIG_TEMPERATURE_SENSOR_2,
         TemperatureSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, 0,
         Util::TWELVE_HOURS_IN_SECONDS, Unit::Type::s)};
 
     ConfigItem<TemperatureT> compensation = {ConfigItem<TemperatureT>(
-        3, EE_ADDRESS_CONFIG_TEMPERATURESENSOR_3,
+        3, EE_ADDRESS_CONFIG_TEMPERATURE_SENSOR_3,
         TemperatureSensorConstants::CONFIG_COMPENSATION_DEFAULT, -100, 100,
         Unit::Type::C, 1)};
   };

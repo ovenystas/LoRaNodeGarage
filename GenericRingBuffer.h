@@ -109,7 +109,7 @@ class GenericRingBuffer {
   }
 
   /**
-   * @brief Fills remaing elements in the ring buffer with the same item.
+   * @brief Fills remaining elements in the ring buffer with the same item.
    *
    * @param item to fill ring buffer with.
    */
@@ -123,7 +123,7 @@ class GenericRingBuffer {
    * @brief Returns a reference to the last element in the ring buffer.
    * Calling back on an empty ring buffer causes undefined behavior.
    *
-   * @return T& referenece to the last element.
+   * @return T& reference to the last element.
    */
   const T& back() const { return mRb[mBack]; }
 
@@ -131,7 +131,7 @@ class GenericRingBuffer {
    * @brief Returns a reference to the first element in the ring buffer.
    * Calling first on an empty ring buffer causes undefined behavior.
    *
-   * @return T& referenece to the first element.
+   * @return T& reference to the first element.
    */
   const T& front() const {
     if (mFront > 0) {

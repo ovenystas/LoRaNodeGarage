@@ -1,10 +1,3 @@
-/*
- * LoRaHandler.cpp
- *
- *  Created on: 25 feb. 2021
- *      Author: oveny
- */
-
 #include "LoRaHandler.h"
 
 #include <Arduino.h>

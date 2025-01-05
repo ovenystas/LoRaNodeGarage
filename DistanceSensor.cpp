@@ -1,8 +1,3 @@
-/*
- *  Created on: 1 mars 2021
- *      Author: oveny
- */
-
 #include "DistanceSensor.h"
 
 #include <Arduino.h>

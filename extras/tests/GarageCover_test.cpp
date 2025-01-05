@@ -227,9 +227,9 @@ TEST_F(GarageCover_test, loadConfigValues_wrong_crc_shall_set_default_values) {
 }
 
 TEST_F(GarageCover_test, loadConfigValues_OK) {
-  (void)EEPROM.put(EE_ADDRESS_CONFIG_GARAGECOVER_0,
+  (void)EEPROM.put(EE_ADDRESS_CONFIG_GARAGE_COVER_0,
                    GarageCoverConstants::CONFIG_REPORT_INTERVAL_DEFAULT + 1);
-  eeprom_write_byte(EE_ADDRESS_CONFIG_GARAGECOVER_0 + sizeof(uint16_t),
+  eeprom_write_byte(EE_ADDRESS_CONFIG_GARAGE_COVER_0 + sizeof(uint16_t),
                     0xD6);  // Correct CRC8 of value
 
   pGc->loadConfigValues();
