@@ -4,10 +4,10 @@
 #include "Unit.h"
 
 const __FlashStringHelper* Cover::getStateName() const {
-  switch(mState) {
+  switch (mState) {
     case CoverState::closed:
       return F("closed");
-    
+
     case CoverState::open:
       return F("open");
 
@@ -23,10 +23,10 @@ const __FlashStringHelper* Cover::getStateName() const {
 }
 
 const __FlashStringHelper* Cover::getServiceName(CoverService service) const {
-  switch(service) {
+  switch (service) {
     case CoverService::open:
       return F("open");
-    
+
     case CoverService::close:
       return F("close");
 

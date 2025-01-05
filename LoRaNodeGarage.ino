@@ -63,16 +63,16 @@
 #define DEBUG_SERVICE
 
 #ifdef DEBUG_SENSOR_REPORT
-#define LOG_SENSOR(sensor)   \
-  printMillis(Serial);       \
+#define LOG_SENSOR(sensor) \
+  printMillis(Serial);     \
   (sensor)->printTo(Serial);
 #else
 #define LOG_SENSOR(sensor)
 #endif
 
 #ifdef DEBUG_SERVICE
-#define LOG_SERVICE(component, service)    \
-  printMillis(Serial);                     \
+#define LOG_SERVICE(component, service) \
+  printMillis(Serial);                  \
   (component)->printTo(Serial, (service));
 #else
 #define LOG_SERVICE(component, service)
