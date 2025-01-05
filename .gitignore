@@ -3,5 +3,6 @@
 .vscode/
 Release/
 build/
+node_modules/
 sloeber.ino.cpp
 spec.d
