@@ -5,15 +5,19 @@
 
 A LoRa wireless node for a car garage with multiple sensors and actuators.
 
-Can sense presence of a car by measuring distance from inner garage roof to object that can be a car roof or garage floor.
+Can sense presence of a car by measuring distance from inner garage roof to
+object that can be a car roof or garage floor.
 
 Also senses temperature and humidity.
 
-Can also act as a cover device to sense state of garage port and open or close the port.
+Can also act as a cover device to sense state of garage port and open or close
+the port.
 
-Has support for Home Assistant discovery to send information on available sensors to Home Assistant. This needs a LoRa to MQTT gateway. See https://github.com/ovenystas/lora2mqtt for that.
+Has support for Home Assistant discovery to send information on available
+sensors to Home Assistant. This needs a LoRa to MQTT gateway. See
+<https://github.com/ovenystas/lora2mqtt> for that.
 
-## Build
+## Build project
 
 Use Arduino IDE or similar to build and download to Arduino board.
 
@@ -21,7 +25,8 @@ Use Arduino IDE or similar to build and download to Arduino board.
 
 Unit tests can be compiled and run with the following cmake/ctest commands.
 
-The tests uses googletest and googlemocks are there to mock Arduino core and addon libraries.
+The tests uses googletest and googlemocks are there to mock Arduino core and
+addon libraries.
 
 ### Configure
 
