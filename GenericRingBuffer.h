@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 template <class T, size_t N>
-class RingBuffer {
+class GenericRingBuffer {
  public:
   /**
    * @brief Checks the capacity of the ring buffer. I.e. the maximum number of

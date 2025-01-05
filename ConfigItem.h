@@ -1,9 +1,11 @@
 #pragma once
 
+#define SAMD21
+
 #include <CRC8.h>
-#include <EEPROM.h>
 #include <stdint.h>
 
+#include "GenericEEPROM.h"
 #include "Types.h"
 #include "Unit.h"
 #include "Util.h"
@@ -22,11 +24,11 @@ class ConfigItem {
   ConfigItem(uint8_t configId, uint16_t eeAddress, T defaultValue, T minValue,
              T maxValue, Unit::Type unitType = Unit::Type::none,
              uint8_t precision = 0)
-      : mValueItem{ValueItem<T>(unitType, precision, defaultValue, minValue,
+      : mConfigId{configId},
+        mValueItem{ValueItem<T>(unitType, precision, defaultValue, minValue,
                                 maxValue)},
         mDefaultValue{defaultValue},
-        mEeAddress{eeAddress},
-        mConfigId{configId} {}
+        mEeAddress{eeAddress} {}
 
   uint8_t getPrecision() const { return mValueItem.getPrecision(); }
 
@@ -68,13 +70,13 @@ class ConfigItem {
   }
 
   void load() {
-    if (mEeAddress >= EEPROM.length()) {
+    if (mEeAddress >= GenericEEPROM.length()) {
       return;
     }
 
     T value;
-    (void)EEPROM.get(mEeAddress, value);
-    uint8_t eeCrc = EEPROM.read(mEeAddress + sizeof(T));
+    (void)GenericEEPROM.get(mEeAddress, value);
+    uint8_t eeCrc = GenericEEPROM.read(mEeAddress + sizeof(T));
 
     CRC8 crc;
     addValueToCrc(crc, value);
@@ -97,7 +99,7 @@ class ConfigItem {
   }
 
   void save() {
-    if (mEeAddress >= EEPROM.length()) {
+    if (mEeAddress >= GenericEEPROM.length()) {
       return;
     }
 
@@ -107,12 +109,12 @@ class ConfigItem {
     addValueToCrc(crc, value);
     uint8_t valueCrc = crc.calc();
 
-    (void)EEPROM.put(mEeAddress, value);
-    EEPROM.put(mEeAddress + sizeof(T), valueCrc);
+    (void)GenericEEPROM.put(mEeAddress, value);
+    GenericEEPROM.put(mEeAddress + sizeof(T), valueCrc);
   }
 
+  const uint8_t mConfigId;
   ValueItem<T> mValueItem;
   const T mDefaultValue;
   const uint16_t mEeAddress;
-  const uint8_t mConfigId;
 };

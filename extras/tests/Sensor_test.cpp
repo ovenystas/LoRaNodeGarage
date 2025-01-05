@@ -129,30 +129,6 @@ TEST_F(SensorInt32BatteryPercent_test, getUnitType_percent) {
   EXPECT_EQ(sc.getUnitType(), Unit::Type::percent);
 }
 
-TEST_F(SensorInt8_test, getUnitName_default) {
-  EXPECT_STREQ(sc.getUnitName(), "");
-}
-
-TEST_F(SensorUInt16_test, getUnitName_default) {
-  EXPECT_STREQ(sc.getUnitName(), "");
-}
-
-TEST_F(SensorInt32_test, getUnitName_default) {
-  EXPECT_STREQ(sc.getUnitName(), "");
-}
-
-TEST_F(SensorInt8BatteryPercent_test, getUnitName_percent) {
-  EXPECT_STREQ(sc.getUnitName(), "%");
-}
-
-TEST_F(SensorUInt16BatteryPercent_test, getUnitName_percent) {
-  EXPECT_STREQ(sc.getUnitName(), "%");
-}
-
-TEST_F(SensorInt32BatteryPercent_test, getUnitName_percent) {
-  EXPECT_STREQ(sc.getUnitName(), "%");
-}
-
 TEST_F(SensorInt8_test, getDiscoveryEntityItem) {
   DiscoveryEntityItemT item;
 

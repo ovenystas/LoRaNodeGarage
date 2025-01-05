@@ -8,6 +8,12 @@
 #include <Print.h>
 #include <stdint.h>
 
+#ifdef ARDUINO
+#include <avr/pgmspace.h>
+#else
+#define PROGMEM
+#endif
+
 namespace UnitConstants {
 static const char UnitName[][4] PROGMEM = {
     "", "°C", "°F", "K", "%", "km", "m", "dm", "cm", "mm", "μm", "s", "ms"};

@@ -9,7 +9,11 @@
  *   Ove Nystås
  *
  * Arduino board:
- *   Arduino Pro Mini, 8 MHz, 3.3 V
+ *   - Arduino Pro Mini, 8 MHz, 3.3 V
+ *   - SparkFun SAMD21 Mini
+ *     Install:
+ *       - Arduino SAMD Baoards
+ *       - SparkFun SAMD Boards
  *
  * External libraries used:
  *   DHT sensor library by Adafruit v1.4.4
@@ -17,6 +21,8 @@
  *   NewPing by Tim Eckel v1.9.7
  *   CRC by Rob Tillaart v1.0.3
  *   Crypto by Rhys Weatherley v0.4.0
+ *   For SAMD21:
+ *     - FlashStorage (To emulate GenericEEPROM)
  */
 
 /* TODO:
@@ -25,12 +31,10 @@
  *   config)
  * - Use message sequence frCnt in LoRa header
  */
-
 #include <AES.h>  // Crypto by Rhys Weatherley
 #include <Arduino.h>
-#include <CTR.h>  // Crypto by Rhys Weatherley
-#include <DHT.h>  // DHT sensor library by Adafruit
-#include <EEPROM.h>
+#include <CTR.h>      // Crypto by Rhys Weatherley
+#include <DHT.h>      // DHT sensor library by Adafruit
 #include <NewPing.h>  // NewPing by Tim Eckel
 #include <SPI.h>
 
@@ -38,6 +42,7 @@
 #include "DistanceSensor.h"
 #include "EeAdressMap.h"
 #include "GarageCover.h"
+#include "GenericEEPROM.h"
 #include "HeightSensor.h"
 #include "HumiditySensor.h"
 #include "LoRaHandler.h"
@@ -141,16 +146,16 @@ void setup() {
 
   printWelcomeMsg();
 
-  uint8_t configMagicEe = EEPROM.read(EE_ADDRESS_CONFIG_MAGIC);
+  uint8_t configMagicEe = GenericEEPROM.read(EE_ADDRESS_CONFIG_MAGIC);
   if (configMagicEe != CONFIG_MAGIC) {
-    Serial.print(F("Config magic word in EEPROM "));
+    Serial.print(F("Config magic word in GenericEEPROM "));
     printHex(Serial, configMagicEe);
     Serial.print(F(" != "));
     printHex(Serial, static_cast<uint8_t>(CONFIG_MAGIC));
     Serial.println('!');
-    Serial.print(F("Erasing EEPROM"));
+    Serial.print(F("Erasing GenericEEPROM"));
     for (uint16_t i = 0; i <= E2END; i++) {
-      EEPROM.write(i, 0xFF);
+      GenericEEPROM.write(i, 0xFF);
       if (i % 64 == 0) {
         Serial.print('.');
       }
@@ -158,7 +163,8 @@ void setup() {
     Serial.println(F("Done!"));
   }
   loadConfigValuesForAllComponents();
-  EEPROM.write(EE_ADDRESS_CONFIG_MAGIC, CONFIG_MAGIC);
+  GenericEEPROM.write(EE_ADDRESS_CONFIG_MAGIC, CONFIG_MAGIC);
+  GenericEEPROM.commit();
 
   dht.begin();
 

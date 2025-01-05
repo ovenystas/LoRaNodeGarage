@@ -197,7 +197,7 @@ TEST_F(LoRaHandler_test, discoveryMsg) {
       .WillRepeatedly(Return(202));  // Send end and debug print of AirTime
 
   pLH->beginDiscoveryMsg();
-  pLH->addDiscoveryItem((&item));
+  pLH->addDiscoveryItem(item);
   pLH->endMsg();
 
   bufSerReadStr();
@@ -579,8 +579,8 @@ TEST_F(LoRaHandler_test, valueMsg) {
       .WillRepeatedly(Return(61602));  // Send end and debug print of AirTime
 
   pLH->beginValueMsg();
-  pLH->addValueItem(&item1);
-  pLH->addValueItem(&item2);
+  pLH->addValueItem(item1);
+  pLH->addValueItem(item2);
   pLH->endMsg();
 
   bufSerReadStr();

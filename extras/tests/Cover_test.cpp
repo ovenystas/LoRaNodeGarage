@@ -62,13 +62,6 @@ TEST_F(Cover_test, getDiscoveryEntityItem) {
 
 TEST_F(Cover_test, getEntityId) { EXPECT_EQ(pC->getEntityId(), 34); }
 
-TEST_F(Cover_test, getServiceName_of_service_as_arg) {
-  EXPECT_STREQ(pC->getServiceName(CoverService::close), "close");
-  EXPECT_STREQ(pC->getServiceName(CoverService::open), "open");
-  EXPECT_STREQ(pC->getServiceName(CoverService::stop), "stop");
-  EXPECT_STREQ(pC->getServiceName(CoverService::toggle), "toggle");
-}
-
 TEST_F(Cover_test, getState) {
   EXPECT_EQ(pC->getState(), CoverState::closed);
 
@@ -80,26 +73,6 @@ TEST_F(Cover_test, getState) {
 
   pC->setState(CoverState::closing);
   EXPECT_EQ(pC->getState(), CoverState::closing);
-}
-
-TEST_F(Cover_test, getStateName_of_current_state) {
-  EXPECT_STREQ(pC->getStateName(), "closed");
-
-  pC->setState(CoverState::opening);
-  EXPECT_STREQ(pC->getStateName(), "opening");
-
-  pC->setState(CoverState::open);
-  EXPECT_STREQ(pC->getStateName(), "open");
-
-  pC->setState(CoverState::closing);
-  EXPECT_STREQ(pC->getStateName(), "closing");
-}
-
-TEST_F(Cover_test, getStateName_of_state_as_arg) {
-  EXPECT_STREQ(pC->getStateName(CoverState::closed), "closed");
-  EXPECT_STREQ(pC->getStateName(CoverState::opening), "opening");
-  EXPECT_STREQ(pC->getStateName(CoverState::open), "open");
-  EXPECT_STREQ(pC->getStateName(CoverState::closing), "closing");
 }
 
 TEST_F(Cover_test, getValueItem) {

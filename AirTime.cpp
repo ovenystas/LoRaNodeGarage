@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <assert.h>
 
-#include "RingBuffer.h"
+#include "GenericRingBuffer.h"
 
 void AirTime::update() { update(millis()); }
 

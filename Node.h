@@ -25,6 +25,6 @@ class Node : Printable {
   size_t printTo(Print& p) const final;
 
  private:
-  const IComponent** mComponents;
+  IComponent** mComponents;
   const uint8_t mSize;
 };
