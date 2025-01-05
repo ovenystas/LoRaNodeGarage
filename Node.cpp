@@ -1,8 +1,3 @@
-/*
- *  Created on: 28 apr. 2021
- *      Author: oveny
- */
-
 #include "Node.h"
 
 IComponent* Node::getComponent(uint8_t idx) {
@@ -29,6 +24,5 @@ size_t Node::printTo(Print& p) const {
     n += p.print(", ");
   }
   n += mComponents[i]->printTo(p);
-  n += p.println();
   return n;
 }

@@ -71,6 +71,10 @@ class Cover : public Printable {
     return mBaseComponent.timeSinceLastReport();
   }
 
+  const __FlashStringHelper* getStateName() const;
+
+  const __FlashStringHelper* Cover::getServiceName(CoverService service) const;
+
  private:
   BaseComponent mBaseComponent;
   const CoverDeviceClass mDeviceClass;

@@ -21,7 +21,7 @@ bool TemperatureSensor::update() {
     mSensor.setValue(newValue);
   } else {
     printMillis(Serial);
-    Serial.println(F("WARN: DHT checksum fail"));
+    Serial.print(F("WARN: DHT checksum fail"));
   }
 
   bool largeChange = mConfig.reportHysteresis.getValue() > 0

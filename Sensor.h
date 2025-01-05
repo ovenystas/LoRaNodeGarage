@@ -109,7 +109,7 @@ class Sensor : public Printable {
   size_t printTo(Print& p) const final {
     size_t n = 0;
     n += mBaseComponent.printTo(p);
-    n += p.print(": ");
+    n += p.print('=');
     n += mValueItem.printTo(p);
     return n;
   }

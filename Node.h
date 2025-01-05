@@ -1,8 +1,3 @@
-/*
- *  Created on: 28 apr. 2021
- *      Author: oveny
- */
-
 #pragma once
 
 #include <Printable.h>

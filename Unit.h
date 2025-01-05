@@ -44,7 +44,6 @@ class Unit {
   size_t print(Print& printer) const {
     size_t n = 0;
     if (mType != Unit::Type::none) {
-      n += printer.print(' ');
       n += printer.print(reinterpret_cast<const __FlashStringHelper*>(
           UnitConstants::UnitName[static_cast<uint8_t>(mType)]));
     }

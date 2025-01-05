@@ -71,7 +71,7 @@ void BinarySensor::getValueItem(ValueItemT* item) const {
 size_t BinarySensor::printTo(Print& p) const {
   size_t n = 0;
   n += mBaseComponent.printTo(p);
-  n += p.print(": ");
+  n += p.print('=');
   n += p.print(getStateName());
   return n;
 }

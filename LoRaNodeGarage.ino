@@ -9,7 +9,7 @@
  *   Ove Nystås
  *
  * Arduino board:
- *   - Arduino Pro Mini, 8 MHz, 3.3 V
+ *   - Arduino Pro Mini, ATmega328P, 3.3 V, 8 MHz
  *   - SparkFun SAMD21 Mini
  *     Install:
  *       - Arduino SAMD Baoards
@@ -65,8 +65,7 @@
 #ifdef DEBUG_SENSOR_REPORT
 #define LOG_SENSOR(sensor)   \
   printMillis(Serial);       \
-  (sensor)->printTo(Serial); \
-  Serial.println()
+  (sensor)->printTo(Serial);
 #else
 #define LOG_SENSOR(sensor)
 #endif
@@ -74,8 +73,7 @@
 #ifdef DEBUG_SERVICE
 #define LOG_SERVICE(component, service)    \
   printMillis(Serial);                     \
-  (component)->printTo(Serial, (service)); \
-  Serial.println()
+  (component)->printTo(Serial, (service));
 #else
 #define LOG_SERVICE(component, service)
 #endif
@@ -91,6 +89,8 @@
 #define COVER_CLOSED_PIN 9
 #define COVER_RELAY_PIN A0
 
+#define LORA_RESET_PIN 5
+
 #define UPDATE_SENSORS_INTERVAL 1000
 
 #define LORA_MY_ADDRESS 1
@@ -104,11 +104,11 @@ NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 uint32_t lastRunTime = 0;
 
 const char garageCoverName[] PROGMEM = "Port";
-const char temperatureSensorName[] PROGMEM = "Temperature";
-const char humiditySensorName[] PROGMEM = "Humidity";
-const char distanceSensorName[] PROGMEM = "Distance";
+const char temperatureSensorName[] PROGMEM = "Temp";
+const char humiditySensorName[] PROGMEM = "Hum";
+const char distanceSensorName[] PROGMEM = "Dist";
 const char heightSensorName[] PROGMEM = "Height";
-const char carPresenceSensorName[] PROGMEM = "CarPresence";
+const char carPresenceSensorName[] PROGMEM = "Car";
 
 GarageCover garageCover = GarageCover(0, garageCoverName, COVER_CLOSED_PIN,
                                       COVER_OPEN_PIN, COVER_RELAY_PIN);
@@ -148,19 +148,19 @@ void setup() {
 
   uint8_t configMagicEe = GenericEEPROM.read(EE_ADDRESS_CONFIG_MAGIC);
   if (configMagicEe != CONFIG_MAGIC) {
-    Serial.print(F("Config magic word in GenericEEPROM "));
+    Serial.print(F("\nConfig magic word in EEPROM "));
     printHex(Serial, configMagicEe);
     Serial.print(F(" != "));
     printHex(Serial, static_cast<uint8_t>(CONFIG_MAGIC));
-    Serial.println('!');
-    Serial.print(F("Erasing GenericEEPROM"));
+    Serial.print('!');
+    Serial.print(F("\nErasing EEPROM"));
     for (uint16_t i = 0; i <= E2END; i++) {
       GenericEEPROM.write(i, 0xFF);
       if (i % 64 == 0) {
         Serial.print('.');
       }
     }
-    Serial.println(F("Done!"));
+    Serial.print(F("Done!"));
   }
   loadConfigValuesForAllComponents();
   GenericEEPROM.write(EE_ADDRESS_CONFIG_MAGIC, CONFIG_MAGIC);
@@ -173,9 +173,10 @@ void setup() {
   ctrAes128.setKey(AES_KEY, ctrAes128.keySize());
   ctrAes128.setIV(CTR_IV, ctrAes128.ivSize());
 
+  lora.setPins(LORA_DEFAULT_SS_PIN, LORA_RESET_PIN, LORA_DEFAULT_DIO0_PIN);
   if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onConfigReqMsg,
                   &onConfigSetReqMsg, &onServiceReqMsg)) {
-    Serial.println(F("Starting LoRa failed!"));
+    Serial.print(F("\nStarting LoRa failed!"));
     while (1) {
       // Do nothing
     }
@@ -191,14 +192,14 @@ void loop() {
 
     updateSensors();
 
-    if (isReportDue()) {
-      sendSensorValueForAllComponents();
-    }
-
 #ifdef DEBUG_SENSOR_VALUES
     printMillis(Serial);
     printAllSensors(Serial);
 #endif
+
+    if (isReportDue()) {
+      sendSensorValueForAllComponents();
+    }
   }
 
   (void)lora.loraRx();
@@ -246,12 +247,13 @@ static void loadConfigValuesForAllComponents() {
 
 static void updateSensors() {
   Serial.print('.');
+
   for (uint8_t i = 0; i < node.getSize(); i++) {
     IComponent* c = node.getComponent(i);
 
     if (c->update()) {
       LOG_SENSOR(c);
-      // c->setReported(); // Tmp: Fake already reported
+      c->setReported();
     }
   }
 }
@@ -322,7 +324,7 @@ void sendSensorValueForEntity(uint8_t entityId) {
   sendSensorValue(c);
 }
 
-static void sendConfigValues(IComponent* component) {
+static void sendConfigValues(const IComponent* component) {
   if (component == nullptr) {
     return;
   }
@@ -339,18 +341,18 @@ static void sendConfigValues(IComponent* component) {
 
 static void sendConfigValuesForAllComponents() {
   for (uint8_t i = 0; i < node.getSize(); i++) {
-    IComponent* c = node.getComponent(i);
+    const IComponent* c = node.getComponent(i);
     sendConfigValues(c);
     delay(500);
   }
 }
 
 void sendConfigValuesForEntity(uint8_t entityId) {
-  IComponent* c = node.getComponentByEntityId(entityId);
+  const IComponent* c = node.getComponentByEntityId(entityId);
   sendConfigValues(c);
 }
 
-static void sendDiscoveryMsg(IComponent* component) {
+static void sendDiscoveryMsg(const IComponent* component) {
   if (component == nullptr) {
     return;
   }
@@ -365,14 +367,14 @@ static void sendDiscoveryMsg(IComponent* component) {
 
 static void sendDiscoveryMsgForAllComponents() {
   for (uint8_t i = 0; i < node.getSize(); i++) {
-    IComponent* c = node.getComponent(i);
+    const IComponent* c = node.getComponent(i);
     sendDiscoveryMsg(c);
     delay(500);
   }
 }
 
 void sendDiscoveryMsgForEntity(uint8_t entityId) {
-  IComponent* c = node.getComponentByEntityId(entityId);
+  const IComponent* c = node.getComponentByEntityId(entityId);
   sendDiscoveryMsg(c);
 }
 
@@ -382,7 +384,7 @@ void printWelcomeMsg() {
   Serial.print(F(", Address="));
   Serial.print(LORA_MY_ADDRESS);
   Serial.print(F(", Gateway="));
-  Serial.println(LORA_GATEWAY_ADDRESS);
+  Serial.print(LORA_GATEWAY_ADDRESS);
 }
 
 #ifdef DEBUG_SENSOR_VALUES

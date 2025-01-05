@@ -47,7 +47,7 @@ void printUptime(Print& printer) {
 void printMillis(Print& printer) {
   auto t = millis();
 
-  printer.print('[');
+  printer.print("\n[");
   printer.print(t);
   printer.print("] ");
 }

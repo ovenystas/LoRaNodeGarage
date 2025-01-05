@@ -26,7 +26,7 @@ bool HumiditySensor::update() {
     mSensor.setValue(static_cast<HumidityT>(newValue));
   } else {
     printMillis(Serial);
-    Serial.println(F("WARN: DHT checksum fail"));
+    Serial.print(F("WARN: DHT checksum fail"));
   }
 
   bool largeChange = mConfig.reportHysteresis.getValue() > 0

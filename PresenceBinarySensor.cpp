@@ -1,8 +1,3 @@
-/*
- *  Created on: 7 mars 2021
- *      Author: oveny
- */
-
 #include "PresenceBinarySensor.h"
 
 #include <Arduino.h>
