@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "GenericRingBuffer.h"
+#include "RingBuffer.h"
 
 constexpr uint8_t SECONDS_PER_MINUTE = 60;
 constexpr uint8_t MINUTES_PER_HOUR = 60;
@@ -30,7 +30,7 @@ class AirTime {
   void update(uint32_t time);
   void addToCurrentMinute(uint32_t t);
 
-  GenericRingBuffer<uint16_t, MINUTES_PER_HOUR> mBuf;
+  RingBuffer<uint16_t, MINUTES_PER_HOUR> mBuf;
   uint32_t mLastUpdate_ms{};
   const uint16_t mLimit_ppm;
   uint32_t mTime_ms{};

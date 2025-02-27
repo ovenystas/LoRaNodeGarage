@@ -101,7 +101,8 @@ TEST_F(HeightSensor_test, getDiscoveryItem) {
   EXPECT_EQ(item.configItems[1].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[1].precision, 0);
   EXPECT_EQ(item.configItems[1].minValue, 0);
-  EXPECT_EQ(item.configItems[1].maxValue, Util::ONE_HOUR_IN_SECONDS);
+  EXPECT_EQ(item.configItems[1].maxValue,
+            HeightSensorConstants::ONE_HOUR_IN_SECONDS);
 
   EXPECT_EQ(item.configItems[2].configId, 2);
   EXPECT_EQ(item.configItems[2].unit, static_cast<uint8_t>(Unit::Type::ms));
@@ -109,7 +110,8 @@ TEST_F(HeightSensor_test, getDiscoveryItem) {
   EXPECT_EQ(item.configItems[2].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[2].precision, 0);
   EXPECT_EQ(item.configItems[2].minValue, 0);
-  EXPECT_EQ(item.configItems[2].maxValue, Util::ONE_MINUTE_IN_MILLISECONDS);
+  EXPECT_EQ(item.configItems[2].maxValue,
+            HeightSensorConstants::ONE_MINUTE_IN_MILLISECONDS);
 
   EXPECT_EQ(item.configItems[3].configId, 3);
   EXPECT_EQ(item.configItems[3].unit, static_cast<uint8_t>(Unit::Type::cm));

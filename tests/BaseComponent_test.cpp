@@ -54,3 +54,23 @@ TEST(BaseComponent_test, isReportDue) {
 
   releaseArduinoMock();
 }
+
+TEST(BaseComponent_test, getName_when_no_name_is_set) {
+  BaseComponent cmp = BaseComponent(23);
+  EXPECT_STREQ(cmp.getName(), "");
+}
+
+TEST(BaseComponent_test, getName_when_empty_name_is_set) {
+  BaseComponent cmp = BaseComponent(23, "");
+  EXPECT_STREQ(cmp.getName(), "");
+}
+
+TEST(BaseComponent_test, getName_when_shortest_name_is_set) {
+  BaseComponent cmp = BaseComponent(23, "H");
+  EXPECT_STREQ(cmp.getName(), "H");
+}
+
+TEST(BaseComponent_test, getName_when_large_name_is_set_shall) {
+  BaseComponent cmp = BaseComponent(23, "123456789012345678901234567890");
+  EXPECT_STREQ(cmp.getName(), "123456789012345678901234567890");
+}

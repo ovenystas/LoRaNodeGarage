@@ -1,4 +1,4 @@
-#include "Unit.h"
+#include "../Unit.h"
 
 #include <gtest/gtest.h>
 
@@ -29,6 +29,11 @@ class Unit_test : public ::testing::Test {
 TEST_F(Unit_test, type_km) {
   Unit unit = Unit(Unit::Type::km);
   EXPECT_EQ(unit.type(), Unit::Type::km);
+}
+
+TEST_F(Unit_test, name_km) {
+  Unit unit = Unit(Unit::Type::km);
+  EXPECT_STREQ(unit.name(), "km");
 }
 
 TEST_F(Unit_test, print_unit_none) {

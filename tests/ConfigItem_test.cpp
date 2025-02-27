@@ -18,6 +18,7 @@ TEST_F(ConfigItem_test, constructDefault_uint8) {
   EXPECT_EQ(cfgItm.getPrecision(), 0);
   EXPECT_EQ(cfgItm.getScaleFactor(), 1);
   EXPECT_EQ(cfgItm.getUnit().type(), Unit::Type::none);
+  EXPECT_STREQ(cfgItm.getUnit().name(), "");
   EXPECT_EQ(cfgItm.getValue(), 0);
   EXPECT_EQ(cfgItm.getConfigId(), 255);
 }
@@ -28,6 +29,7 @@ TEST_F(ConfigItem_test, constructDefault_int32) {
   EXPECT_EQ(cfgItm.getPrecision(), 0);
   EXPECT_EQ(cfgItm.getScaleFactor(), 1);
   EXPECT_EQ(cfgItm.getUnit().type(), Unit::Type::none);
+  EXPECT_STREQ(cfgItm.getUnit().name(), "");
   EXPECT_EQ(cfgItm.getValue(), 0);
   EXPECT_EQ(cfgItm.getConfigId(), 255);
 }
@@ -111,6 +113,7 @@ TEST_F(ConfigItem_test, constructAllParams) {
   EXPECT_EQ(cfgItm.getPrecision(), 3);
   EXPECT_EQ(cfgItm.getScaleFactor(), 1000);
   EXPECT_EQ(cfgItm.getUnit().type(), Unit::Type::percent);
+  EXPECT_STREQ(cfgItm.getUnit().name(), "%");
   EXPECT_EQ(cfgItm.getValue(), 45);
   EXPECT_EQ(cfgItm.getConfigId(), 123);
 }

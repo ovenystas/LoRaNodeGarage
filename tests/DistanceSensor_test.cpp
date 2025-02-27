@@ -105,7 +105,8 @@ TEST_F(DistanceSensor_test, getDiscoveryItem) {
   EXPECT_EQ(item.configItems[1].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[1].precision, 0);
   EXPECT_EQ(item.configItems[1].minValue, 0);
-  EXPECT_EQ(item.configItems[1].maxValue, Util::ONE_HOUR_IN_SECONDS);
+  EXPECT_EQ(item.configItems[1].maxValue,
+            DistanceSensorConstants::ONE_HOUR_IN_SECONDS);
 
   EXPECT_EQ(item.configItems[2].configId, 2);
   EXPECT_EQ(item.configItems[2].unit, static_cast<uint8_t>(Unit::Type::s));
@@ -113,7 +114,8 @@ TEST_F(DistanceSensor_test, getDiscoveryItem) {
   EXPECT_EQ(item.configItems[2].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[2].precision, 0);
   EXPECT_EQ(item.configItems[2].minValue, 0);
-  EXPECT_EQ(item.configItems[2].maxValue, Util::TWELVE_HOURS_IN_SECONDS);
+  EXPECT_EQ(item.configItems[2].maxValue,
+            DistanceSensorConstants::TWELVE_HOURS_IN_SECONDS);
 }
 
 TEST_F(DistanceSensor_test, getEntityId) { EXPECT_EQ(pDs->getEntityId(), 7); }

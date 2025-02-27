@@ -8,4 +8,4 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 enable_testing()
 
 add_subdirectory(libraries)
-add_subdirectory(extras/tests)
+add_subdirectory(tests)

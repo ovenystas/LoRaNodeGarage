@@ -7,8 +7,8 @@
 #include "Util.h"
 
 // TODO: Replace this ugly workaround with something better
-#if (!defined HAVE_HWSERIAL0) && (!defined ARDUINO_ARCH_SAMD)
-#include "extras/tests/mocks/BufferSerial.h"
+#ifndef HAVE_HWSERIAL0
+#include "tests/mocks/BufferSerial.h"
 extern BufferSerial Serial;
 #endif
 
