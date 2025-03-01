@@ -73,7 +73,7 @@ class Cover : public Printable {
 
   const __FlashStringHelper* getStateName() const;
 
-  const __FlashStringHelper* Cover::getServiceName(CoverService service) const;
+  const __FlashStringHelper* getServiceName(CoverService service) const;
 
  private:
   BaseComponent mBaseComponent;

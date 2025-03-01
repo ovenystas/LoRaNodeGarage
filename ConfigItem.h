@@ -14,10 +14,10 @@ class ConfigItem {
  public:
   ConfigItem(uint8_t configId, uint16_t eeAddress, T defaultValue = 0,
              Unit::Type unitType = Unit::Type::none, uint8_t precision = 0)
-      : mConfigId{configId},
-        mValueItem{ValueItem<T>(unitType, precision, defaultValue)},
+      : mValueItem{ValueItem<T>(unitType, precision, defaultValue)},
         mDefaultValue{defaultValue},
-        mEeAddress{eeAddress} {}
+        mEeAddress{eeAddress},
+        mConfigId{configId} {}
 
   ConfigItem(uint8_t configId, uint16_t eeAddress, T defaultValue, T minValue,
              T maxValue, Unit::Type unitType = Unit::Type::none,

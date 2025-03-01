@@ -3,6 +3,8 @@ set(CMAKE_CXX_STANDARD 11)
 
 add_compile_definitions(TESTING="true")
 
+include(CTest)
+
 add_compile_options(
   -g
   -O0
@@ -70,10 +72,7 @@ add_executable(
   ../Util.cpp
   mocks/Arduino.cpp
   mocks/BufferSerial.cpp
-  ../../Util.cpp
-  ../../GenericEEPROM.cpp
   mocks/Arduino.cpp
-  mocks/BufferSerial.cpp
   mocks/Print.cpp
   mocks/EEPROM.cpp)
 target_link_libraries(ConfigItem_test GTest::gtest_main GTest::gmock_main
@@ -166,7 +165,8 @@ target_include_directories(LoRaHandler_test SYSTEM
 # target_compile_options(LoRaHandler_test PRIVATE -Wold-style-cast)
 gtest_discover_tests(LoRaHandler_test)
 
-add_executable(Node_test.cpp ../Node.cpp mocks/Print.cpp mocks/BufferSerial.cpp)
+add_executable(Node_test Node_test.cpp ../Node.cpp mocks/Print.cpp
+                         mocks/BufferSerial.cpp)
 target_link_libraries(Node_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(Node_test)
 
@@ -191,16 +191,8 @@ target_link_libraries(RingBuffer_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(RingBuffer_test)
 
 add_executable(
-  Sensor_test EXCLUDE_FROM_ALL
-  Sensor_test.cpp
-  ../Util.cpp
-  mocks/Arduino.cpp
-  Sensor_test.cpp
-  ../../Util.cpp
-  ../../GenericEEPROM.cpp
-  mocks/Arduino.cpp
-  mocks/Print.cpp
-  mocks/BufferSerial.cpp)
+  Sensor_test EXCLUDE_FROM_ALL Sensor_test.cpp ../Util.cpp mocks/Arduino.cpp
+                               mocks/Print.cpp mocks/BufferSerial.cpp)
 target_link_libraries(Sensor_test GTest::gtest_main GTest::gmock_main)
 gtest_discover_tests(Sensor_test)
 

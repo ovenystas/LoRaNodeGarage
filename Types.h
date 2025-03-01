@@ -109,7 +109,7 @@ struct DiscoveryConfigItemT {
 
     return size();
   }
-};
+} __attribute__((packed, aligned(1)));
 
 // TODO: See if the array size can be templatized
 // // N is number of config items it can hold.

@@ -130,16 +130,17 @@ TEST_F(PresenceBinarySensor_test, getValueItem) {
 }
 
 TEST_F(PresenceBinarySensor_test, print) {
-  const char* expectStr = "PresenceBinarySensor: away";
+  const char* expectStr = "PresenceBinarySensor=away";
   Sensor<HeightT> hs = Sensor<HeightT>(
       99, "Height", SensorDeviceClass::distance, Unit::Type::cm);
   PresenceBinarySensor pbs =
       PresenceBinarySensor(89, "PresenceBinarySensor", hs);
 
-  EXPECT_EQ(pbs.printTo(Serial), strlen(expectStr));
-
+  size_t len = pbs.printTo(Serial);
   bufSerReadStr();
+
   EXPECT_STREQ(strBuf, expectStr);
+  EXPECT_EQ(len, strlen(expectStr));
 }
 
 TEST_F(PresenceBinarySensor_test, print_service_shall_do_nothing) {
@@ -151,29 +152,29 @@ TEST_F(PresenceBinarySensor_test, print_service_shall_do_nothing) {
 }
 
 TEST_F(PresenceBinarySensor_test, setConfigs_all_in_order) {
-  ConfigItemValueT inItems[4] = {{0, 1000}, {1, 1001}, {2, 1002}, {3, 1003}};
+  ConfigItemValueT inItems[4] = {{0, 100}, {1, 101}, {2, 102}, {3, 103}};
   EXPECT_TRUE(pPbs->setConfigItemValues(inItems, 4));
 
   ConfigItemValueT items[4];
   EXPECT_EQ(pPbs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
             4);
-  EXPECT_EQ(items[0].value, 1000);
-  EXPECT_EQ(items[1].value, 1001);
-  EXPECT_EQ(items[2].value, 1002);
-  EXPECT_EQ(items[3].value, 1003);
+  EXPECT_EQ(items[0].value, 100);
+  EXPECT_EQ(items[1].value, 101);
+  EXPECT_EQ(items[2].value, 102);
+  EXPECT_EQ(items[3].value, 103);
 }
 
 TEST_F(PresenceBinarySensor_test, setConfigs_all_out_of_order) {
-  ConfigItemValueT inItems[4] = {{3, 2003}, {2, 2002}, {1, 2001}, {0, 2000}};
+  ConfigItemValueT inItems[4] = {{3, 203}, {2, 202}, {1, 201}, {0, 200}};
   EXPECT_TRUE(pPbs->setConfigItemValues(inItems, 4));
 
   ConfigItemValueT items[4];
   EXPECT_EQ(pPbs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
             4);
-  EXPECT_EQ(items[0].value, 2000);
-  EXPECT_EQ(items[1].value, 2001);
-  EXPECT_EQ(items[2].value, 2002);
-  EXPECT_EQ(items[3].value, 2003);
+  EXPECT_EQ(items[0].value, 200);
+  EXPECT_EQ(items[1].value, 201);
+  EXPECT_EQ(items[2].value, 202);
+  EXPECT_EQ(items[3].value, 203);
 }
 
 TEST_F(PresenceBinarySensor_test, setConfigs_one) {

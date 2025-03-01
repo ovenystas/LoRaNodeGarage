@@ -276,7 +276,7 @@ TEST_F(BinarySensor_test, getValueItem) {
 }
 
 TEST_F(BinarySensor_test, print_deviceclass_none_state_false) {
-  const char* expectStr = "BinarySensor: off";
+  const char* expectStr = "BinarySensor=off";
   pBS->setState(false);
 
   size_t printedChars = pBS->printTo(Serial);
@@ -287,7 +287,7 @@ TEST_F(BinarySensor_test, print_deviceclass_none_state_false) {
 }
 
 TEST_F(BinarySensor_test, print_deviceclass_none_state_true) {
-  const char* expectStr = "BinarySensor: on";
+  const char* expectStr = "BinarySensor=on";
   pBS->setState(true);
 
   size_t printedChars = pBS->printTo(Serial);
@@ -307,11 +307,11 @@ TEST_F(BinarySensor_test,
       .WillOnce(Return(35999));
   pBS->setReported();
   EXPECT_EQ(pBS->isDiffLastReportedState(), false);
-  EXPECT_EQ(pBS->timeSinceLastReport(), 10);
+  EXPECT_EQ(pBS->timeSinceLastReport(), 10000 - 0);
   pBS->setState(true);
   EXPECT_EQ(pBS->isDiffLastReportedState(), true);
   pBS->setReported();
-  EXPECT_EQ(pBS->timeSinceLastReport(), 15);
+  EXPECT_EQ(pBS->timeSinceLastReport(), 35999 - 20500);
 
   releaseArduinoMock();
 }

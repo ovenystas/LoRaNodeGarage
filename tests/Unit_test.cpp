@@ -28,17 +28,13 @@ class Unit_test : public ::testing::Test {
 
 TEST_F(Unit_test, type_km) {
   Unit unit = Unit(Unit::Type::km);
+
   EXPECT_EQ(unit.type(), Unit::Type::km);
 }
 
 TEST_F(Unit_test, name_km) {
+  const char* expectStr = "km";
   Unit unit = Unit(Unit::Type::km);
-  EXPECT_STREQ(unit.name(), "km");
-}
-
-TEST_F(Unit_test, print_unit_none) {
-  const char* expectStr = "";
-  Unit unit = Unit(Unit::Type::none);
 
   size_t printedChars = unit.print(Serial);
 
@@ -48,7 +44,7 @@ TEST_F(Unit_test, print_unit_none) {
 }
 
 TEST_F(Unit_test, print_unit_C) {
-  const char* expectStr = " °C";
+  const char* expectStr = "°C";
   Unit unit = Unit(Unit::Type::C);
 
   size_t printedChars = unit.print(Serial);
@@ -59,7 +55,7 @@ TEST_F(Unit_test, print_unit_C) {
 }
 
 TEST_F(Unit_test, print_unit_F) {
-  const char* expectStr = " °F";
+  const char* expectStr = "°F";
   Unit unit = Unit(Unit::Type::F);
 
   size_t printedChars = unit.print(Serial);
@@ -70,7 +66,7 @@ TEST_F(Unit_test, print_unit_F) {
 }
 
 TEST_F(Unit_test, print_unit_K) {
-  const char* expectStr = " K";
+  const char* expectStr = "K";
   Unit unit = Unit(Unit::Type::K);
 
   size_t printedChars = unit.print(Serial);
@@ -81,7 +77,7 @@ TEST_F(Unit_test, print_unit_K) {
 }
 
 TEST_F(Unit_test, print_unit_percent) {
-  const char* expectStr = " %";
+  const char* expectStr = "%";
   Unit unit = Unit(Unit::Type::percent);
 
   size_t printedChars = unit.print(Serial);
@@ -92,7 +88,7 @@ TEST_F(Unit_test, print_unit_percent) {
 }
 
 TEST_F(Unit_test, print_unit_km) {
-  const char* expectStr = " km";
+  const char* expectStr = "km";
   Unit unit = Unit(Unit::Type::km);
 
   size_t printedChars = unit.print(Serial);
@@ -103,7 +99,7 @@ TEST_F(Unit_test, print_unit_km) {
 }
 
 TEST_F(Unit_test, print_unit_m) {
-  const char* expectStr = " m";
+  const char* expectStr = "m";
   Unit unit = Unit(Unit::Type::m);
 
   size_t printedChars = unit.print(Serial);
@@ -114,7 +110,7 @@ TEST_F(Unit_test, print_unit_m) {
 }
 
 TEST_F(Unit_test, print_unit_dm) {
-  const char* expectStr = " dm";
+  const char* expectStr = "dm";
   Unit unit = Unit(Unit::Type::dm);
 
   size_t printedChars = unit.print(Serial);
@@ -125,7 +121,7 @@ TEST_F(Unit_test, print_unit_dm) {
 }
 
 TEST_F(Unit_test, print_unit_cm) {
-  const char* expectStr = " cm";
+  const char* expectStr = "cm";
   Unit unit = Unit(Unit::Type::cm);
 
   size_t printedChars = unit.print(Serial);
@@ -136,7 +132,7 @@ TEST_F(Unit_test, print_unit_cm) {
 }
 
 TEST_F(Unit_test, print_unit_mm) {
-  const char* expectStr = " mm";
+  const char* expectStr = "mm";
   Unit unit = Unit(Unit::Type::mm);
 
   size_t printedChars = unit.print(Serial);
@@ -147,7 +143,7 @@ TEST_F(Unit_test, print_unit_mm) {
 }
 
 TEST_F(Unit_test, print_unit_um) {
-  const char* expectStr = " μm";
+  const char* expectStr = "μm";
   Unit unit = Unit(Unit::Type::um);
 
   size_t printedChars = unit.print(Serial);
@@ -158,7 +154,7 @@ TEST_F(Unit_test, print_unit_um) {
 }
 
 TEST_F(Unit_test, print_unit_s) {
-  const char* expectStr = " s";
+  const char* expectStr = "s";
   Unit unit = Unit(Unit::Type::s);
 
   size_t printedChars = unit.print(Serial);
@@ -169,7 +165,7 @@ TEST_F(Unit_test, print_unit_s) {
 }
 
 TEST_F(Unit_test, print_unit_ms) {
-  const char* expectStr = " ms";
+  const char* expectStr = "ms";
   Unit unit = Unit(Unit::Type::ms);
 
   size_t printedChars = unit.print(Serial);

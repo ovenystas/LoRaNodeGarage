@@ -242,29 +242,29 @@ TEST_F(GarageCover_test, loadConfigValues_OK) {
 }
 
 TEST_F(GarageCover_test, print) {
-  const char* expectStr = "GarageCover: closed";
+  const char* expectStr = "GarageCover=closed";
   EXPECT_CALL(*pArduinoMock, pinMode(11, INPUT_PULLUP));
   EXPECT_CALL(*pArduinoMock, pinMode(12, INPUT_PULLUP));
   EXPECT_CALL(*pArduinoMock, pinMode(13, OUTPUT));
   EXPECT_CALL(*pArduinoMock, digitalWrite(13, LOW));
   GarageCover gc = GarageCover(91, "GarageCover", 11, 12, 13);
 
-  EXPECT_EQ(gc.printTo(Serial), 19);
+  EXPECT_EQ(gc.printTo(Serial), strlen(expectStr));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
 }
 
 TEST_F(GarageCover_test, print_service_open) {
-  const char* expectStr =
-      "GarageCover: Service open called when in state closed";
+  const char* expectStr = "GarageCover: service=open state=closed";
   EXPECT_CALL(*pArduinoMock, pinMode(11, INPUT_PULLUP));
   EXPECT_CALL(*pArduinoMock, pinMode(12, INPUT_PULLUP));
   EXPECT_CALL(*pArduinoMock, pinMode(13, OUTPUT));
   EXPECT_CALL(*pArduinoMock, digitalWrite(13, LOW));
   GarageCover gc = GarageCover(91, "GarageCover", 11, 12, 13);
 
-  EXPECT_EQ(gc.printTo(Serial, static_cast<uint8_t>(CoverService::open)), 53);
+  EXPECT_EQ(gc.printTo(Serial, static_cast<uint8_t>(CoverService::open)),
+            strlen(expectStr));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);

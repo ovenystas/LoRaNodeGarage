@@ -56,7 +56,7 @@ class Node_test : public ::testing::Test {
  protected:
   ComponentChild c0 = ComponentChild(10);
   ComponentChild c1 = ComponentChild(11);
-  IComponent* components[2] = {&c0, &c1};
+  const IComponent* components[2] = {&c0, &c1};
   Node n = Node(components, 2);
 };
 
@@ -100,10 +100,11 @@ TEST_F(Node_test, getComponentByEntityId) {
 }
 
 TEST_F(NodePrint_test, print) {
-  const char* expectedStr = "10, 11\r\n";
+  const char* expectedStr = "10, 11";
 
-  EXPECT_EQ(n.printTo(*pSerial), strlen(expectedStr));
-
+  size_t len = n.printTo(*pSerial);
   bufSerReadStr();
+
   EXPECT_STREQ(strBuf, expectedStr);
+  EXPECT_EQ(len, strlen(expectedStr));
 }

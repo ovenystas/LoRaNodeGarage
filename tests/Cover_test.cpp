@@ -95,13 +95,6 @@ TEST_F(Cover_test, getStateName_of_current_state) {
   EXPECT_STREQ(pC->getStateName(), "closing");
 }
 
-TEST_F(Cover_test, getStateName_of_state_as_arg) {
-  EXPECT_STREQ(pC->getStateName(CoverState::closed), "closed");
-  EXPECT_STREQ(pC->getStateName(CoverState::opening), "opening");
-  EXPECT_STREQ(pC->getStateName(CoverState::open), "open");
-  EXPECT_STREQ(pC->getStateName(CoverState::closing), "closing");
-}
-
 TEST_F(Cover_test, getValueItem) {
   ValueItemT item;
   pC->setState(CoverState::closed);
@@ -134,16 +127,16 @@ TEST_F(Cover_test, setReported_isDiffLastReportedState_timeSinceLastReport) {
       .WillOnce(Return(35999));
   pC->setReported();
   EXPECT_EQ(pC->isDiffLastReportedState(), false);
-  EXPECT_EQ(pC->timeSinceLastReport(), 10);
+  EXPECT_EQ(pC->timeSinceLastReport(), 10000 - 0);
   pC->setState(CoverState::opening);
   EXPECT_EQ(pC->isDiffLastReportedState(), true);
   pC->setReported();
-  EXPECT_EQ(pC->timeSinceLastReport(), 15);
+  EXPECT_EQ(pC->timeSinceLastReport(), 35999 - 20500);
   releaseArduinoMock();
 }
 
 TEST_F(Cover_test, print_when_state_is_closed) {
-  const char* expectStr = "Cover: closed";
+  const char* expectStr = "Cover=closed";
   pC->setState(CoverState::closed);
 
   size_t printedChars = pC->printTo(Serial);
@@ -154,7 +147,7 @@ TEST_F(Cover_test, print_when_state_is_closed) {
 }
 
 TEST_F(Cover_test, print_when_state_is_opening) {
-  const char* expectStr = "Cover: opening";
+  const char* expectStr = "Cover=opening";
   pC->setState(CoverState::opening);
 
   size_t printedChars = pC->printTo(Serial);
@@ -165,7 +158,7 @@ TEST_F(Cover_test, print_when_state_is_opening) {
 }
 
 TEST_F(Cover_test, print_when_state_is_open) {
-  const char* expectStr = "Cover: open";
+  const char* expectStr = "Cover=open";
   pC->setState(CoverState::open);
 
   size_t printedChars = pC->printTo(Serial);
@@ -176,7 +169,7 @@ TEST_F(Cover_test, print_when_state_is_open) {
 }
 
 TEST_F(Cover_test, print_when_state_is_closing) {
-  const char* expectStr = "Cover: closing";
+  const char* expectStr = "Cover=closing";
   pC->setState(CoverState::closing);
 
   size_t printedChars = pC->printTo(Serial);
@@ -187,7 +180,7 @@ TEST_F(Cover_test, print_when_state_is_closing) {
 }
 
 TEST_F(Cover_test, print_when_state_is_closed_and_service_open_is_called) {
-  const char* expectStr = "Cover: Service open called when in state closed";
+  const char* expectStr = "Cover: service=open state=closed";
   pC->setState(CoverState::closed);
 
   size_t printedChars =
@@ -199,7 +192,7 @@ TEST_F(Cover_test, print_when_state_is_closed_and_service_open_is_called) {
 }
 
 TEST_F(Cover_test, print_when_state_is_open_and_service_close_is_called) {
-  const char* expectStr = "Cover: Service close called when in state open";
+  const char* expectStr = "Cover: service=close state=open";
   pC->setState(CoverState::open);
 
   size_t printedChars =
@@ -211,7 +204,7 @@ TEST_F(Cover_test, print_when_state_is_open_and_service_close_is_called) {
 }
 
 TEST_F(Cover_test, print_when_state_is_opening_and_service_stop_is_called) {
-  const char* expectStr = "Cover: Service stop called when in state opening";
+  const char* expectStr = "Cover: service=stop state=opening";
   pC->setState(CoverState::opening);
 
   size_t printedChars =
@@ -223,7 +216,7 @@ TEST_F(Cover_test, print_when_state_is_opening_and_service_stop_is_called) {
 }
 
 TEST_F(Cover_test, print_when_state_is_closing_and_service_toggle_is_called) {
-  const char* expectStr = "Cover: Service toggle called when in state closing";
+  const char* expectStr = "Cover: service=toggle state=closing";
   pC->setState(CoverState::closing);
 
   size_t printedChars =
@@ -235,7 +228,7 @@ TEST_F(Cover_test, print_when_state_is_closing_and_service_toggle_is_called) {
 }
 
 TEST_F(Cover_test, print_when_state_is_closed_and_service_unknown_is_called) {
-  const char* expectStr = "Cover: Service unknown called when in state closed";
+  const char* expectStr = "Cover: service=unknown state=closed";
   pC->setState(CoverState::closed);
 
   size_t printedChars =

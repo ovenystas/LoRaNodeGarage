@@ -93,6 +93,7 @@
 #include "Util.h"
 
 #define DEBUG_LORA_MESSAGE
+// #define LORA_DRY_RUN
 
 #define LORA_FREQUENCY 868e6
 #define LORA_MAX_MESSAGE_LENGTH 100
@@ -272,11 +273,6 @@ class LoRaHandler {
   void endMsg();
 
   void setDefaultHeader(LoRaHeaderT& header);
-
-  void setPins(int ss = LORA_DEFAULT_SS_PIN, int reset = LORA_DEFAULT_RESET_PIN,
-               int dio0 = LORA_DEFAULT_DIO0_PIN) {
-    mLoRa.setPins(ss, reset, dio0);
-  };
 
  private:
   void printMessage(const LoRaTxMessageT& msg);

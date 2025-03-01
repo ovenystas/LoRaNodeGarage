@@ -129,13 +129,14 @@ TEST_F(TemperatureSensor_test, getValueItem) {
 }
 
 TEST_F(TemperatureSensor_test, print) {
-  const char *expectStr = "TemperatureSensor: 0.0 °C";
+  const char *expectStr = "TemperatureSensor=0.0°C";
   TemperatureSensor ts = TemperatureSensor(15, "TemperatureSensor", *pDhtMock);
 
-  EXPECT_EQ(ts.printTo(Serial), strlen(expectStr));
-
+  size_t len = ts.printTo(Serial);
   bufSerReadStr();
+
   EXPECT_STREQ(strBuf, expectStr);
+  EXPECT_EQ(len, strlen(expectStr));
 }
 
 TEST_F(TemperatureSensor_test, print_service_shall_do_nothing) {
@@ -144,33 +145,33 @@ TEST_F(TemperatureSensor_test, print_service_shall_do_nothing) {
 }
 
 TEST_F(TemperatureSensor_test, setConfigs_all_in_order) {
-  ConfigItemValueT inItems[4] = {{0, 1000}, {1, 1001}, {2, 1002}, {3, 1003}};
+  ConfigItemValueT inItems[4] = {{0, 10}, {1, 11}, {2, 12}, {3, 13}};
   EXPECT_TRUE(pTs->setConfigItemValues(inItems, 4));
 
   ConfigItemValueT items[4];
   EXPECT_EQ(pTs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
             4);
-  EXPECT_EQ(items[0].value, 1000);
-  EXPECT_EQ(items[1].value, 1001);
-  EXPECT_EQ(items[2].value, 1002);
-  EXPECT_EQ(items[3].value, 1003);
+  EXPECT_EQ(items[0].value, 10);
+  EXPECT_EQ(items[1].value, 11);
+  EXPECT_EQ(items[2].value, 12);
+  EXPECT_EQ(items[3].value, 13);
 }
 
 TEST_F(TemperatureSensor_test, setConfigs_all_out_of_order) {
-  ConfigItemValueT inItems[4] = {{3, 2003}, {2, 2002}, {1, 2001}, {0, 2000}};
+  ConfigItemValueT inItems[4] = {{3, 23}, {2, 22}, {1, 21}, {0, 20}};
   EXPECT_TRUE(pTs->setConfigItemValues(inItems, 4));
 
   ConfigItemValueT items[4];
   EXPECT_EQ(pTs->getConfigItemValues(items, sizeof(items) / sizeof(items[0])),
             4);
-  EXPECT_EQ(items[0].value, 2000);
-  EXPECT_EQ(items[1].value, 2001);
-  EXPECT_EQ(items[2].value, 2002);
-  EXPECT_EQ(items[3].value, 2003);
+  EXPECT_EQ(items[0].value, 20);
+  EXPECT_EQ(items[1].value, 21);
+  EXPECT_EQ(items[2].value, 22);
+  EXPECT_EQ(items[3].value, 23);
 }
 
 TEST_F(TemperatureSensor_test, setConfigs_one) {
-  ConfigItemValueT inItems[1] = {{3, 3003}};
+  ConfigItemValueT inItems[1] = {{3, 33}};
   EXPECT_TRUE(pTs->setConfigItemValues(inItems, 1));
 
   ConfigItemValueT items[4];
@@ -182,12 +183,11 @@ TEST_F(TemperatureSensor_test, setConfigs_one) {
             TemperatureSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT);
   EXPECT_EQ(items[2].value,
             TemperatureSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
-  EXPECT_EQ(items[3].value, 3003);
+  EXPECT_EQ(items[3].value, 33);
 }
 
 TEST_F(TemperatureSensor_test, setConfigs_too_many) {
-  ConfigItemValueT inItems[5] = {
-      {0, 1000}, {1, 1001}, {2, 1002}, {3, 1003}, {4, 1004}};
+  ConfigItemValueT inItems[5] = {{0, 10}, {1, 11}, {2, 12}, {3, 13}, {4, 14}};
   EXPECT_FALSE(pTs->setConfigItemValues(inItems, 5));
 }
 

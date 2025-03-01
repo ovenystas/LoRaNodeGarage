@@ -167,7 +167,6 @@ void setup() {
   ctrAes128.setKey(AES_KEY, ctrAes128.keySize());
   ctrAes128.setIV(CTR_IV, ctrAes128.ivSize());
 
-  lora.setPins(LORA_DEFAULT_SS_PIN, LORA_RESET_PIN, LORA_DEFAULT_DIO0_PIN);
   if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onConfigReqMsg,
                   &onConfigSetReqMsg, &onServiceReqMsg)) {
     Serial.print(F("\nStarting LoRa failed!"));

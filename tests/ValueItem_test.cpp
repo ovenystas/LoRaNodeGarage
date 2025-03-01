@@ -185,7 +185,7 @@ TEST_F(ValueItem_test, print_uint32_max_val_precision_0_no_unit) {
 }
 
 TEST_F(ValueItem_test, print_uint32_max_val_precision_3_unit_C) {
-  const char* expectStr = "4294967.295 °C";
+  const char* expectStr = "4294967.295°C";
   auto v = ValueItem<uint32_t>(Unit::Type::C, 3, UINT32_MAX);
 
   size_t printedChars = v.printTo(Serial);
@@ -196,7 +196,7 @@ TEST_F(ValueItem_test, print_uint32_max_val_precision_3_unit_C) {
 }
 
 TEST_F(ValueItem_test, print_int32_min_val_precision_2_unit_F) {
-  const char* expectStr = "-21474836.48 °F";
+  const char* expectStr = "-21474836.48°F";
   auto v = ValueItem<int32_t>(Unit::Type::F, 2, INT32_MIN);
 
   size_t printedChars = v.printTo(Serial);
@@ -207,7 +207,7 @@ TEST_F(ValueItem_test, print_int32_min_val_precision_2_unit_F) {
 }
 
 TEST_F(ValueItem_test, print_int8_val_minus_1_precision_3_unit_km) {
-  const char* expectStr = "-0.001 km";
+  const char* expectStr = "-0.001km";
   auto v = ValueItem<int8_t>(Unit::Type::km, 3, -1);
 
   size_t printedChars = v.printTo(Serial);

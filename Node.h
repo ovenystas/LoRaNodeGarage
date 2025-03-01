@@ -9,11 +9,11 @@ class Node : Printable {
  public:
   Node() = delete;
 
-  Node(IComponent** components, uint8_t size)
+  Node(const IComponent** components, uint8_t size)
       : mComponents{components}, mSize{size} {}
 
-  IComponent* getComponent(uint8_t idx);
-  IComponent* getComponentByEntityId(uint8_t entityId);
+  const IComponent* getComponent(uint8_t idx);
+  const IComponent* getComponentByEntityId(uint8_t entityId);
 
   uint8_t getSize() const { return mSize; }
 

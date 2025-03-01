@@ -35,7 +35,7 @@ class BaseComponent {
   }
 
  private:
-  uint32_t mLastReportTime{};  // s
+  uint32_t mLastReportTime{};  // ms
   const char* mName{""};
   const uint8_t mEntityId{};
   bool mIsReportDue{true};

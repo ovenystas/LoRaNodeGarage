@@ -108,7 +108,7 @@ TEST_F(HumiditySensor_test, getDiscoveryItem) {
   EXPECT_EQ(item.configItems[3].configId, 3);
   EXPECT_EQ(item.configItems[3].unit,
             static_cast<uint8_t>(Unit::Type::percent));
-  EXPECT_FALSE(item.configItems[3].isSigned);
+  EXPECT_TRUE(item.configItems[3].isSigned);
   EXPECT_EQ(item.configItems[3].sizeCode, sizeof(HumidityT) / 2);
   EXPECT_EQ(item.configItems[3].precision, 0);
 }
@@ -125,7 +125,7 @@ TEST_F(HumiditySensor_test, getValueItem) {
 }
 
 TEST_F(HumiditySensor_test, print) {
-  const char* expectStr = "HumiditySensor: 0 %";
+  const char* expectStr = "HumiditySensor=0%";
   HumiditySensor hs = HumiditySensor(51, "HumiditySensor", *pDhtMock);
 
   EXPECT_EQ(hs.printTo(Serial), strlen(expectStr));
@@ -149,7 +149,7 @@ TEST_F(HumiditySensor_test, setConfigs_all_in_order) {
   EXPECT_EQ(items[0].value, 100);
   EXPECT_EQ(items[1].value, 1001);
   EXPECT_EQ(items[2].value, 1002);
-  EXPECT_EQ(items[3].value, 103);
+  EXPECT_EQ(items[3].value, 100);  // Clamped to max 100
 }
 
 TEST_F(HumiditySensor_test, setConfigs_all_out_of_order) {

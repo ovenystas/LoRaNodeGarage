@@ -3,20 +3,42 @@
 #include <gtest/gtest.h>
 
 #include "mocks/Arduino.h"
+#include "mocks/BufferSerial.h"
 
 using ::testing::Return;
 
-TEST(BaseComponent_test, getEntityId_constructor_1_param) {
+class BaseComponent_test : public ::testing::Test {
+ protected:
+  void SetUp() override { strBuf[0] = '\0'; }
+
+  void TearDown() override {}
+
+  void bufSerReadStr() {
+    size_t i = 0;
+    while (Serial.available()) {
+      int c = Serial.read();
+      if (c < 0) {
+        break;
+      }
+      strBuf[i++] = static_cast<char>(c);
+    }
+    strBuf[i] = '\0';
+  }
+
+  char strBuf[256];
+};
+
+TEST_F(BaseComponent_test, getEntityId_constructor_1_param) {
   BaseComponent cmp = BaseComponent(23);
   EXPECT_EQ(cmp.getEntityId(), 23);
 }
 
-TEST(BaseComponent_test, getEntityId_constructor_2_params) {
+TEST_F(BaseComponent_test, getEntityId_constructor_2_params) {
   BaseComponent cmp = BaseComponent(23, "Hello");
   EXPECT_EQ(cmp.getEntityId(), 23);
 }
 
-TEST(BaseComponent_test, setReported_and_timeSinceLastReport) {
+TEST_F(BaseComponent_test, setReported_and_timeSinceLastReport) {
   BaseComponent cmp = BaseComponent(23);
   ArduinoMock* arduinoMock = arduinoMockInstance();
   EXPECT_CALL(*arduinoMock, millis())
@@ -26,15 +48,15 @@ TEST(BaseComponent_test, setReported_and_timeSinceLastReport) {
       .WillOnce(Return(135000ul));
 
   cmp.setReported();
-  EXPECT_EQ(cmp.timeSinceLastReport(), 10);
+  EXPECT_EQ(cmp.timeSinceLastReport(), 20500 - 10000);
 
   cmp.setReported();
-  EXPECT_EQ(cmp.timeSinceLastReport(), 100);
+  EXPECT_EQ(cmp.timeSinceLastReport(), 135000 - 35999);
 
   releaseArduinoMock();
 }
 
-TEST(BaseComponent_test, isReportDue) {
+TEST_F(BaseComponent_test, isReportDue) {
   BaseComponent cmp = BaseComponent(23);
   ArduinoMock* arduinoMock = arduinoMockInstance();
   EXPECT_CALL(*arduinoMock, millis()).WillOnce(Return(10000ul));
@@ -55,22 +77,46 @@ TEST(BaseComponent_test, isReportDue) {
   releaseArduinoMock();
 }
 
-TEST(BaseComponent_test, getName_when_no_name_is_set) {
+TEST_F(BaseComponent_test, print_name_when_no_name_is_set) {
   BaseComponent cmp = BaseComponent(23);
-  EXPECT_STREQ(cmp.getName(), "");
+  const char* expectStr = "";
+
+  size_t printedChars = cmp.printTo(Serial);
+
+  bufSerReadStr();
+  EXPECT_STREQ(strBuf, expectStr);
+  EXPECT_EQ(printedChars, strlen(expectStr));
 }
 
-TEST(BaseComponent_test, getName_when_empty_name_is_set) {
-  BaseComponent cmp = BaseComponent(23, "");
-  EXPECT_STREQ(cmp.getName(), "");
+TEST_F(BaseComponent_test, print_name_when_empty_name_is_set) {
+  const char* expectStr = "";
+  BaseComponent cmp = BaseComponent(23, expectStr);
+
+  size_t printedChars = cmp.printTo(Serial);
+
+  bufSerReadStr();
+  EXPECT_STREQ(strBuf, expectStr);
+  EXPECT_EQ(printedChars, strlen(expectStr));
 }
 
-TEST(BaseComponent_test, getName_when_shortest_name_is_set) {
-  BaseComponent cmp = BaseComponent(23, "H");
-  EXPECT_STREQ(cmp.getName(), "H");
+TEST_F(BaseComponent_test, print_name_when_shortest_name_is_set) {
+  const char* expectStr = "B";
+  BaseComponent cmp = BaseComponent(23, expectStr);
+
+  size_t printedChars = cmp.printTo(Serial);
+
+  bufSerReadStr();
+  EXPECT_STREQ(strBuf, expectStr);
+  EXPECT_EQ(printedChars, strlen(expectStr));
 }
 
-TEST(BaseComponent_test, getName_when_large_name_is_set_shall) {
-  BaseComponent cmp = BaseComponent(23, "123456789012345678901234567890");
-  EXPECT_STREQ(cmp.getName(), "123456789012345678901234567890");
+TEST_F(BaseComponent_test, print_name_when_large_name_is_set) {
+  const char* expectStr = "123456789012345678901234567890";
+  BaseComponent cmp = BaseComponent(23, expectStr);
+
+  size_t printedChars = cmp.printTo(Serial);
+
+  bufSerReadStr();
+  EXPECT_STREQ(strBuf, expectStr);
+  EXPECT_EQ(printedChars, strlen(expectStr));
 }

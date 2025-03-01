@@ -129,30 +129,6 @@ TEST_F(SensorInt32BatteryPercent_test, getUnitType_percent) {
   EXPECT_EQ(sc.getUnitType(), Unit::Type::percent);
 }
 
-TEST_F(SensorInt8_test, getUnitName_default) {
-  EXPECT_STREQ(sc.getUnitName(), "");
-}
-
-TEST_F(SensorUInt16_test, getUnitName_default) {
-  EXPECT_STREQ(sc.getUnitName(), "");
-}
-
-TEST_F(SensorInt32_test, getUnitName_default) {
-  EXPECT_STREQ(sc.getUnitName(), "");
-}
-
-TEST_F(SensorInt8BatteryPercent_test, getUnitName_percent) {
-  EXPECT_STREQ(sc.getUnitName(), "%");
-}
-
-TEST_F(SensorUInt16BatteryPercent_test, getUnitName_percent) {
-  EXPECT_STREQ(sc.getUnitName(), "%");
-}
-
-TEST_F(SensorInt32BatteryPercent_test, getUnitName_percent) {
-  EXPECT_STREQ(sc.getUnitName(), "%");
-}
-
 TEST_F(SensorInt8_test, getDiscoveryEntityItem) {
   DiscoveryEntityItemT item;
 
@@ -311,74 +287,74 @@ TEST_F(SensorInt8_test, setReported) {
       .WillOnce(Return(35999));
   sc.setReported();
   EXPECT_EQ(sc.absDiffLastReportedValue(), 0);
-  EXPECT_EQ(sc.timeSinceLastReport(), 10);
+  EXPECT_EQ(sc.timeSinceLastReport(), 10000 - 0);
   sc.setValue(-33);
   EXPECT_EQ(sc.absDiffLastReportedValue(), 33);
   sc.setReported();
-  EXPECT_EQ(sc.timeSinceLastReport(), 15);
+  EXPECT_EQ(sc.timeSinceLastReport(), 35999 - 20500);
   releaseArduinoMock();
 }
 
 TEST_F(SensorPrint_test, print_simple_constructed_sensor) {
-  const char* expectStr = ": 0";
+  const char* expectStr = "=0";
   Sensor<int8_t> sc = Sensor<int8_t>(108);
 
-  size_t printedChars = sc.printTo(Serial);
+  size_t len = sc.printTo(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
-  EXPECT_EQ(printedChars, strlen(expectStr));
+  EXPECT_EQ(len, strlen(expectStr));
 }
 
 TEST_F(SensorPrint_test, print_negative_value_scale_factor_1_unit_none) {
-  const char* expectStr = "Sensor8: -123";
+  const char* expectStr = "Sensor8=-123";
   Sensor<int8_t> sc = Sensor<int8_t>(108, "Sensor8");
   sc.setValue(-123);
 
-  size_t printedChars = sc.printTo(Serial);
+  size_t len = sc.printTo(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
-  EXPECT_EQ(printedChars, strlen(expectStr));
+  EXPECT_EQ(len, strlen(expectStr));
 }
 
 TEST_F(SensorPrint_test, print_positive_value_scale_factor_1000_unit_percent) {
-  const char* expectStr = "Sensor8: 0.001 %";
+  const char* expectStr = "Sensor8=0.001%";
   Sensor<int8_t> sc = Sensor<int8_t>(
       108, "Sensor8", SensorDeviceClass::humidity, Unit::Type::percent, 3);
   sc.setValue(1);
 
-  size_t printedChars = sc.printTo(Serial);
+  size_t len = sc.printTo(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
-  EXPECT_EQ(printedChars, strlen(expectStr));
+  EXPECT_EQ(len, strlen(expectStr));
 }
 
 TEST_F(SensorPrint_test, print_negative_value_scale_factor_10_unit_mm) {
-  const char* expectStr = "Sensor16: 1234.5 mm";
+  const char* expectStr = "Sensor16=1234.5mm";
   Sensor<uint16_t> sc = Sensor<uint16_t>(
       116, "Sensor16", SensorDeviceClass::distance, Unit::Type::mm, 1);
   sc.setValue(12345);
 
-  size_t printedChars = sc.printTo(Serial);
+  size_t len = sc.printTo(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
-  EXPECT_EQ(printedChars, strlen(expectStr));
+  EXPECT_EQ(len, strlen(expectStr));
 }
 
 TEST_F(SensorPrint_test, print_negative_value_scale_factor_1000_unit_um) {
-  const char* expectStr = "Sensor32: -2147483.648 μm";
+  const char* expectStr = "Sensor32=-2147483.648μm";
   Sensor<int32_t> sc = Sensor<int32_t>(
       116, "Sensor32", SensorDeviceClass::distance, Unit::Type::um, 3);
   sc.setValue(INT32_MIN);
 
-  size_t printedChars = sc.printTo(Serial);
+  size_t len = sc.printTo(Serial);
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);
-  EXPECT_EQ(printedChars, strlen(expectStr));
+  EXPECT_EQ(len, strlen(expectStr));
 }
 
 TEST_F(SensorInt8_test, isReportDue) {

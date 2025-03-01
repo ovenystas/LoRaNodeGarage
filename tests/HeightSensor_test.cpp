@@ -101,8 +101,7 @@ TEST_F(HeightSensor_test, getDiscoveryItem) {
   EXPECT_EQ(item.configItems[1].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[1].precision, 0);
   EXPECT_EQ(item.configItems[1].minValue, 0);
-  EXPECT_EQ(item.configItems[1].maxValue,
-            HeightSensorConstants::ONE_HOUR_IN_SECONDS);
+  EXPECT_EQ(item.configItems[1].maxValue, Util::ONE_HOUR_IN_SECONDS);
 
   EXPECT_EQ(item.configItems[2].configId, 2);
   EXPECT_EQ(item.configItems[2].unit, static_cast<uint8_t>(Unit::Type::ms));
@@ -110,8 +109,7 @@ TEST_F(HeightSensor_test, getDiscoveryItem) {
   EXPECT_EQ(item.configItems[2].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[2].precision, 0);
   EXPECT_EQ(item.configItems[2].minValue, 0);
-  EXPECT_EQ(item.configItems[2].maxValue,
-            HeightSensorConstants::ONE_MINUTE_IN_MILLISECONDS);
+  EXPECT_EQ(item.configItems[2].maxValue, Util::ONE_MINUTE_IN_MILLISECONDS);
 
   EXPECT_EQ(item.configItems[3].configId, 3);
   EXPECT_EQ(item.configItems[3].unit, static_cast<uint8_t>(Unit::Type::cm));
@@ -139,12 +137,12 @@ TEST_F(HeightSensor_test, getValueItem) {
 }
 
 TEST_F(HeightSensor_test, print) {
-  const char* expectStr = "HeightSensor: 0 cm";
+  const char* expectStr = "HeightSensor=0cm";
   Sensor<DistanceT> ds = Sensor<DistanceT>(
       99, "Distance", SensorDeviceClass::distance, Unit::Type::cm);
   HeightSensor hs = HeightSensor(39, "HeightSensor", ds);
 
-  EXPECT_EQ(hs.printTo(Serial), 18);
+  EXPECT_EQ(hs.printTo(Serial), strlen(expectStr));
 
   bufSerReadStr();
   EXPECT_STREQ(strBuf, expectStr);

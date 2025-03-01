@@ -163,7 +163,7 @@ TEST_F(LoRaHandler_test, configsValueMsg) {
   bufSerReadStr();
   // clang-format off
   EXPECT_STREQ(strBuf,
-    "[61500] LoRaTx: H: 01 02 01 47 P: 37 02 01 00 00 00 11 02 11 22 33 44\r\n[61602] AirTime: 100 ms, 28 ppm\r\n");
+    "\n[61500] LoRaTx: H: 01 02 01 47 P: 37 02 01 00 00 00 11 02 11 22 33 44\n[61602] AirTime: 100 ms, 28 ppm");
   // clang-format on
 
   EXPECT_EQ(writeSize, expectedMsgSize);
@@ -197,13 +197,13 @@ TEST_F(LoRaHandler_test, discoveryMsg) {
       .WillRepeatedly(Return(202));  // Send end and debug print of AirTime
 
   pLH->beginDiscoveryMsg();
-  pLH->addDiscoveryItem((&item));
+  pLH->addDiscoveryItem(item);
   pLH->endMsg();
 
   bufSerReadStr();
   // clang-format off
   EXPECT_STREQ(strBuf,
-    "[100] LoRaTx: H: 01 02 01 43 P: 7B 01 02 03 1B 02 06 10 1B 00 01 E2 40 00 09 FB F1 07 11 06 00 01 E2 40 00 09 FB F1\r\n[202] AirTime: 100 ms, 28 ppm\r\n");
+    "\n[100] LoRaTx: H: 01 02 01 43 P: 7B 01 02 03 1B 02 06 10 1B 00 01 E2 40 00 09 FB F1 07 11 06 00 01 E2 40 00 09 FB F1\n[202] AirTime: 100 ms, 28 ppm");
   // clang-format on
 
   EXPECT_EQ(writeSize, expectedMsgSize);
@@ -295,8 +295,8 @@ TEST_F(LoRaHandler_test, loraRx_ping_req_no_ack_shall_send_ping_msg) {
 
   bufSerReadStr();
   EXPECT_THAT(strBuf,
-              HasSubstr("[101] LoRaTx: H: 01 02 01 41 P: FF 7E\r\n[204] "
-                        "AirTime: 100 ms, 28 ppm\r\n"));
+              HasSubstr("\n[101] LoRaTx: H: 01 02 01 41 P: FF 7E\n[204] "
+                        "AirTime: 100 ms, 28 ppm"));
 
   // Check TX header
   EXPECT_EQ(loraTxMsg.header.dst, LORA_GATEWAY);
@@ -388,8 +388,8 @@ TEST_F(
   EXPECT_EQ(pLH->loraRx(), rxMsgSize);
 
   bufSerReadStr();
-  EXPECT_THAT(strBuf, HasSubstr("[101] LoRaTx: H: 01 02 00 82 P: 21\r\n[203] "
-                                "AirTime: 100 ms, 28 ppm\r\n"));
+  EXPECT_THAT(strBuf, HasSubstr("\n[101] LoRaTx: H: 01 02 00 82 P: 21\n[203] "
+                                "AirTime: 100 ms, 28 ppm"));
 
   // Check TX header
   EXPECT_EQ(loraTxMsg.header.dst, LORA_GATEWAY);
@@ -579,15 +579,15 @@ TEST_F(LoRaHandler_test, valueMsg) {
       .WillRepeatedly(Return(61602));  // Send end and debug print of AirTime
 
   pLH->beginValueMsg();
-  pLH->addValueItem(&item1);
-  pLH->addValueItem(&item2);
+  pLH->addValueItem(item1);
+  pLH->addValueItem(item2);
   pLH->endMsg();
 
   bufSerReadStr();
   // clang-format off
   EXPECT_STREQ(
       strBuf,
-      "[61500] LoRaTx: H: 01 02 01 45 P: 02 7B 00 00 00 01 7C 11 22 33 44\r\n[61602] AirTime: 100 ms, 28 ppm\r\n");
+      "\n[61500] LoRaTx: H: 01 02 01 45 P: 02 7B 00 00 00 01 7C 11 22 33 44\n[61602] AirTime: 100 ms, 28 ppm");
   // clang-format off
 
   EXPECT_EQ(writeSize, expectedMsgSize);
@@ -651,8 +651,8 @@ TEST_F(LoRaHandler_test, encrypted_msg) {
   EXPECT_EQ(lora.loraRx(), LORA_HEADER_LENGTH);
 
   bufSerReadStr();
-  EXPECT_THAT(strBuf, HasSubstr("[0] LoRaTx: H: 01 02 01 41 P: FF 91\r\n[0] "
-                               "AirTime: 0 ms, 0 ppm\r\n"));
+  EXPECT_THAT(strBuf, HasSubstr("\n[0] LoRaTx: H: 01 02 01 41 P: FF 91\n[0] "
+                               "AirTime: 0 ms, 0 ppm"));
 
   uint8_t decryptedPingRespMsg[LORA_MAX_MESSAGE_LENGTH];
   memcpy(decryptedPingRespMsg, loraTxBuf.buf, 3);

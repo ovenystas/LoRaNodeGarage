@@ -5,8 +5,6 @@
 
 #include "Util.h"
 
-#define LORA_DRY_RUN
-
 static constexpr uint8_t msgTypeMask = 0x0f;
 
 int16_t LoRaHandler::begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc,

@@ -89,7 +89,7 @@ TEST(Util_test, printMillis_0) {
   printMillis(Serial);
 
   bufSerReadStr();
-  EXPECT_STREQ(strBuf, "[0] ");
+  EXPECT_STREQ(strBuf, "\n[0] ");
   releaseArduinoMock();
 }
 
@@ -100,7 +100,7 @@ TEST(Util_test, printMillis_UINT32_MAX) {
   printMillis(Serial);
 
   bufSerReadStr();
-  EXPECT_STREQ(strBuf, "[4294967295] ");
+  EXPECT_STREQ(strBuf, "\n[4294967295] ");
   releaseArduinoMock();
 }
 
