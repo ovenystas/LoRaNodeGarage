@@ -4,6 +4,7 @@
 
 #include "Sensor.h"
 #include "Unit.h"
+#include "Util.h"
 #include "mocks/BufferSerial.h"
 #include "mocks/EEPROM.h"
 
@@ -275,4 +276,71 @@ TEST_F(HeightSensor_test, isReportDue) {
   // Shall be set to false when setReported() is called
   pHs->setReported();
   EXPECT_FALSE(pHs->isReportDue());
+}
+
+TEST_F(HeightSensor_test, loadConfigValues_crc_fail_shall_load_defaults) {
+  pHs->loadConfigValues();
+
+  ConfigItemValueT items[4];
+  EXPECT_EQ(pHs->getConfigItemValues(items, arrayLength(items)), 4);
+  EXPECT_EQ(items[0].value,
+            HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
+  EXPECT_EQ(items[1].value,
+            HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
+  EXPECT_EQ(items[2].value, HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT);
+  EXPECT_EQ(items[3].value, HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT);
+}
+
+TEST_F(HeightSensor_test, loadConfigValues_crc_ok_shall_load_stored_values) {
+  CRC8 crc;
+  int eeAddr = 0;
+
+  const uint16_t expectedConfig0 = 100;
+  crc.restart();
+  crc.add(lowByte(expectedConfig0));
+  crc.add(highByte(expectedConfig0));
+  const uint8_t expectedCrc0 = crc.calc();
+  eeAddr = EE_ADDRESS_CONFIG_HEIGHT_SENSOR_0;
+  eeprom_write_byte(eeAddr++, lowByte(expectedConfig0));
+  eeprom_write_byte(eeAddr++, highByte(expectedConfig0));
+  eeprom_write_byte(eeAddr++, expectedCrc0);
+
+  const uint16_t expectedConfig1 = 1001;
+  crc.restart();
+  crc.add(lowByte(expectedConfig1));
+  crc.add(highByte(expectedConfig1));
+  const uint8_t expectedCrc1 = crc.calc();
+  eeAddr = EE_ADDRESS_CONFIG_HEIGHT_SENSOR_1;
+  eeprom_write_byte(eeAddr++, lowByte(expectedConfig1));
+  eeprom_write_byte(eeAddr++, highByte(expectedConfig1));
+  eeprom_write_byte(eeAddr++, expectedCrc1);
+
+  const uint16_t expectedConfig2 = 1002;
+  crc.restart();
+  crc.add(lowByte(expectedConfig2));
+  crc.add(highByte(expectedConfig2));
+  const uint8_t expectedCrc2 = crc.calc();
+  eeAddr = EE_ADDRESS_CONFIG_HEIGHT_SENSOR_2;
+  eeprom_write_byte(eeAddr++, lowByte(expectedConfig2));
+  eeprom_write_byte(eeAddr++, highByte(expectedConfig2));
+  eeprom_write_byte(eeAddr++, expectedCrc2);
+
+  const HeightT expectedConfig3 = 103;
+  crc.restart();
+  crc.add(lowByte(expectedConfig3));
+  crc.add(highByte(expectedConfig3));
+  const uint8_t expectedCrc3 = crc.calc();
+  eeAddr = EE_ADDRESS_CONFIG_HEIGHT_SENSOR_3;
+  eeprom_write_byte(eeAddr++, lowByte(expectedConfig3));
+  eeprom_write_byte(eeAddr++, highByte(expectedConfig3));
+  eeprom_write_byte(eeAddr++, expectedCrc3);
+
+  pHs->loadConfigValues();
+
+  ConfigItemValueT items[4];
+  EXPECT_EQ(pHs->getConfigItemValues(items, arrayLength(items)), 4);
+  EXPECT_EQ(items[0].value, expectedConfig0);
+  EXPECT_EQ(items[1].value, expectedConfig1);
+  EXPECT_EQ(items[2].value, expectedConfig2);
+  EXPECT_EQ(items[3].value, expectedConfig3);
 }

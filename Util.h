@@ -14,6 +14,8 @@
    ((x) >> 8 & 0x0000FF00UL) | ((x) >> 24 & 0x000000FFUL))
 #define ntohl(x) htonl(x)
 
+#define arrayLength(array) (sizeof(array) / sizeof(array[0]))
+
 inline int8_t hton(int8_t v) { return v; }
 inline int16_t hton(int16_t v) { return htons(v); }
 inline int32_t hton(int32_t v) { return htonl(v); }

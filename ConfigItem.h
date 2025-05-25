@@ -90,7 +90,7 @@ class ConfigItem {
 
  private:
   void addValueToCrc(CRC8& crc, T value) {
-    for (int8_t i = sizeof(T) - 1; i >= 0; i--) {
+    for (uint8_t i = 0; i < sizeof(T); i++) {
       uint8_t b = static_cast<uint8_t>((value >> (i * 8)) & 0xFF);
       crc.add(b);
     }

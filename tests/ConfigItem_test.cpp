@@ -5,7 +5,7 @@
 #include "Types.h"
 #include "mocks/EEPROM.h"
 
-#define EE_ADDR 321
+#define EE_ADDR 0
 
 class ConfigItem_test : public ::testing::Test {
  protected:
@@ -44,7 +44,28 @@ TEST_F(ConfigItem_test, load_uint8_fail_shall_save_default_value) {
   EXPECT_EQ(eeprom_read_byte(EE_ADDR + 1), 0x5F);  // CRC8 of value
 }
 
-TEST_F(ConfigItem_test, load_uint8_OK_shall_set_loaded_value) {
+TEST_F(ConfigItem_test,
+       load_uint8_OK_shall_set_loaded_value_and_not_change_eeprom) {
+  const uint8_t expectedValue = 0xAA;
+
+  CRC8 crc;
+  crc.add(reinterpret_cast<const uint8_t *>(&expectedValue),
+          sizeof(expectedValue));
+  uint8_t expectedCrc = crc.calc();
+
+  EEPROM.put(EE_ADDR, expectedValue);
+  eeprom_write_byte(EE_ADDR + sizeof(uint8_t), expectedCrc);  // Correct CRC
+
+  ConfigItem<int32_t> cfgItm = ConfigItem<int32_t>(255, EE_ADDR, -2000000);
+
+  cfgItm.load();
+
+  EXPECT_EQ(cfgItm.getValue(), expectedValue);
+  int32_t eeValue;
+  EXPECT_EQ(EEPROM.get(EE_ADDR, eeValue), expectedValue);
+  EXPECT_EQ(eeValue, expectedValue);
+  EXPECT_EQ(eeprom_read_byte(EE_ADDR + 4), expectedCrc);  // CRC8 of value
+
   eeprom_write_byte(EE_ADDR, 0xAA);      // Value
   eeprom_write_byte(EE_ADDR + 1, 0x5F);  // CRC
   ConfigItem<uint8_t> cfgItm = ConfigItem<uint8_t>(255, EE_ADDR, 0xBB);
@@ -56,40 +77,53 @@ TEST_F(ConfigItem_test, load_uint8_OK_shall_set_loaded_value) {
   EXPECT_EQ(eeprom_read_byte(EE_ADDR + 1), 0x5F);  // CRC8 of value
 }
 
-TEST_F(ConfigItem_test, load_int32_fail_shall_save_default_value) {
-  eeprom_write_byte(EE_ADDR, 0xC0);      // Value
-  eeprom_write_byte(EE_ADDR + 1, 0xBD);  // Value
-  eeprom_write_byte(EE_ADDR + 2, 0xF0);  // Value
-  eeprom_write_byte(EE_ADDR + 3, 0xFF);  // Value
-  eeprom_write_byte(EE_ADDR + 4, 0x00);  // Wrong CRC8 of value
-  ConfigItem<int32_t> cfgItm = ConfigItem<int32_t>(255, EE_ADDR, -1000000);
+TEST_F(ConfigItem_test, load_int32_fail_shall_set_and_store_default_value) {
+  const int32_t storedValue = -1000000;
+  const int32_t defaultValue = -2000000;
+
+  CRC8 crc;
+  crc.add(reinterpret_cast<const uint8_t *>(&storedValue), sizeof(storedValue));
+  const uint8_t storedCrc = crc.calc();
+  crc.restart();
+  crc.add(reinterpret_cast<const uint8_t *>(&defaultValue),
+          sizeof(defaultValue));
+  const uint8_t defaultValueCrc = crc.calc();
+
+  EEPROM.put(EE_ADDR, storedValue);
+  eeprom_write_byte(EE_ADDR + sizeof(int32_t), storedCrc + 1);  // Wrong CRC
+  ConfigItem<int32_t> cfgItm = ConfigItem<int32_t>(255, EE_ADDR, defaultValue);
 
   cfgItm.load();
 
-  EXPECT_EQ(cfgItm.getValue(), -1000000);
-  EXPECT_EQ(eeprom_read_byte(EE_ADDR), 0xC0);      // Value
-  EXPECT_EQ(eeprom_read_byte(EE_ADDR + 1), 0xBD);  // Value
-  EXPECT_EQ(eeprom_read_byte(EE_ADDR + 2), 0xF0);  // Value
-  EXPECT_EQ(eeprom_read_byte(EE_ADDR + 3), 0xFF);  // Value
-  EXPECT_EQ(eeprom_read_byte(EE_ADDR + 4), 0x55);  // CRC8 of value
+  EXPECT_EQ(cfgItm.getValue(), defaultValue);
+  int32_t eeValue;
+  EXPECT_EQ(EEPROM.get(EE_ADDR, eeValue), defaultValue);
+  EXPECT_EQ(eeprom_read_byte(EE_ADDR + sizeof(int32_t)),
+            defaultValueCrc);  // Correct CRC of defaultValue
 }
 
-TEST_F(ConfigItem_test, load_int32_OK_shall_set_loaded_value) {
-  eeprom_write_byte(EE_ADDR, 0xC0);      // Value
-  eeprom_write_byte(EE_ADDR + 1, 0xBD);  // Value
-  eeprom_write_byte(EE_ADDR + 2, 0xF0);  // Value
-  eeprom_write_byte(EE_ADDR + 3, 0xFF);  // Value
-  eeprom_write_byte(EE_ADDR + 4, 0x55);  // Correct CRC8 of value
+TEST_F(ConfigItem_test,
+       load_int32_OK_shall_set_loaded_value_and_not_change_eeprom) {
+  const int32_t storedValue = -1000000;
+  const int32_t defaultValue = -2000000;
+
+  CRC8 crc;
+  crc.add(reinterpret_cast<const uint8_t *>(&storedValue), sizeof(storedValue));
+  const uint8_t storedCrc = crc.calc();
+
+  EEPROM.put(EE_ADDR, storedValue);
+  eeprom_write_byte(EE_ADDR + sizeof(int32_t), storedCrc);  // Correct CRC
+
   ConfigItem<int32_t> cfgItm = ConfigItem<int32_t>(255, EE_ADDR, -2000000);
 
   cfgItm.load();
 
-  EXPECT_EQ(cfgItm.getValue(), -1000000);
-  EXPECT_EQ(eeprom_read_byte(EE_ADDR), 0xC0);      // Value
-  EXPECT_EQ(eeprom_read_byte(EE_ADDR + 1), 0xBD);  // Value
-  EXPECT_EQ(eeprom_read_byte(EE_ADDR + 2), 0xF0);  // Value
-  EXPECT_EQ(eeprom_read_byte(EE_ADDR + 3), 0xFF);  // Value
-  EXPECT_EQ(eeprom_read_byte(EE_ADDR + 4), 0x55);  // CRC8 of value
+  EXPECT_EQ(cfgItm.getValue(), storedValue);
+  int32_t eeValue;
+  EXPECT_EQ(EEPROM.get(EE_ADDR, eeValue), storedValue);
+  EXPECT_EQ(eeValue, storedValue);
+  EXPECT_EQ(eeprom_read_byte(EE_ADDR + sizeof(int32_t)),
+            storedCrc);  // Correct CRC
 }
 
 TEST_F(ConfigItem_test, load_uint8_ee_address_out_of_range_shall_do_nothing) {
@@ -146,6 +180,19 @@ TEST_F(ConfigItem_test, setValue_higher_than_max_value) {
 
   EXPECT_EQ(eeprom_read_byte(EE_ADDR), 111);       // Value
   EXPECT_EQ(eeprom_read_byte(EE_ADDR + 1), 0x0A);  // CRC8 of value
+}
+
+TEST_F(ConfigItem_test,
+       setValue_ee_address_out_of_range_shall_set_but_not_store_value) {
+  eeprom_write_byte(EE_ADDR, 0xFF);      // Value
+  eeprom_write_byte(EE_ADDR + 1, 0xFF);  // CRC
+  ConfigItem<uint8_t> cfgItm = ConfigItem<uint8_t>(33, E2END + 1, 0xAA);
+
+  cfgItm.setValue(113);
+
+  EXPECT_EQ(cfgItm.getValue(), 113);
+  EXPECT_EQ(eeprom_read_byte(EE_ADDR), 0xFF);      // Value
+  EXPECT_EQ(eeprom_read_byte(EE_ADDR + 1), 0xFF);  // CRC8 of value
 }
 
 TEST_F(ConfigItem_test, getDiscoveryConfigItem_default) {
