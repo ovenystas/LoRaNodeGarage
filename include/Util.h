@@ -43,7 +43,7 @@ void printArray(Print& printer, const uint8_t* buf, size_t len, int base = DEC,
                 bool prefix = false);
 
 namespace Util {
-constexpr uint16_t ONE_HOUR_IN_SECONDS = 1 * 60 * 60;
-constexpr uint16_t ONE_MINUTE_IN_MILLISECONDS = 60 * 1000;
-constexpr uint16_t TWELVE_HOURS_IN_SECONDS = 12 * 60 * 60;
+constexpr uint16_t ONE_HOUR_IN_SECONDS = 60u * 60u;
+constexpr uint16_t ONE_MINUTE_IN_MILLISECONDS = 60u * 1000u;
+constexpr uint16_t TWELVE_HOURS_IN_SECONDS = 12u * ONE_HOUR_IN_SECONDS;
 }  // namespace Util

@@ -11,7 +11,7 @@
 using DistanceT = int16_t;  // cm
 
 namespace DistanceSensorConstants {
-constexpr uint16_t CONFIG_REPORT_HYSTERESIS_DEFAULT = 10;
+constexpr int16_t CONFIG_REPORT_HYSTERESIS_DEFAULT = 10;
 constexpr uint16_t CONFIG_MEASURE_INTERVAL_DEFAULT = 60;
 constexpr uint16_t CONFIG_REPORT_INTERVAL_DEFAULT = 300;
 }  // namespace DistanceSensorConstants
@@ -63,7 +63,7 @@ class DistanceSensor : public IComponent {
     // cppcheck-suppress unusedStructMember
     static const uint8_t numberOfConfigItems = {3};
 
-    ConfigItem<uint16_t> reportHysteresis = {ConfigItem<uint16_t>(
+    ConfigItem<int16_t> reportHysteresis = {ConfigItem<int16_t>(
         0, EE_ADDRESS_CONFIG_DISTANCE_SENSOR_0,
         DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT, 0,
         MAX_SENSOR_DISTANCE, Unit::Type::cm)};

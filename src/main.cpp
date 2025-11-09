@@ -12,7 +12,8 @@
  *   - Arduino Pro Mini, ATmega328P, 3.3 V, 8 MHz
  *
  * External libraries used:
- *   DHT sensor library by Adafruit v1.4.4
+ *   Adafruit Unified Sensor by Adafruit v1.1.15
+ *   DHT sensor library by Adafruit v1.4.6
  *   LoRa by Sandeep Mistry v0.8.0
  *   NewPing by Tim Eckel v1.9.7
  *   CRC by Rob Tillaart v1.0.3
@@ -21,8 +22,8 @@
 
 /* TODO:
  * - Improve encryption of messages
- * - Use configuration measurement interval to update sensors (or remove that
- *   config)
+ * - Use configuration measurement interval to update sensors
+ *   (or remove that config)
  * - Use message sequence frCnt in LoRa header
  */
 
@@ -93,6 +94,8 @@
 
 #define NUMBER_OF_COMPONENTS 6
 
+// Local variables
+// ----------------------------------------------------------------
 DHT dht(DHT_PIN, DHT_TYPE);
 NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 
@@ -122,7 +125,7 @@ IComponent* components[NUMBER_OF_COMPONENTS] = {
 
 Node node = Node(components, sizeof(components) / sizeof(components[0]));
 
-CTR<AES128> ctrAes128;
+// CTR<AES128> ctrAes128;
 
 LoRaHandler lora(LoRa, LORA_GATEWAY_ADDRESS, LORA_MY_ADDRESS /*, &ctrAes128*/);
 
@@ -133,104 +136,16 @@ const byte CTR_IV[16] PROGMEM = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                  0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                  0x00, 0x00, 0x00, 0x01};
 
-void setup() {
-  Serial.begin(115200);
-  while (!Serial) {
-    // Do nothing
-  }
+// Local function declarations
+// ----------------------------------------------------------------
+void onDiscoveryReqMsg(uint8_t entityId);
+void onValueReqMsg(void);
+void onConfigReqMsg(uint8_t entityId);
+void onConfigSetReqMsg(const ConfigValuePayloadT& payload);
+void onServiceReqMsg(const LoRaServiceItemT& item);
 
-  printWelcomeMsg();
-
-  uint8_t configMagicEe = EEPROM.read(EE_ADDRESS_CONFIG_MAGIC);
-  if (configMagicEe != CONFIG_MAGIC) {
-    Serial.print(F("\nConfig magic word in EEPROM "));
-    printHex(Serial, configMagicEe);
-    Serial.print(F(" != "));
-    printHex(Serial, static_cast<uint8_t>(CONFIG_MAGIC));
-    Serial.print('!');
-    Serial.print(F("\nErasing EEPROM"));
-    for (uint16_t i = 0; i <= E2END; i++) {
-      EEPROM.write(i, 0xFF);
-      if (i % 64 == 0) {
-        Serial.print('.');
-      }
-    }
-    Serial.print(F("Done!"));
-  }
-  loadConfigValuesForAllComponents();
-  EEPROM.write(EE_ADDRESS_CONFIG_MAGIC, CONFIG_MAGIC);
-
-  dht.begin();
-
-  ctrAes128.clear();
-  ctrAes128.setCounterSize(4);
-  ctrAes128.setKey(AES_KEY, ctrAes128.keySize());
-  ctrAes128.setIV(CTR_IV, ctrAes128.ivSize());
-
-  if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onConfigReqMsg,
-                  &onConfigSetReqMsg, &onServiceReqMsg)) {
-    Serial.print(F("\nStarting LoRa failed!"));
-    while (1) {
-      // Do nothing
-    }
-  }
-
-  sendDiscoveryMsgForAllComponents();
-}
-
-void loop() {
-  auto curMillis = millis();
-  if (curMillis - lastRunTime >= UPDATE_SENSORS_INTERVAL) {
-    lastRunTime += UPDATE_SENSORS_INTERVAL;
-
-    updateSensors();
-
-#ifdef DEBUG_SENSOR_VALUES
-    printMillis(Serial);
-    printAllSensors(Serial);
-#endif
-
-    if (isReportDue()) {
-      sendSensorValueForAllComponents();
-    }
-  }
-
-  (void)lora.loraRx();
-}
-
-void onDiscoveryReqMsg(uint8_t entityId) {
-  if (entityId == 255) {
-    sendDiscoveryMsgForAllComponents();
-    return;
-  }
-  sendDiscoveryMsgForEntity(entityId);
-}
-
-void onValueReqMsg(void) { sendSensorValueForAllComponents(); }
-
-void onConfigReqMsg(uint8_t entityId) {
-  if (entityId == 255) {
-    sendConfigValuesForAllComponents();
-    return;
-  }
-  sendConfigValuesForEntity(entityId);
-}
-
-void onConfigSetReqMsg(const ConfigValuePayloadT& payload) {
-  IComponent* c = node.getComponentByEntityId(payload.entityId);
-  if (c) {
-    c->setConfigItemValues(payload.configValues, payload.numberOfConfigs);
-  }
-}
-
-void onServiceReqMsg(const LoRaServiceItemT& item) {
-  IComponent* c = node.getComponentByEntityId(item.entityId);
-  if (c) {
-    LOG_SERVICE(c, item.service);
-    c->callService(item.service);
-  }
-}
-
+// Local function definitions
+// ----------------------------------------------------------------
 static void loadConfigValuesForAllComponents() {
   for (uint8_t i = 0; i < node.getSize(); i++) {
     IComponent* c = node.getComponent(i);
@@ -246,7 +161,7 @@ static void updateSensors() {
 
     if (c->update()) {
       LOG_SENSOR(c);
-      c->setReported();
+      // c->setReported();
     }
   }
 }
@@ -255,6 +170,8 @@ static bool isReportDue() {
   for (uint8_t i = 0; i < node.getSize(); i++) {
     IComponent* c = node.getComponent(i);
     if (c != nullptr && c->isReportDue()) {
+      Serial.print("\nReport is due for entityId=");
+      Serial.print(c->getEntityId());
       return true;
     }
   }
@@ -350,6 +267,9 @@ static void sendDiscoveryMsg(const IComponent* component) {
     return;
   }
 
+  Serial.print(F("\nSending discovery for entityId="));
+  Serial.print(component-> getEntityId());
+
   DiscoveryItemT item;
   component->getDiscoveryItem(&item);
 
@@ -366,12 +286,12 @@ static void sendDiscoveryMsgForAllComponents() {
   }
 }
 
-void sendDiscoveryMsgForEntity(uint8_t entityId) {
+static void sendDiscoveryMsgForEntity(uint8_t entityId) {
   const IComponent* c = node.getComponentByEntityId(entityId);
   sendDiscoveryMsg(c);
 }
 
-void printWelcomeMsg() {
+static void printWelcomeMsg() {
   Serial.print(F("LoRa Garage Node v"));
   printVersion(Serial, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
   Serial.print(F(", Address="));
@@ -383,3 +303,105 @@ void printWelcomeMsg() {
 #ifdef DEBUG_SENSOR_VALUES
 static void printAllSensors(Print& p) { node.printTo(p); }
 #endif
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial) {
+    // Do nothing
+  }
+
+  printWelcomeMsg();
+
+  uint8_t configMagicEe = EEPROM.read(EE_ADDRESS_CONFIG_MAGIC);
+  if (configMagicEe != CONFIG_MAGIC) {
+    Serial.print(F("\nConfig magic word in EEPROM "));
+    printHex(Serial, configMagicEe);
+    Serial.print(F(" != "));
+    printHex(Serial, static_cast<uint8_t>(CONFIG_MAGIC));
+    Serial.print('!');
+    Serial.print(F("\nErasing EEPROM"));
+    for (uint16_t i = 0; i <= E2END; i++) {
+      EEPROM.write(i, 0xFF);
+      if (i % 64 == 0) {
+        Serial.print('.');
+      }
+    }
+    Serial.print(F("Done!"));
+  }
+  else {
+    Serial.print(F("\nConfig magic word in EEPROM OK: "));
+    printHex(Serial, configMagicEe);
+  }
+  loadConfigValuesForAllComponents();
+  EEPROM.write(EE_ADDRESS_CONFIG_MAGIC, CONFIG_MAGIC);
+
+  dht.begin();
+
+  // ctrAes128.clear();
+  // ctrAes128.setCounterSize(4);
+  // ctrAes128.setKey(AES_KEY, ctrAes128.keySize());
+  // ctrAes128.setIV(CTR_IV, ctrAes128.ivSize());
+
+  if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onConfigReqMsg,
+                  &onConfigSetReqMsg, &onServiceReqMsg)) {
+    Serial.print(F("\nStarting LoRa failed!"));
+    while (1) {
+      // Do nothing
+    }
+  }
+
+  sendDiscoveryMsgForAllComponents();
+}
+
+void loop() {
+  auto curMillis = millis();
+  if (curMillis - lastRunTime >= UPDATE_SENSORS_INTERVAL) {
+    lastRunTime += UPDATE_SENSORS_INTERVAL;
+
+    updateSensors();
+
+#ifdef DEBUG_SENSOR_VALUES
+    printMillis(Serial);
+    printAllSensors(Serial);
+#endif
+
+    if (isReportDue()) {
+      sendSensorValueForAllComponents();
+    }
+  }
+
+  (void)lora.loraRx();
+}
+
+void onDiscoveryReqMsg(uint8_t entityId) {
+  if (entityId == 255) {
+    sendDiscoveryMsgForAllComponents();
+    return;
+  }
+  sendDiscoveryMsgForEntity(entityId);
+}
+
+void onValueReqMsg(void) { sendSensorValueForAllComponents(); }
+
+void onConfigReqMsg(uint8_t entityId) {
+  if (entityId == 255) {
+    sendConfigValuesForAllComponents();
+    return;
+  }
+  sendConfigValuesForEntity(entityId);
+}
+
+void onConfigSetReqMsg(const ConfigValuePayloadT& payload) {
+  IComponent* c = node.getComponentByEntityId(payload.entityId);
+  if (c) {
+    c->setConfigItemValues(payload.configValues, payload.numberOfConfigs);
+  }
+}
+
+void onServiceReqMsg(const LoRaServiceItemT& item) {
+  IComponent* c = node.getComponentByEntityId(item.entityId);
+  if (c) {
+    LOG_SERVICE(c, item.service);
+    c->callService(item.service);
+  }
+}

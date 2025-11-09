@@ -1,8 +1,9 @@
-#include "HumiditySensor.h"
+#include "TemperatureSensor.h"
 
 #include <Arduino.h>
 #include <assert.h>
 
+#include "ConfigItem.h"
 #include "Sensor.h"
 #include "Util.h"
 
@@ -12,18 +13,12 @@
 extern BufferSerial Serial;
 #endif
 
-bool HumiditySensor::update() {
+bool TemperatureSensor::update() {
   if (mDht.read()) {
-    int16_t newValue =
-        round(mDht.readHumidity()) + mConfig.compensation.getValue();
-    if (newValue < 0) {
-      newValue = 0;
-    }
-    if (newValue > 100) {
-      newValue = 100;
-    }
+    TemperatureT newValue =
+        round(mDht.readTemperature() * 10) + mConfig.compensation.getValue();
 
-    mSensor.setValue(static_cast<HumidityT>(newValue));
+    mSensor.setValue(newValue);
   } else {
     printMillis(Serial);
     Serial.print(F("WARN: DHT checksum fail"));
@@ -35,8 +30,8 @@ bool HumiditySensor::update() {
                          : false;
 
   bool timeToReport = mConfig.reportInterval.getValue() > 0
-                          ? mSensor.timeSinceLastReport() >=
-                                (mConfig.reportInterval.getValue() * 1000)
+                          ? (mSensor.timeSinceLastReport() / 1000)>=
+                                mConfig.reportInterval.getValue()
                           : false;
 
   bool isReportDue = largeChange || timeToReport;
@@ -45,19 +40,7 @@ bool HumiditySensor::update() {
   return isReportDue;
 }
 
-uint8_t HumiditySensor::getConfigItemValues(ConfigItemValueT *items,
-                                            uint8_t length) const {
-  assert(mConfig.numberOfConfigItems <= length);
-
-  mConfig.reportHysteresis.getConfigItemValue(&items[0]);
-  mConfig.measureInterval.getConfigItemValue(&items[1]);
-  mConfig.reportInterval.getConfigItemValue(&items[2]);
-  mConfig.compensation.getConfigItemValue(&items[3]);
-
-  return mConfig.numberOfConfigItems;
-}
-
-void HumiditySensor::getDiscoveryItem(DiscoveryItemT *item) const {
+void TemperatureSensor::getDiscoveryItem(DiscoveryItemT *item) const {
   assert(mConfig.numberOfConfigItems <=
          sizeof(item->configItems) / sizeof(item->configItems[0]));
 
@@ -69,8 +52,20 @@ void HumiditySensor::getDiscoveryItem(DiscoveryItemT *item) const {
   mConfig.compensation.getDiscoveryConfigItem(&item->configItems[3]);
 }
 
-bool HumiditySensor::setConfigItemValues(const ConfigItemValueT *items,
-                                         uint8_t length) {
+uint8_t TemperatureSensor::getConfigItemValues(ConfigItemValueT *items,
+                                               uint8_t length) const {
+  assert(mConfig.numberOfConfigItems <= length);
+
+  mConfig.reportHysteresis.getConfigItemValue(&items[0]);
+  mConfig.measureInterval.getConfigItemValue(&items[1]);
+  mConfig.reportInterval.getConfigItemValue(&items[2]);
+  mConfig.compensation.getConfigItemValue(&items[3]);
+
+  return mConfig.numberOfConfigItems;
+}
+
+bool TemperatureSensor::setConfigItemValues(const ConfigItemValueT *items,
+                                            uint8_t length) {
   if (length > mConfig.numberOfConfigItems) {
     return false;
   }
@@ -97,7 +92,7 @@ bool HumiditySensor::setConfigItemValues(const ConfigItemValueT *items,
   return true;
 }
 
-void HumiditySensor::loadConfigValues() {
+void TemperatureSensor::loadConfigValues() {
   mConfig.reportHysteresis.load();
   mConfig.measureInterval.load();
   mConfig.reportInterval.load();

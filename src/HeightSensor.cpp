@@ -17,8 +17,8 @@ bool HeightSensor::update() {
                          : false;
 
   bool timeToReport = mConfig.reportInterval.getValue() > 0
-                          ? mSensor.timeSinceLastReport() >=
-                                (mConfig.reportInterval.getValue() * 1000)
+                          ? (mSensor.timeSinceLastReport() / 1000) >=
+                                mConfig.reportInterval.getValue()
                           : false;
 
   bool isReportDue = largeChange || timeToReport;

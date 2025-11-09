@@ -13,7 +13,7 @@
 using HeightT = int16_t;  // cm
 
 namespace HeightSensorConstants {
-static const uint16_t CONFIG_REPORT_HYSTERESIS_DEFAULT = 10;
+static const int16_t CONFIG_REPORT_HYSTERESIS_DEFAULT = 10;
 static const uint16_t CONFIG_REPORT_INTERVAL_DEFAULT = 300;
 static const uint16_t CONFIG_STABLE_TIME_DEFAULT = 5000;
 static const HeightT CONFIG_ZERO_VALUE_DEFAULT = 60;
@@ -67,7 +67,7 @@ class HeightSensor : public IComponent {
     // cppcheck-suppress unusedStructMember
     const uint8_t numberOfConfigItems = {4};
 
-    ConfigItem<uint16_t> reportHysteresis = {ConfigItem<uint16_t>(
+    ConfigItem<int16_t> reportHysteresis = {ConfigItem<int16_t>(
         0, EE_ADDRESS_CONFIG_HEIGHT_SENSOR_0,
         HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT, 0,
         MAX_SENSOR_DISTANCE, Unit::Type::cm)};

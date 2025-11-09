@@ -17,11 +17,30 @@ bool DistanceSensor::update() {
                                : false;
 
   const bool timeToReport = mConfig.reportInterval.getValue() > 0
-                                ? mSensor.timeSinceLastReport() >=
-                                      (mConfig.reportInterval.getValue() * 1000)
+                                ? (mSensor.timeSinceLastReport() / 1000) >=
+                                      mConfig.reportInterval.getValue()
                                 : false;
 
   const bool isReportDue = largeChange || timeToReport;
+  if (largeChange) {
+    Serial.print(F("Dist: Large change, "));
+    Serial.print(mSensor.absDiffLastReportedValue());
+    Serial.println(" cm");
+  } else if (timeToReport) {
+    Serial.print(F("Dist: Report interval elapsed, "));
+    Serial.print(mSensor.timeSinceLastReport() / 1000);
+    Serial.println(" s");
+  } else {
+    Serial.print(F("Dist: No report, change("));
+    Serial.print(mSensor.absDiffLastReportedValue());
+    Serial.print("<");
+    Serial.print(mConfig.reportHysteresis.getValue());
+    Serial.print("), time(");
+    Serial.print(mSensor.timeSinceLastReport() / 1000);
+    Serial.print("<");
+    Serial.print(mConfig.reportInterval.getValue());
+    Serial.println(")");
+  }
   mSensor.setIsReportDue(isReportDue);
 
   return isReportDue;
