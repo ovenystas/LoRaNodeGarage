@@ -14,6 +14,10 @@ repos:
         files: "^.gitignore$"
       - id: requirements-txt-fixer
       - id: check-json
+        exclude: |
+          (?x)^(
+            .vscode\extensions.json
+          )$
       - id: check-yaml
       - id: check-merge-conflict
 
@@ -66,3 +70,6 @@ repos:
     hooks:
       - id: check-hooks-apply
       - id: check-useless-excludes
+
+ci:
+  skip: [clang-format, cppcheck]
