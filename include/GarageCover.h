@@ -65,7 +65,7 @@ class GarageCover final : public IComponent {
 
   void activateRelay(uint8_t times);
 
-#ifdef TESTING
+#ifdef PIO_UNIT_TESTING 
  public:
 #else
  private:

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Arduino.h>
 #include <Print.h>
 
 #define lowWord(ul) (static_cast<uint16_t>((ul)&0xffff))
@@ -43,7 +42,7 @@ void printArray(Print& printer, const uint8_t* buf, size_t len, int base = DEC,
                 bool prefix = false);
 
 namespace Util {
-constexpr uint16_t ONE_HOUR_IN_SECONDS = 60u * 60u;
+constexpr uint16_t ONE_HOUR_IN_SECONDS = 1u * 60u * 60u;
 constexpr uint16_t ONE_MINUTE_IN_MILLISECONDS = 60u * 1000u;
-constexpr uint16_t TWELVE_HOURS_IN_SECONDS = 12u * ONE_HOUR_IN_SECONDS;
+constexpr uint16_t TWELVE_HOURS_IN_SECONDS = 12u * 60u * 60u;
 }  // namespace Util

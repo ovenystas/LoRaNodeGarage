@@ -9,7 +9,7 @@
 
 // TODO: Replace this ugly workaround with something better
 #ifndef HAVE_HWSERIAL0
-#include "tests/mocks/BufferSerial.h"
+#include "BufferSerial.h"
 extern BufferSerial Serial;
 #endif
 
