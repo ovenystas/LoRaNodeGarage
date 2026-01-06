@@ -1,6 +1,7 @@
 # LoRaNodeGarage
 
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/ovenystas/LoRaNodeGarage/master.svg)](https://results.pre-commit.ci/latest/github/ovenystas/LoRaNodeGarage/master)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
 A LoRa wireless node for a car garage with multiple sensors and actuators.
