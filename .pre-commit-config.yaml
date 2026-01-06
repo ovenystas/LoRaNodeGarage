@@ -71,5 +71,5 @@ repos:
       - id: check-hooks-apply
       - id: check-useless-excludes
 
-ci:
-  skip: [clang-format, cppcheck]
+# ci:
+#   skip: [clang-format, cppcheck]
