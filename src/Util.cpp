@@ -109,21 +109,52 @@ void printHex(Print& printer, uint32_t value, bool prefix) {
   printer.print(value, HEX);
 }
 
+void printBin(Print& printer, uint8_t value, bool prefix) {
+  if (prefix) {
+    printer.print('b');
+  }
+  printer.print(bitRead(value, 7));
+  printer.print(bitRead(value, 6));
+  printer.print(bitRead(value, 5));
+  printer.print(bitRead(value, 4));
+  printer.print(bitRead(value, 3));
+  printer.print(bitRead(value, 2));
+  printer.print(bitRead(value, 1));
+  printer.print(bitRead(value, 0));
+}
+
+void printOct(Print& printer, uint8_t value, bool prefix) {
+  if (prefix) {
+    printer.print('o');
+  }
+  if (value < B00111111) {
+    printer.print('0');
+  }
+  if (value < B00000111) {
+    printer.print('0');
+  }
+  printer.print(value, OCT);
+}
+
+void printDec(Print& printer, uint8_t value, bool prefix) {
+  if (prefix) {
+    printer.print('d');
+  }
+  printer.print(value, DEC);
+}
+
 void printArray(Print& printer, const uint8_t* buf, size_t len, int base,
                 bool prefix) {
   for (size_t i = 0; i < len; i++) {
     if (base == HEX) {
       printHex(printer, buf[i], prefix);
+    } else if (base == BIN) {
+      printBin(printer, buf[i], prefix);
+    } else if (base == OCT) {
+      printOct(printer, buf[i], prefix);
+    } else if (base == DEC) {
+      printDec(printer, buf[i], prefix);
     } else {
-      if (prefix) {
-        if (base == BIN) {
-          printer.print('b');
-        } else if (base == OCT) {
-          printer.print('o');
-        } else if (base == DEC) {
-          printer.print('d');
-        }
-      }
       printer.print(buf[i], base);
     }
 

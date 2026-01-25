@@ -12,6 +12,8 @@
 #include "BufferSerial.h"
 #include "avr/pgmspace.h"
 
+#include "binary.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -58,6 +60,12 @@ void yield(void);
 
 #define lowByte(w) (static_cast<uint8_t>((w)&0xff))
 #define highByte(w) (static_cast<uint8_t>((w) >> 8))
+
+#define bitRead(value, bit) (((value) >> (bit)) & 0x01)
+#define bitSet(value, bit) ((value) |= (1UL << (bit)))
+#define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
+#define bitToggle(value, bit) ((value) ^= (1UL << (bit)))
+#define bitWrite(value, bit, bitvalue) ((bitvalue) ? bitSet(value, bit) : bitClear(value, bit))
 
 extern BufferSerial bufSerial;
 #define Serial bufSerial
