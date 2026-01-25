@@ -20,29 +20,35 @@ sensors to Home Assistant. This needs a LoRa to MQTT gateway. See
 
 ## Build project
 
-Use Arduino IDE or similar to build and download to Arduino board.
+Use PlatformIO to build the project.
 
-## Test
+```bash
+pio run build
+```
 
-Unit tests can be compiled and run with the following cmake/ctest commands.
+## Upload to target
+
+To upload to Arduino board:
+
+```bash
+pio run upload
+```
+
+## Unit Test
+
+Unit tests can be compiled and run with the command:
+
+```bash
+pio test
+```
 
 The tests uses googletest and googlemocks are there to mock Arduino core and
 addon libraries.
 
-### Configure
+## Static Code Analysis
+
+PlatformIO uses cppcheck for static code analysis. Run it with:
 
 ```bash
-cmake -S . -B build
-```
-
-### Build
-
-```bash
-cmake --build build
-```
-
-### Run
-
-```bash
-cd build/tests && ctest; cd -
+pio check
 ```

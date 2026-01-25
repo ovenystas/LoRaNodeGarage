@@ -47,7 +47,7 @@ TEST_F(ConfigItem_test, load_uint8_fail_shall_save_default_value) {
 
   EXPECT_EQ(cfgItm.getValue(), 0xAA);
   EXPECT_EQ(eeprom_read_byte(EE_ADDR), 0xAA);      // Value
-  
+
   // Calculate expected CRC
   CRC8 expectedCrc;
   expectedCrc.add(0xAA);
@@ -171,7 +171,7 @@ TEST_F(ConfigItem_test, setValue) {
   EXPECT_EQ(cfgItm.getValue(), 111);
 
   EXPECT_EQ(eeprom_read_byte(EE_ADDR), 111);       // Value
-  
+
   // Calculate expected CRC
   CRC8 expectedCrc;
   expectedCrc.add(111);
@@ -186,7 +186,7 @@ TEST_F(ConfigItem_test, setValue_lower_than_min_value) {
   EXPECT_EQ(cfgItm.getValue(), 111);
 
   EXPECT_EQ(eeprom_read_byte(EE_ADDR), 111);       // Value
-  
+
   // Calculate expected CRC
   CRC8 expectedCrc;
   expectedCrc.add(111);
@@ -201,7 +201,7 @@ TEST_F(ConfigItem_test, setValue_higher_than_max_value) {
   EXPECT_EQ(cfgItm.getValue(), 111);
 
   EXPECT_EQ(eeprom_read_byte(EE_ADDR), 111);       // Value
-  
+
   // Calculate expected CRC
   CRC8 expectedCrc;
   expectedCrc.add(111);
@@ -301,7 +301,7 @@ TEST_F(ConfigItem_test, setConfigItemValue) {
   EXPECT_EQ(eeprom_read_byte(EE_ADDR + 1), 0xCA);  // Value
   EXPECT_EQ(eeprom_read_byte(EE_ADDR + 2), 0xBA);  // Value
   EXPECT_EQ(eeprom_read_byte(EE_ADDR + 3), 0xAB);  // Value
-  
+
   // Calculate expected CRC for uint32_t value 0xABBACAFE
   CRC8 expectedCrc;
   uint32_t value = 0xABBACAFE;
