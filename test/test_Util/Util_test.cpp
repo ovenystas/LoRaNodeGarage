@@ -268,13 +268,13 @@ TEST(Util_test, printArray) {
   EXPECT_STREQ(strBuf,
                "0 17 34 51 68 85 102 119 "
                "136 153 170 187 204 221 238 255");
-  
+
   printArray(Serial, buf, sizeof(buf), OCT, true);
   bufSerReadStr();
   EXPECT_STREQ(strBuf,
                "o000 o021 o042 o063 o104 o125 o146 o167 "
                "o210 o231 o252 o273 o314 o335 o356 o377");
-  
+
   printArray(Serial, buf, sizeof(buf), BIN, true);
   bufSerReadStr();
   EXPECT_STREQ(strBuf,
