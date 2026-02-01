@@ -1,13 +1,13 @@
-#include "Node.h"
+#include "Device.h"
 
-IComponent* Node::getComponent(uint8_t idx) {
+IComponent* Device::getComponent(uint8_t idx) {
   if (idx >= mSize) {
     return nullptr;
   }
   return mComponents[idx];
 }
 
-IComponent* Node::getComponentByEntityId(uint8_t entityId) {
+IComponent* Device::getComponentByEntityId(uint8_t entityId) {
   for (uint8_t i = 0; i < mSize; i++) {
     if (mComponents[i]->getEntityId() == entityId) {
       return mComponents[i];
@@ -16,7 +16,7 @@ IComponent* Node::getComponentByEntityId(uint8_t entityId) {
   return nullptr;
 }
 
-size_t Node::printTo(Print& p) const {
+size_t Device::printTo(Print& p) const {
   uint8_t i;
   size_t n = 0;
   for (i = 0; i < mSize - 1; i++) {

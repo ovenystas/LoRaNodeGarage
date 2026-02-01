@@ -1,5 +1,5 @@
 /**
- * LoraNodeGarage
+ * LoraDeviceGarage
  *
  * A LoRa wireless device that can sense if a Car is present in a garage,
  * sense the state of the garage door (open, closed, opening and closing),
@@ -42,7 +42,7 @@
 #include "HeightSensor.h"
 #include "HumiditySensor.h"
 #include "LoRaHandler.h"
-#include "Node.h"
+#include "Device.h"
 #include "PresenceBinarySensor.h"
 #include "TemperatureSensor.h"
 #include "Util.h"
@@ -54,7 +54,7 @@
 // Increment when breaking changes of configuration are made.
 #define CONFIG_MAGIC 0x00
 
-//#define DEBUG_SENSOR_VALUES
+#define DEBUG_SENSOR_VALUES
 #define DEBUG_SENSOR_REPORT
 #define DEBUG_SERVICE
 
@@ -123,7 +123,7 @@ IComponent* components[NUMBER_OF_COMPONENTS] = {
     &garageCover,    &temperatureSensor, &humiditySensor,
     &distanceSensor, &heightSensor,      &carPresenceSensor};
 
-Node node = Node(components, sizeof(components) / sizeof(components[0]));
+Device device = Device(components, sizeof(components) / sizeof(components[0]));
 
 // CTR<AES128> ctrAes128;
 
@@ -147,8 +147,8 @@ void onServiceReqMsg(const LoRaServiceItemT& item);
 // Local function definitions
 // ----------------------------------------------------------------
 static void loadConfigValuesForAllComponents() {
-  for (uint8_t i = 0; i < node.getSize(); i++) {
-    IComponent* c = node.getComponent(i);
+  for (uint8_t i = 0; i < device.getSize(); i++) {
+    IComponent* c = device.getComponent(i);
     c->loadConfigValues();
   }
 }
@@ -156,8 +156,8 @@ static void loadConfigValuesForAllComponents() {
 static void updateSensors() {
   Serial.print('.');
 
-  for (uint8_t i = 0; i < node.getSize(); i++) {
-    IComponent* c = node.getComponent(i);
+  for (uint8_t i = 0; i < device.getSize(); i++) {
+    IComponent* c = device.getComponent(i);
 
     if (c->update()) {
       LOG_SENSOR(c);
@@ -167,8 +167,8 @@ static void updateSensors() {
 }
 
 static bool isReportDue() {
-  for (uint8_t i = 0; i < node.getSize(); i++) {
-    IComponent* c = node.getComponent(i);
+  for (uint8_t i = 0; i < device.getSize(); i++) {
+    IComponent* c = device.getComponent(i);
     if (c != nullptr && c->isReportDue()) {
       Serial.print("\nReport is due for entityId=");
       Serial.print(c->getEntityId());
@@ -196,8 +196,8 @@ static void sendSensorValue(IComponent* component) {
 static void sendSensorValueForAllComponents() {
   lora.beginValueMsg();
 
-  for (uint8_t i = 0; i < node.getSize(); i++) {
-    IComponent* c = node.getComponent(i);
+  for (uint8_t i = 0; i < device.getSize(); i++) {
+    IComponent* c = device.getComponent(i);
     if (c != nullptr) {
       ValueItemT item;
       c->getValueItem(&item);
@@ -213,8 +213,8 @@ static void sendSensorValueForComponentsWhereReportIsDue() {
   lora.beginValueMsg();
 
   uint8_t itemsAdded = 0;
-  for (uint8_t i = 0; i < node.getSize(); i++) {
-    IComponent* c = node.getComponent(i);
+  for (uint8_t i = 0; i < device.getSize(); i++) {
+    IComponent* c = device.getComponent(i);
     if (c != nullptr && c->isReportDue()) {
       ValueItemT item;
       c->getValueItem(&item);
@@ -230,7 +230,7 @@ static void sendSensorValueForComponentsWhereReportIsDue() {
 }
 
 void sendSensorValueForEntity(uint8_t entityId) {
-  IComponent* c = node.getComponentByEntityId(entityId);
+  IComponent* c = device.getComponentByEntityId(entityId);
   sendSensorValue(c);
 }
 
@@ -250,15 +250,15 @@ static void sendConfigValues(const IComponent* component) {
 }
 
 static void sendConfigValuesForAllComponents() {
-  for (uint8_t i = 0; i < node.getSize(); i++) {
-    const IComponent* c = node.getComponent(i);
+  for (uint8_t i = 0; i < device.getSize(); i++) {
+    const IComponent* c = device.getComponent(i);
     sendConfigValues(c);
     delay(500);
   }
 }
 
 void sendConfigValuesForEntity(uint8_t entityId) {
-  const IComponent* c = node.getComponentByEntityId(entityId);
+  const IComponent* c = device.getComponentByEntityId(entityId);
   sendConfigValues(c);
 }
 
@@ -279,20 +279,20 @@ static void sendDiscoveryMsg(const IComponent* component) {
 }
 
 static void sendDiscoveryMsgForAllComponents() {
-  for (uint8_t i = 0; i < node.getSize(); i++) {
-    const IComponent* c = node.getComponent(i);
+  for (uint8_t i = 0; i < device.getSize(); i++) {
+    const IComponent* c = device.getComponent(i);
     sendDiscoveryMsg(c);
     delay(500);
   }
 }
 
 static void sendDiscoveryMsgForEntity(uint8_t entityId) {
-  const IComponent* c = node.getComponentByEntityId(entityId);
+  const IComponent* c = device.getComponentByEntityId(entityId);
   sendDiscoveryMsg(c);
 }
 
 static void printWelcomeMsg() {
-  Serial.print(F("LoRa Garage Node v"));
+  Serial.print(F("LoRa Garage Device v"));
   printVersion(Serial, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
   Serial.print(F(", Address="));
   Serial.print(LORA_MY_ADDRESS);
@@ -301,7 +301,7 @@ static void printWelcomeMsg() {
 }
 
 #ifdef DEBUG_SENSOR_VALUES
-static void printAllSensors(Print& p) { node.printTo(p); }
+static void printAllSensors(Print& p) { device.printTo(p); }
 #endif
 
 void setup() {
@@ -392,14 +392,14 @@ void onConfigReqMsg(uint8_t entityId) {
 }
 
 void onConfigSetReqMsg(const ConfigValuePayloadT& payload) {
-  IComponent* c = node.getComponentByEntityId(payload.entityId);
+  IComponent* c = device.getComponentByEntityId(payload.entityId);
   if (c) {
     c->setConfigItemValues(payload.configValues, payload.numberOfConfigs);
   }
 }
 
 void onServiceReqMsg(const LoRaServiceItemT& item) {
-  IComponent* c = node.getComponentByEntityId(item.entityId);
+  IComponent* c = device.getComponentByEntityId(item.entityId);
   if (c) {
     LOG_SERVICE(c, item.service);
     c->callService(item.service);

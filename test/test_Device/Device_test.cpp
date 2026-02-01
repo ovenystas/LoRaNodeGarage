@@ -1,4 +1,4 @@
-#include "Node.h"
+#include "Device.h"
 
 #include <gtest/gtest.h>
 
@@ -7,7 +7,7 @@
 #include "Print.h"
 
 // Include source implementation
-#include "../../src/Node.cpp"
+#include "../../src/Device.cpp"
 
 class ComponentChild : public IComponent {
  public:
@@ -55,15 +55,15 @@ class ComponentChild : public IComponent {
   const uint8_t mEntityId;
 };
 
-class Node_test : public ::testing::Test {
+class Device_test : public ::testing::Test {
  protected:
   ComponentChild c0 = ComponentChild(10);
   ComponentChild c1 = ComponentChild(11);
   IComponent* components[2] = {&c0, &c1};
-  Node n = Node(components, 2);
+  Device n = Device(components, 2);
 };
 
-class NodePrint_test : public Node_test {
+class DevicePrint_test : public Device_test {
  protected:
   void SetUp() override {
     pSerial = new BufferSerial(256);
@@ -88,21 +88,21 @@ class NodePrint_test : public Node_test {
   BufferSerial* pSerial;
 };
 
-TEST_F(Node_test, getSize) { EXPECT_EQ(n.getSize(), 2); }
+TEST_F(Device_test, getSize) { EXPECT_EQ(n.getSize(), 2); }
 
-TEST_F(Node_test, getComponent) {
+TEST_F(Device_test, getComponent) {
   EXPECT_EQ(n.getComponent(0), &c0);
   EXPECT_EQ(n.getComponent(1), &c1);
   EXPECT_EQ(n.getComponent(2), nullptr);
 }
 
-TEST_F(Node_test, getComponentByEntityId) {
+TEST_F(Device_test, getComponentByEntityId) {
   EXPECT_EQ(n.getComponentByEntityId(12), nullptr);
   EXPECT_EQ(n.getComponentByEntityId(11), &c1);
   EXPECT_EQ(n.getComponentByEntityId(10), &c0);
 }
 
-TEST_F(NodePrint_test, print) {
+TEST_F(DevicePrint_test, print) {
   const char* expectedStr = "10, 11";
 
   size_t len = n.printTo(*pSerial);

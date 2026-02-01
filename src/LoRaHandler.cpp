@@ -39,6 +39,10 @@ int16_t LoRaHandler::loraRx() {
   for (int16_t i = 0; i < packetSize; i++) {
     int b = mLoRa.read();
     if (b < 0) {
+      Serial.print(F("', Error: Failed to read byte "));
+      Serial.print(i);
+      Serial.print(F(" of "));
+      Serial.println(packetSize);
       return -1;
     }
     buf[i] = b;

@@ -5,11 +5,11 @@
 
 #include "Component.h"
 
-class Node : Printable {
+class Device : Printable {
  public:
-  Node() = delete;
+  Device() = delete;
 
-  Node(IComponent** components, uint8_t size)
+  Device(IComponent** components, uint8_t size)
       : mComponents{components}, mSize{size} {}
 
   IComponent* getComponent(uint8_t idx);
