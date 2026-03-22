@@ -7,45 +7,45 @@
 
 const __FlashStringHelper* BinarySensor::getStateName() const {
   switch (getDeviceClass()) {
-    case BinarySensorDeviceClass::battery:
+    case BinarySensorDeviceClass::BATTERY:
       return mState ? F("low") : F("normal");
 
-    case BinarySensorDeviceClass::cold:
+    case BinarySensorDeviceClass::COLD:
       return mState ? F("cold") : F("normal");
 
-    case BinarySensorDeviceClass::heat:
+    case BinarySensorDeviceClass::HEAT:
       return mState ? F("hot") : F("normal");
 
-    case BinarySensorDeviceClass::connectivity:
+    case BinarySensorDeviceClass::CONNECTIVITY:
       return mState ? F("connected") : F("disconnected");
 
-    case BinarySensorDeviceClass::door:
-    case BinarySensorDeviceClass::garageDoor:
-    case BinarySensorDeviceClass::opening:
-    case BinarySensorDeviceClass::window:
+    case BinarySensorDeviceClass::DOOR:
+    case BinarySensorDeviceClass::GARAGE_DOOR:
+    case BinarySensorDeviceClass::OPENING:
+    case BinarySensorDeviceClass::WINDOW:
       return mState ? F("open") : F("closed");
 
-    case BinarySensorDeviceClass::lock:
+    case BinarySensorDeviceClass::LOCK:
       return mState ? F("unlocked") : F("locked");
 
-    case BinarySensorDeviceClass::moisture:
+    case BinarySensorDeviceClass::MOISTURE:
       return mState ? F("wet") : F("dry");
 
-    case BinarySensorDeviceClass::gas:
-    case BinarySensorDeviceClass::motion:
-    case BinarySensorDeviceClass::occupancy:
-    case BinarySensorDeviceClass::smoke:
-    case BinarySensorDeviceClass::sound:
-    case BinarySensorDeviceClass::vibration:
+    case BinarySensorDeviceClass::GAS:
+    case BinarySensorDeviceClass::MOTION:
+    case BinarySensorDeviceClass::OCCUPANCY:
+    case BinarySensorDeviceClass::SMOKE:
+    case BinarySensorDeviceClass::SOUND:
+    case BinarySensorDeviceClass::VIBRATION:
       return mState ? F("detected") : F("clear");
 
-    case BinarySensorDeviceClass::presence:
+    case BinarySensorDeviceClass::PRESENCE:
       return mState ? F("home") : F("away");
 
-    case BinarySensorDeviceClass::problem:
+    case BinarySensorDeviceClass::PROBLEM:
       return mState ? F("problem") : F("OK");
 
-    case BinarySensorDeviceClass::safety:
+    case BinarySensorDeviceClass::SAFETY:
       return mState ? F("unsafe") : F("safe");
 
     default:
@@ -57,10 +57,15 @@ void BinarySensor::getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
   item->entityId = mBaseComponent.getEntityId();
   item->componentType = static_cast<uint8_t>(getComponentType());
   item->deviceClass = static_cast<uint8_t>(getDeviceClass());
+  item->category = static_cast<uint8_t>(getCategory());
   item->unit = static_cast<uint8_t>(mUnit.type());
   item->isSigned = false;
   item->sizeCode = 0;
   item->precision = 0;
+  item->minValue = 0;
+  item->maxValue = 1;
+  strncpy(item->name, mBaseComponent.getName(), sizeof(item->name));
+  item->name[sizeof(item->name) - 1] = '\0'; // Ensure null termination
 }
 
 void BinarySensor::getValueItem(ValueItemT* item) const {

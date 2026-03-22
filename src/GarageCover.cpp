@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "Cover.h"
+#include "Ee.h"
 #include "Util.h"
 
 void GarageCover::activateRelay(uint8_t times) {
@@ -23,32 +24,32 @@ void GarageCover::callService(uint8_t service) {
   const CoverState state = mCover.getState();
 
   switch (mCover.serviceDecode(service)) {
-    case CoverService::open:
-      if (state == CoverState::closed) {
+    case CoverService::OPEN:
+      if (state == CoverState::CLOSED) {
         activateRelay(1);
-      } else if (state == CoverState::closing) {
+      } else if (state == CoverState::CLOSING) {
         activateRelay(2);
       }
       break;
 
-    case CoverService::close:
-      if (state == CoverState::open) {
+    case CoverService::CLOSE:
+      if (state == CoverState::OPEN) {
         activateRelay(1);
-      } else if (state == CoverState::opening) {
+      } else if (state == CoverState::OPENING) {
         activateRelay(2);
       }
       break;
 
-    case CoverService::stop:
-      if (state == CoverState::opening || state == CoverState::closing) {
+    case CoverService::STOP:
+      if (state == CoverState::OPENING || state == CoverState::CLOSING) {
         activateRelay(1);
       }
       break;
 
-    case CoverService::toggle:
-      if (state == CoverState::open || state == CoverState::closed) {
+    case CoverService::TOGGLE:
+      if (state == CoverState::OPEN || state == CoverState::CLOSED) {
         activateRelay(1);
-      } else if (state == CoverState::opening || state == CoverState::closing) {
+      } else if (state == CoverState::OPENING || state == CoverState::CLOSING) {
         activateRelay(2);
       }
       break;
@@ -63,38 +64,53 @@ CoverState GarageCover::determineState() {
   const bool openSensor = digitalRead(mPinOpen);
 
   if (isClosed(closedSensor, openSensor)) {
-    return CoverState::closed;
+    return CoverState::CLOSED;
   }
 
   if (isOpen(closedSensor, openSensor)) {
-    return CoverState::open;
+    return CoverState::OPEN;
   }
 
   if (isClosing(closedSensor, openSensor)) {
-    return CoverState::closing;
+    return CoverState::CLOSING;
   }
 
   if (isOpening(closedSensor, openSensor)) {
-    return CoverState::opening;
+    return CoverState::OPENING;
   }
 
   return mCover.getState();  // Error condition, both sensors can't be LOW.
 }
 
-void GarageCover::getDiscoveryItem(DiscoveryItemT* item) const {
-  mCover.getDiscoveryEntityItem(&item->entity);
-  item->numberOfConfigItems = mConfig.numberOfConfigItems;
-  mConfig.reportInterval.getDiscoveryConfigItem(&item->configItems[0]);
+uint8_t GarageCover::getDiscoveryItems(DiscoveryEntityItemT* items, uint8_t length) const {
+  assert(sNumItems <= length);
+
+  mCover.getDiscoveryEntityItem(&items[0]);
+  mReportInterval.getDiscoveryEntityItem(&items[1]);
+  
+  return sNumItems;
 }
 
-uint8_t GarageCover::getConfigItemValues(ConfigItemValueT* items,
+uint8_t GarageCover::getConfigValueItems(ValueItemT* items,
                                          uint8_t length) const {
-  assert(mConfig.numberOfConfigItems <= length);
+  assert(sNumConfigItems <= length);
 
-  mConfig.reportInterval.getConfigItemValue(&items[0]);
+  mReportInterval.getValueItem(&items[0]);
 
-  return mConfig.numberOfConfigItems;
+  return sNumConfigItems;
 }
+
+bool GarageCover::setValueItem(const ValueItemT &item) {
+  switch (item.entityId - mCover.getEntityId() - 1) {
+    case 0:
+      mReportInterval.setValueItem(item);
+      break;
+    default:
+      return false;
+    }
+
+    return true;
+  }
 
 bool GarageCover::isClosed(bool closedSensor, bool openSensor) {
   return closedSensor == LOW && openSensor == HIGH;
@@ -102,8 +118,8 @@ bool GarageCover::isClosed(bool closedSensor, bool openSensor) {
 
 bool GarageCover::isClosing(bool closedSensor, bool openSensor) {
   return closedSensor == HIGH && openSensor == HIGH &&
-         (mCover.getState() == CoverState::closing ||
-          mCover.getState() == CoverState::open);
+         (mCover.getState() == CoverState::CLOSING ||
+          mCover.getState() == CoverState::OPEN);
 }
 
 bool GarageCover::isOpen(bool closedSensor, bool openSensor) {
@@ -112,8 +128,8 @@ bool GarageCover::isOpen(bool closedSensor, bool openSensor) {
 
 bool GarageCover::isOpening(bool closedSensor, bool openSensor) {
   return closedSensor == HIGH && openSensor == HIGH &&
-         (mCover.getState() == CoverState::opening ||
-          mCover.getState() == CoverState::closed);
+         (mCover.getState() == CoverState::OPENING ||
+          mCover.getState() == CoverState::CLOSED);
 }
 
 bool GarageCover::update() {
@@ -128,23 +144,7 @@ bool GarageCover::update() {
   return isReportDue;
 }
 
-bool GarageCover::setConfigItemValues(const ConfigItemValueT* items,
-                                      uint8_t length) {
-  if (length > mConfig.numberOfConfigItems) {
-    return false;
-  }
-
-  for (uint8_t i = 0; i < length; i++) {
-    switch (items[i].configId) {
-      case 0:
-        (void)mConfig.reportInterval.setConfigItemValue(&items[i]);
-        break;
-      default:
-        return false;
-    }
-  }
-
-  return true;
+void GarageCover::loadConfigValues() {
+  Ee::loadValue(EE_ADDRESS_CONFIG_GARAGE_COVER_0, mReportInterval,
+    GarageCoverConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
 }
-
-void GarageCover::loadConfigValues() { mConfig.reportInterval.load(); }

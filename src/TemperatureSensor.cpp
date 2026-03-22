@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <assert.h>
 
-#include "ConfigItem.h"
+#include "Ee.h"
 #include "Sensor.h"
 #include "Util.h"
 
@@ -14,24 +14,21 @@ extern BufferSerial Serial;
 #endif
 
 bool TemperatureSensor::update() {
-  if (mDht.read()) {
+  if (mDhtReader.isReadSuccessful()) {
     TemperatureT newValue =
-        round(mDht.readTemperature() * 10) + mConfig.compensation.getValue();
+        round(mDhtReader.getTemperature() * 10) + mCompensation.getValue();
 
     mSensor.setValue(newValue);
-  } else {
-    printMillis(Serial);
-    Serial.print(F("WARN: DHT checksum fail"));
   }
 
-  bool largeChange = mConfig.reportHysteresis.getValue() > 0
+  bool largeChange = mReportHysteresis.getValue() > 0
                          ? mSensor.absDiffLastReportedValue() >=
-                               mConfig.reportHysteresis.getValue()
+                               mReportHysteresis.getValue()
                          : false;
 
-  bool timeToReport = mConfig.reportInterval.getValue() > 0
+  bool timeToReport = mReportInterval.getValue() > 0
                           ? (mSensor.timeSinceLastReport() / 1000)>=
-                                mConfig.reportInterval.getValue()
+                                mReportInterval.getValue()
                           : false;
 
   bool isReportDue = largeChange || timeToReport;
@@ -40,61 +37,61 @@ bool TemperatureSensor::update() {
   return isReportDue;
 }
 
-void TemperatureSensor::getDiscoveryItem(DiscoveryItemT *item) const {
-  assert(mConfig.numberOfConfigItems <=
-         sizeof(item->configItems) / sizeof(item->configItems[0]));
+uint8_t TemperatureSensor::getConfigValueItems(ValueItemT* items,
+                                            uint8_t length) const {
+  assert(sNumConfigItems <= length);
 
-  mSensor.getDiscoveryEntityItem(&item->entity);
-  item->numberOfConfigItems = mConfig.numberOfConfigItems;
-  mConfig.reportHysteresis.getDiscoveryConfigItem(&item->configItems[0]);
-  mConfig.measureInterval.getDiscoveryConfigItem(&item->configItems[1]);
-  mConfig.reportInterval.getDiscoveryConfigItem(&item->configItems[2]);
-  mConfig.compensation.getDiscoveryConfigItem(&item->configItems[3]);
+  mReportHysteresis.getValueItem(&items[0]);
+  mMeasureInterval.getValueItem(&items[1]);
+  mReportInterval.getValueItem(&items[2]);
+  mCompensation.getValueItem(&items[3]);
+
+  return sNumConfigItems;
 }
 
-uint8_t TemperatureSensor::getConfigItemValues(ConfigItemValueT *items,
-                                               uint8_t length) const {
-  assert(mConfig.numberOfConfigItems <= length);
-
-  mConfig.reportHysteresis.getConfigItemValue(&items[0]);
-  mConfig.measureInterval.getConfigItemValue(&items[1]);
-  mConfig.reportInterval.getConfigItemValue(&items[2]);
-  mConfig.compensation.getConfigItemValue(&items[3]);
-
-  return mConfig.numberOfConfigItems;
-}
-
-bool TemperatureSensor::setConfigItemValues(const ConfigItemValueT *items,
-                                            uint8_t length) {
-  if (length > mConfig.numberOfConfigItems) {
-    return false;
-  }
-
-  for (uint8_t i = 0; i < length; i++) {
-    switch (items[i].configId) {
+bool TemperatureSensor::setValueItem(const ValueItemT &item) {
+    switch (item.entityId - mSensor.getEntityId() - 1) {
       case 0:
-        (void)mConfig.reportHysteresis.setConfigItemValue(&items[i]);
+        mReportHysteresis.setValueItem(item);
         break;
       case 1:
-        (void)mConfig.measureInterval.setConfigItemValue(&items[i]);
+        mMeasureInterval.setValueItem(item);
         break;
       case 2:
-        (void)mConfig.reportInterval.setConfigItemValue(&items[i]);
+        mReportInterval.setValueItem(item);
         break;
       case 3:
-        (void)mConfig.compensation.setConfigItemValue(&items[i]);
+        mCompensation.setValueItem(item);
         break;
       default:
         return false;
     }
-  }
 
   return true;
 }
 
+uint8_t TemperatureSensor::getDiscoveryItems(DiscoveryEntityItemT* items, uint8_t length) const {
+  assert(sNumItems <= length);
+
+  mSensor.getDiscoveryEntityItem(&items[0]);
+  mReportHysteresis.getDiscoveryEntityItem(&items[1]);
+  mMeasureInterval.getDiscoveryEntityItem(&items[2]);
+  mReportInterval.getDiscoveryEntityItem(&items[3]);
+  mCompensation.getDiscoveryEntityItem(&items[4]);
+
+  return sNumItems;
+}
+
 void TemperatureSensor::loadConfigValues() {
-  mConfig.reportHysteresis.load();
-  mConfig.measureInterval.load();
-  mConfig.reportInterval.load();
-  mConfig.compensation.load();
+  Ee::loadValue(EE_ADDRESS_CONFIG_TEMPERATURE_SENSOR_0, mReportHysteresis,
+    TemperatureSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
+
+  Ee::loadValue(EE_ADDRESS_CONFIG_TEMPERATURE_SENSOR_1, mMeasureInterval,
+    TemperatureSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT);
+
+  Ee::loadValue(EE_ADDRESS_CONFIG_TEMPERATURE_SENSOR_2, mReportInterval,
+    TemperatureSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
+
+  Ee::loadValue(EE_ADDRESS_CONFIG_TEMPERATURE_SENSOR_3, mCompensation,
+    TemperatureSensorConstants::CONFIG_COMPENSATION_DEFAULT);
 }

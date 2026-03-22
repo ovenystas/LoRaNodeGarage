@@ -5,16 +5,16 @@
 
 const __FlashStringHelper* Cover::getStateName() const {
   switch (mState) {
-    case CoverState::closed:
+    case CoverState::CLOSED:
       return F("closed");
 
-    case CoverState::open:
+    case CoverState::OPEN:
       return F("open");
 
-    case CoverState::opening:
+    case CoverState::OPENING:
       return F("opening");
 
-    case CoverState::closing:
+    case CoverState::CLOSING:
       return F("closing");
 
     default:
@@ -24,19 +24,19 @@ const __FlashStringHelper* Cover::getStateName() const {
 
 const __FlashStringHelper* Cover::getServiceName(CoverService service) const {
   switch (service) {
-    case CoverService::open:
+    case CoverService::OPEN:
       return F("open");
 
-    case CoverService::close:
+    case CoverService::CLOSE:
       return F("close");
 
-    case CoverService::stop:
+    case CoverService::STOP:
       return F("stop");
 
-    case CoverService::toggle:
+    case CoverService::TOGGLE:
       return F("toggle");
 
-    case CoverService::unknown:
+    case CoverService::UNKNOWN:
     default:
       return F("unknown");
   }
@@ -81,14 +81,14 @@ size_t Cover::printTo(Print& p, uint8_t service) const {
 CoverService Cover::serviceDecode(uint8_t service) const {
   switch (service) {
     case 0:
-      return CoverService::open;
+      return CoverService::OPEN;
     case 1:
-      return CoverService::close;
+      return CoverService::CLOSE;
     case 2:
-      return CoverService::stop;
+      return CoverService::STOP;
     case 3:
-      return CoverService::toggle;
+      return CoverService::TOGGLE;
     default:
-      return CoverService::unknown;
+      return CoverService::UNKNOWN;
   }
 }

@@ -1,4 +1,16 @@
 {
     "cmake.sourceDirectory": "C:/Users/oveny/Documents/PlatformIO/Projects/LoRaNodeGarage/test",
-    "C_Cpp.default.compilerPath": "C:/Users/oveny/.platformio/packages/toolchain-atmelavr/bin/avr-gcc.exe"
+    "C_Cpp.default.compilerPath": "C:/Users/oveny/.platformio/packages/toolchain-atmelavr/bin/avr-gcc.exe",
+    "cmake.ignoreCMakeListsMissing": true,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "xaver.clang-format",
+    "[cpp]": {
+        "editor.defaultFormatter": "xaver.clang-format"
+    },
+    "[c]": {
+        "editor.defaultFormatter": "xaver.clang-format"
+    },
+    "[h]": {
+        "editor.defaultFormatter": "xaver.clang-format"
+    }
 }

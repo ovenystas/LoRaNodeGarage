@@ -3,22 +3,23 @@
 #include <Arduino.h>
 #include <assert.h>
 
+#include "Ee.h"
 #include "Sensor.h"
 #include "Util.h"
 
 bool HeightSensor::update() {
-  HeightT newValue = mConfig.zeroValue.getValue() - mDistanceSensor.getValue();
+  HeightT newValue = mZeroValue.getValue() - mDistanceSensor.getValue();
 
   mSensor.setValue(newValue);
 
-  bool largeChange = mConfig.reportHysteresis.getValue() > 0
+  bool largeChange = mReportHysteresis.getValue() > 0
                          ? mSensor.absDiffLastReportedValue() >=
-                               mConfig.reportHysteresis.getValue()
+                               mReportHysteresis.getValue()
                          : false;
 
-  bool timeToReport = mConfig.reportInterval.getValue() > 0
+  bool timeToReport = mReportInterval.getValue() > 0
                           ? (mSensor.timeSinceLastReport() / 1000) >=
-                                mConfig.reportInterval.getValue()
+                                mReportInterval.getValue()
                           : false;
 
   bool isReportDue = largeChange || timeToReport;
@@ -27,61 +28,60 @@ bool HeightSensor::update() {
   return isReportDue;
 }
 
-void HeightSensor::getDiscoveryItem(DiscoveryItemT* item) const {
-  assert(mConfig.numberOfConfigItems <=
-         sizeof(item->configItems) / sizeof(item->configItems[0]));
+uint8_t HeightSensor::getDiscoveryItems(DiscoveryEntityItemT* items, uint8_t length) const {
+  assert(sNumItems <= length);
 
-  mSensor.getDiscoveryEntityItem(&item->entity);
-  item->numberOfConfigItems = mConfig.numberOfConfigItems;
-  mConfig.reportHysteresis.getDiscoveryConfigItem(&item->configItems[0]);
-  mConfig.reportInterval.getDiscoveryConfigItem(&item->configItems[1]);
-  mConfig.stableTime.getDiscoveryConfigItem(&item->configItems[2]);
-  mConfig.zeroValue.getDiscoveryConfigItem(&item->configItems[3]);
+  mSensor.getDiscoveryEntityItem(&items[0]);
+  mReportHysteresis.getDiscoveryEntityItem(&items[1]);
+  mReportInterval.getDiscoveryEntityItem(&items[2]);
+  mStableTime.getDiscoveryEntityItem(&items[3]);
+  mZeroValue.getDiscoveryEntityItem(&items[4]);
+
+  return sNumItems;
 }
 
-uint8_t HeightSensor::getConfigItemValues(ConfigItemValueT* items,
-                                          uint8_t length) const {
-  assert(mConfig.numberOfConfigItems <= length);
+uint8_t HeightSensor::getConfigValueItems(ValueItemT* items, uint8_t length) const {
+  assert(sNumConfigItems <= length);
 
-  mConfig.reportHysteresis.getConfigItemValue(&items[0]);
-  mConfig.reportInterval.getConfigItemValue(&items[1]);
-  mConfig.stableTime.getConfigItemValue(&items[2]);
-  mConfig.zeroValue.getConfigItemValue(&items[3]);
+  mReportHysteresis.getValueItem(&items[0]);
+  mReportInterval.getValueItem(&items[1]);
+  mStableTime.getValueItem(&items[2]);
+  mZeroValue.getValueItem(&items[3]);
 
-  return mConfig.numberOfConfigItems;
+  return sNumConfigItems;
 }
 
-bool HeightSensor::setConfigItemValues(const ConfigItemValueT* items,
-                                       uint8_t length) {
-  if (length > mConfig.numberOfConfigItems) {
-    return false;
-  }
-
-  for (uint8_t i = 0; i < length; i++) {
-    switch (items[i].configId) {
+bool HeightSensor::setValueItem(const ValueItemT &item) {
+    switch (item.entityId - mSensor.getEntityId() - 1) {
       case 0:
-        (void)mConfig.reportHysteresis.setConfigItemValue(&items[i]);
+        mReportHysteresis.setValueItem(item);
         break;
       case 1:
-        (void)mConfig.reportInterval.setConfigItemValue(&items[i]);
+        mReportInterval.setValueItem(item);
         break;
       case 2:
-        (void)mConfig.stableTime.setConfigItemValue(&items[i]);
+        mStableTime.setValueItem(item);
         break;
       case 3:
-        (void)mConfig.zeroValue.setConfigItemValue(&items[i]);
+        mZeroValue.setValueItem(item);
         break;
       default:
         return false;
     }
-  }
 
   return true;
 }
 
 void HeightSensor::loadConfigValues() {
-  mConfig.reportHysteresis.load();
-  mConfig.reportInterval.load();
-  mConfig.stableTime.load();
-  mConfig.zeroValue.load();
+    Ee::loadValue(EE_ADDRESS_CONFIG_HEIGHT_SENSOR_0, mReportHysteresis,
+      HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT);
+
+    Ee::loadValue(EE_ADDRESS_CONFIG_HEIGHT_SENSOR_1, mReportInterval,
+      HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
+
+    Ee::loadValue(EE_ADDRESS_CONFIG_HEIGHT_SENSOR_2, mStableTime,
+      HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT);
+
+    Ee::loadValue(EE_ADDRESS_CONFIG_HEIGHT_SENSOR_3, mZeroValue,
+      HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT);
 }

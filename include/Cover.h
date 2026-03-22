@@ -8,34 +8,34 @@
 
 // From https://www.home-assistant.io/integrations/cover/ at 2021-03-21
 enum class CoverDeviceClass : uint8_t {
-  none,
-  awning,
-  blind,
-  curtain,
-  damper,
-  door,
-  garage,
-  gate,
-  shade,
-  shutter,
-  window
+  NONE,
+  AWNING,
+  BLIND,
+  CURTAIN,
+  DAMPER,
+  DOOR,
+  GARAGE,
+  GATE,
+  SHADE,
+  SHUTTER,
+  WINDOW
 };
 
-enum class CoverState : uint8_t { closed, open, opening, closing };
+enum class CoverState : uint8_t { CLOSED, OPEN, OPENING, CLOSING };
 
-enum class CoverService : uint8_t { open, close, stop, toggle, unknown };
+enum class CoverService : uint8_t { OPEN, CLOSE, STOP, TOGGLE, UNKNOWN };
 
 class Cover : public Printable {
  public:
   Cover() = delete;
 
   Cover(uint8_t entityId, const char* name,
-        CoverDeviceClass deviceClass = CoverDeviceClass::none)
+        CoverDeviceClass deviceClass = CoverDeviceClass::NONE)
       : mBaseComponent{BaseComponent(entityId, name)},
         mDeviceClass{deviceClass} {}
 
   BaseComponent::Type getComponentType() const {
-    return BaseComponent::Type::cover;
+    return BaseComponent::Type::COVER;
   }
 
   CoverDeviceClass getDeviceClass() const { return mDeviceClass; }
@@ -78,6 +78,6 @@ class Cover : public Printable {
  private:
   BaseComponent mBaseComponent;
   const CoverDeviceClass mDeviceClass;
-  CoverState mState{CoverState::closed};
-  CoverState mLastReportedState{CoverState::closed};
+  CoverState mState{CoverState::CLOSED};
+  CoverState mLastReportedState{CoverState::CLOSED};
 };

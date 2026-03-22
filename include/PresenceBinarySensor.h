@@ -2,9 +2,8 @@
 
 #include "BinarySensor.h"
 #include "Component.h"
-#include "ConfigItem.h"
-#include "EeAdressMap.h"
 #include "HeightSensor.h"
+#include "Number.h"
 #include "Util.h"
 
 namespace PresenceBinarySensorConstants {
@@ -12,6 +11,11 @@ static const HeightT CONFIG_LOW_LIMIT_DEFAULT = 180;
 static const HeightT CONFIG_HIGH_LIMIT_DEFAULT = 200;
 static const uint16_t CONFIG_MIN_STABLE_TIME_DEFAULT = 10000;
 static const uint16_t CONFIG_REPORT_INTERVAL_DEFAULT = 300;
+
+static const char lowLimitName[] PROGMEM = "Low Limit";
+static const char highLimitName[] PROGMEM = "High Limit";
+static const char minStableTimeName[] PROGMEM = "Min Stable Time";
+static const char reportIntervalName[] PROGMEM = "Report Interval";
 }  // namespace PresenceBinarySensorConstants
 
 class PresenceBinarySensor : public IComponent {
@@ -21,22 +25,48 @@ class PresenceBinarySensor : public IComponent {
   PresenceBinarySensor(uint8_t entityId, const char* name,
                        Sensor<HeightT>& heightSensor)
       : mBinarySensor{BinarySensor(entityId, name,
-                                   BinarySensorDeviceClass::presence)},
-        mHeightSensor{heightSensor} {}
+                                   BinarySensorDeviceClass::PRESENCE)},
+
+        mLowLimit{Number<HeightT>(
+            0, PresenceBinarySensorConstants::lowLimitName, NumberDeviceClass::DISTANCE, Unit::Type::cm, 0,
+            BaseComponent::Category::CONFIG, PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT, 0,
+            MAX_SENSOR_DISTANCE)},
+
+        mHighLimit{Number<HeightT>(
+            1, PresenceBinarySensorConstants::highLimitName, NumberDeviceClass::DISTANCE, Unit::Type::cm, 0,
+            BaseComponent::Category::CONFIG, PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT, 0,
+            MAX_SENSOR_DISTANCE)},
+
+        mMinStableTime{Number<uint16_t>(
+            2, PresenceBinarySensorConstants::minStableTimeName, NumberDeviceClass::DURATION, Unit::Type::ms, 0,
+            BaseComponent::Category::CONFIG, PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT, 0,
+            Util::ONE_MINUTE_IN_MILLISECONDS)},
+
+        mReportInterval{Number<uint16_t>(
+            3, PresenceBinarySensorConstants::reportIntervalName, NumberDeviceClass::DURATION, Unit::Type::s, 0,
+            BaseComponent::Category::CONFIG, PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, 0,
+            Util::TWELVE_HOURS_IN_SECONDS)},
+
+      mHeightSensor{heightSensor} {}
 
   void callService(uint8_t service) final { (void)service; }
 
-  uint8_t getConfigItemValues(ConfigItemValueT* items,
-                              uint8_t length) const final;
+  uint8_t getConfigValueItems(ValueItemT* items, uint8_t length) const final;
 
-  void getDiscoveryItem(DiscoveryItemT* item) const final;
+  void loadConfigValues() final;
+  
+  uint8_t getDiscoveryItems(DiscoveryEntityItemT* item, uint8_t length) const final;
 
   uint8_t getEntityId() const final { return mBinarySensor.getEntityId(); }
 
-  void getValueItem(ValueItemT* item) const final {
-    return mBinarySensor.getValueItem(item);
-  }
+  uint8_t getNumEntities() const final { return sNumItems; };
 
+  void getValueItem(ValueItemT* item) const final {
+      return mBinarySensor.getValueItem(item);
+    }
+    
+  bool setValueItem(const ValueItemT &item) final;
+  
   bool isReportDue() const final { return mBinarySensor.isReportDue(); }
 
   size_t printTo(Print& p) const final { return mBinarySensor.printTo(p); };
@@ -47,42 +77,18 @@ class PresenceBinarySensor : public IComponent {
     return 0;
   };
 
-  void loadConfigValues() final;
-
-  bool setConfigItemValues(const ConfigItemValueT* items, uint8_t length) final;
-
   void setReported() final { mBinarySensor.setReported(); }
 
   bool update() final;
 
  private:
-  struct Config {
-    // cppcheck-suppress unusedStructMember
-    static const uint8_t numberOfConfigItems = {4};
-
-    ConfigItem<HeightT> lowLimit = {ConfigItem<HeightT>(
-        0, EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_0,
-        PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT, 0,
-        MAX_SENSOR_DISTANCE, Unit::Type::cm)};
-
-    ConfigItem<HeightT> highLimit = {ConfigItem<HeightT>(
-        1, EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_1,
-        PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT, 0,
-        MAX_SENSOR_DISTANCE, Unit::Type::cm)};
-
-    ConfigItem<uint16_t> minStableTime = {ConfigItem<uint16_t>(
-        2, EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_2,
-        PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT, 0,
-        Util::ONE_MINUTE_IN_MILLISECONDS, Unit::Type::ms)};
-
-    ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        3, EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_3,
-        PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, 0,
-        Util::TWELVE_HOURS_IN_SECONDS, Unit::Type::s)};
-  };
-
+  static constexpr uint8_t sNumConfigItems = 4;
+  static constexpr uint8_t sNumItems = 1 + sNumConfigItems;
   BinarySensor mBinarySensor;
-  Config mConfig;
+  Number<HeightT> mLowLimit;
+  Number<HeightT> mHighLimit;
+  Number<uint16_t> mMinStableTime;
+  Number<uint16_t> mReportInterval;
   Sensor<HeightT>& mHeightSensor;
   uint32_t mLastChangedTime{};
   bool mStableState{};

@@ -5,17 +5,17 @@
 
 #include "Util.h"
 
+#define LORA_BROADCAST_ADDRESS 255
+
 static constexpr uint8_t msgTypeMask = 0x0f;
 
 int16_t LoRaHandler::begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc,
                            OnValueReqMsgFunc onValueReqMsgFunc,
-                           OnConfigReqMsgFunc onConfigReqMsgFunc,
-                           OnConfigSetReqMsgFunc onConfigSetReqMsgFunc,
+                           OnValueSetReqMsgFunc onValueSetReqMsgFunc,
                            OnServiceReqMsgFunc onServiceReqMsgFunc) {
   mOnDiscoveryReqMsgFunc = onDiscoveryReqMsgFunc;
   mOnValueReqMsgFunc = onValueReqMsgFunc;
-  mOnConfigReqMsgFunc = onConfigReqMsgFunc;
-  mOnConfigSetReqMsgFunc = onConfigSetReqMsgFunc;
+  mOnValueSetReqMsgFunc = onValueSetReqMsgFunc;
   mOnServiceReqMsgFunc = onServiceReqMsgFunc;
 
   return mLoRa.begin(LORA_FREQUENCY);
@@ -75,8 +75,8 @@ int16_t LoRaHandler::loraRx() {
   Serial.print(rxMsg.rssi);
 #endif
 
-  // Check if it is addressed to me
-  if (rxMsg.header.dst != mMyAddress) {
+  // Check if it is addressed to me or broadcast
+  if (rxMsg.header.dst != mMyAddress && rxMsg.header.dst != LORA_BROADCAST_ADDRESS) {
 #ifdef DEBUG_LORA_MESSAGE
     Serial.print(F(", not for me, drop msg."));
 #endif
@@ -126,6 +126,12 @@ int8_t LoRaHandler::parseMsg(const LoRaRxMessageT& rxMsg, uint8_t* payload) {
 
   switch (rxMsg.header.flags.msgType) {
     case LoRaMsgType::ping_req:
+      printMillis(Serial);
+      Serial.print(F("Ping request, from "));
+      Serial.print(rxMsg.header.src);
+      Serial.print(F(", RSSI "));
+      Serial.print(rxMsg.rssi);
+      Serial.print(F("dBm"));
       sendPing(rxMsg.header.src, rxMsg.rssi);
       break;
 
@@ -142,18 +148,11 @@ int8_t LoRaHandler::parseMsg(const LoRaRxMessageT& rxMsg, uint8_t* payload) {
       }
       break;
 
-    case LoRaMsgType::config_req:
-      if (mOnConfigReqMsgFunc) {
-        uint8_t entityId = payload[0];
-        mOnConfigReqMsgFunc(entityId);
-      }
-      break;
-
-    case LoRaMsgType::configSet_req:
-      if (mOnConfigSetReqMsgFunc) {
-        ConfigValuePayloadT cfgValPayload;
-        cfgValPayload.fromByteArray(payload, rxMsg.payload_length);
-        mOnConfigSetReqMsgFunc(cfgValPayload);
+    case LoRaMsgType::valueSet_req:
+      if (mOnValueSetReqMsgFunc) {
+        ValueItemT valueItem;
+        valueItem.fromByteArray(payload, rxMsg.payload_length);
+        mOnValueSetReqMsgFunc(valueItem);
       }
       break;
 
@@ -288,7 +287,7 @@ void LoRaHandler::endMsg() {
   sendMsg(mMsgTx);
 }
 
-void LoRaHandler::addDiscoveryItem(const DiscoveryItemT& item) {
+void LoRaHandler::addDiscoveryItem(const DiscoveryEntityItemT& item) {
   size_t length =
       item.toByteArray(&mMsgTx.payload[mMsgTx.payload_length],
                        sizeof(mMsgTx.payload) - mMsgTx.payload_length);
@@ -316,34 +315,6 @@ void LoRaHandler::addValueItem(const ValueItemT& item) {
 
   payload.valueItems[payload.numberOfEntities++] = item;
   mMsgTx.payload_length += item.size();
-
-  payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
-}
-
-void LoRaHandler::beginConfigsValueMsg(uint8_t entityId) {
-  setDefaultHeader(mMsgTx.header);
-  mMsgTx.payload_length = 0;
-  mMsgTx.header.flags.msgType = LoRaMsgType::config_msg;
-
-  ConfigValuePayloadT payload;
-  payload.entityId = entityId;
-  payload.numberOfConfigs = 0;
-
-  payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
-
-  mMsgTx.payload_length += 2;
-}
-
-void LoRaHandler::addConfigItemValues(const ConfigItemValueT* items,
-                                      uint8_t length) {
-  ConfigValuePayloadT payload;
-  payload.fromByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
-
-  for (uint8_t i = 0; i < length; i++) {
-    payload.configValues[i] = items[i];
-    payload.numberOfConfigs++;
-    mMsgTx.payload_length += payload.configValues[0].size();
-  }
 
   payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
 }

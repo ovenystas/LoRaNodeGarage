@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <assert.h>
 
+#include "Ee.h"
 #include "Util.h"
 
 bool PresenceBinarySensor::update() {
@@ -10,8 +11,8 @@ bool PresenceBinarySensor::update() {
 
   HeightT height = mHeightSensor.getValue();
 
-  bool newState = (height >= mConfig.lowLimit.getValue()) &&
-                  (height <= mConfig.highLimit.getValue());
+  bool newState = (height >= mLowLimit.getValue()) &&
+                  (height <= mHighLimit.getValue());
 
   if (newState != mBinarySensor.getState()) {
     mLastChangedTime = timestamp;
@@ -22,15 +23,15 @@ bool PresenceBinarySensor::update() {
 
   bool enteredNewStableState =
       !mStableState &&
-      timestamp - mLastChangedTime >= mConfig.minStableTime.getValue();
+      timestamp - mLastChangedTime >= mMinStableTime.getValue();
 
   if (enteredNewStableState) {
     mStableState = true;
   }
 
-  bool timeToReport = mConfig.reportInterval.getValue() > 0
+  bool timeToReport = mReportInterval.getValue() > 0
                           ? (mBinarySensor.timeSinceLastReport() / 1000) >=
-                                mConfig.reportInterval.getValue()
+                                mReportInterval.getValue()
                           : false;
 
   bool isReportDue = enteredNewStableState || timeToReport;
@@ -39,61 +40,60 @@ bool PresenceBinarySensor::update() {
   return isReportDue;
 }
 
-uint8_t PresenceBinarySensor::getConfigItemValues(ConfigItemValueT* items,
-                                                  uint8_t length) const {
-  assert(mConfig.numberOfConfigItems <= length);
+uint8_t PresenceBinarySensor::getConfigValueItems(ValueItemT* items, uint8_t length) const {
+  assert(sNumConfigItems <= length);
 
-  mConfig.lowLimit.getConfigItemValue(&items[0]);
-  mConfig.highLimit.getConfigItemValue(&items[1]);
-  mConfig.minStableTime.getConfigItemValue(&items[2]);
-  mConfig.reportInterval.getConfigItemValue(&items[3]);
+  mLowLimit.getValueItem(&items[0]);
+  mHighLimit.getValueItem(&items[1]);
+  mMinStableTime.getValueItem(&items[2]);
+  mReportInterval.getValueItem(&items[3]);
 
-  return mConfig.numberOfConfigItems;
+  return sNumConfigItems;
 }
 
-void PresenceBinarySensor::getDiscoveryItem(DiscoveryItemT* item) const {
-  assert(mConfig.numberOfConfigItems <=
-         sizeof(item->configItems) / sizeof(item->configItems[0]));
+uint8_t PresenceBinarySensor::getDiscoveryItems(DiscoveryEntityItemT* items, uint8_t length) const {
+  assert(sNumItems <= length);
 
-  mBinarySensor.getDiscoveryEntityItem(&item->entity);
-  item->numberOfConfigItems = mConfig.numberOfConfigItems;
-  mConfig.lowLimit.getDiscoveryConfigItem(&item->configItems[0]);
-  mConfig.highLimit.getDiscoveryConfigItem(&item->configItems[1]);
-  mConfig.minStableTime.getDiscoveryConfigItem(&item->configItems[2]);
-  mConfig.reportInterval.getDiscoveryConfigItem(&item->configItems[3]);
+  mBinarySensor.getDiscoveryEntityItem(&items[0]);
+  mLowLimit.getDiscoveryEntityItem(&items[1]);
+  mHighLimit.getDiscoveryEntityItem(&items[2]);
+  mMinStableTime.getDiscoveryEntityItem(&items[3]);
+  mReportInterval.getDiscoveryEntityItem(&items[4]);
+
+  return sNumItems;
 }
 
-bool PresenceBinarySensor::setConfigItemValues(const ConfigItemValueT* items,
-                                               uint8_t length) {
-  if (length > mConfig.numberOfConfigItems) {
-    return false;
-  }
-
-  for (uint8_t i = 0; i < length; i++) {
-    switch (items[i].configId) {
-      case 0:
-        (void)mConfig.lowLimit.setConfigItemValue(&items[i]);
-        break;
-      case 1:
-        (void)mConfig.highLimit.setConfigItemValue(&items[i]);
-        break;
-      case 2:
-        (void)mConfig.minStableTime.setConfigItemValue(&items[i]);
-        break;
-      case 3:
-        (void)mConfig.reportInterval.setConfigItemValue(&items[i]);
-        break;
-      default:
-        return false;
-    }
+bool PresenceBinarySensor::setValueItem(const ValueItemT &item) {
+  switch (item.entityId - mBinarySensor.getEntityId() - 1) {
+    case 0:
+      mLowLimit.setValueItem(item);
+      break;
+    case 1:
+      mHighLimit.setValueItem(item);
+      break;
+    case 2:
+      mMinStableTime.setValueItem(item);
+      break;
+    case 3:
+      mReportInterval.setValueItem(item);
+      break;
+    default:
+      return false;
   }
 
   return true;
 }
 
 void PresenceBinarySensor::loadConfigValues() {
-  mConfig.lowLimit.load();
-  mConfig.highLimit.load();
-  mConfig.minStableTime.load();
-  mConfig.reportInterval.load();
+  Ee::loadValue(EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_0, mLowLimit,
+    PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT);
+
+  Ee::loadValue(EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_1, mHighLimit,
+    PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT);
+
+  Ee::loadValue(EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_2, mMinStableTime,
+    PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT);
+
+  Ee::loadValue(EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_3, mReportInterval,
+    PresenceBinarySensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
 }

@@ -36,6 +36,7 @@
 #include <SPI.h>
 
 #include "Component.h"
+#include "DHTReader.h"
 #include "DistanceSensor.h"
 #include "EeAdressMap.h"
 #include "GarageCover.h"
@@ -86,6 +87,8 @@
 #define COVER_RELAY_PIN A0
 
 #define LORA_RESET_PIN 5
+#define LORA_SS_PIN LORA_DEFAULT_SS_PIN
+#define LORA_DIO0_PIN LORA_DEFAULT_DIO0_PIN
 
 #define UPDATE_SENSORS_INTERVAL 1000
 
@@ -97,27 +100,24 @@
 // Local variables
 // ----------------------------------------------------------------
 DHT dht(DHT_PIN, DHT_TYPE);
+DHTReader dhtReader(dht);
 NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 
 uint32_t lastRunTime = 0;
 
 const char garageCoverName[] PROGMEM = "Port";
-const char temperatureSensorName[] PROGMEM = "Temp";
-const char humiditySensorName[] PROGMEM = "Hum";
-const char distanceSensorName[] PROGMEM = "Dist";
+const char temperatureSensorName[] PROGMEM = "Temperature";
+const char humiditySensorName[] PROGMEM = "Humidity";
+const char distanceSensorName[] PROGMEM = "Distance";
 const char heightSensorName[] PROGMEM = "Height";
-const char carPresenceSensorName[] PROGMEM = "Car";
+const char carPresenceSensorName[] PROGMEM = "Car Presence";
 
-GarageCover garageCover = GarageCover(0, garageCoverName, COVER_CLOSED_PIN,
-                                      COVER_OPEN_PIN, COVER_RELAY_PIN);
-TemperatureSensor temperatureSensor =
-    TemperatureSensor(1, temperatureSensorName, dht);
-HumiditySensor humiditySensor = HumiditySensor(2, humiditySensorName, dht);
-DistanceSensor distanceSensor = DistanceSensor(3, distanceSensorName, sonar);
-HeightSensor heightSensor =
-    HeightSensor(4, heightSensorName, distanceSensor.getSensor());
-PresenceBinarySensor carPresenceSensor =
-    PresenceBinarySensor(5, carPresenceSensorName, heightSensor.getSensor());
+GarageCover garageCover = GarageCover(0, garageCoverName, COVER_CLOSED_PIN, COVER_OPEN_PIN, COVER_RELAY_PIN);
+TemperatureSensor temperatureSensor = TemperatureSensor(10, temperatureSensorName, dhtReader);
+HumiditySensor humiditySensor = HumiditySensor(20, humiditySensorName, dhtReader);
+DistanceSensor distanceSensor = DistanceSensor(30, distanceSensorName, sonar);
+HeightSensor heightSensor = HeightSensor(40, heightSensorName, distanceSensor.getSensor());
+PresenceBinarySensor carPresenceSensor = PresenceBinarySensor(50, carPresenceSensorName, heightSensor.getSensor());
 
 IComponent* components[NUMBER_OF_COMPONENTS] = {
     &garageCover,    &temperatureSensor, &humiditySensor,
@@ -140,8 +140,7 @@ const byte CTR_IV[16] PROGMEM = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 // ----------------------------------------------------------------
 void onDiscoveryReqMsg(uint8_t entityId);
 void onValueReqMsg(void);
-void onConfigReqMsg(uint8_t entityId);
-void onConfigSetReqMsg(const ConfigValuePayloadT& payload);
+void onValueSetReqMsg(const ValueItemT& item);
 void onServiceReqMsg(const LoRaServiceItemT& item);
 
 // Local function definitions
@@ -156,9 +155,10 @@ static void loadConfigValuesForAllComponents() {
 static void updateSensors() {
   Serial.print('.');
 
+  // dhtReader.update();
+
   for (uint8_t i = 0; i < device.getSize(); i++) {
     IComponent* c = device.getComponent(i);
-
     if (c->update()) {
       LOG_SENSOR(c);
       // c->setReported();
@@ -207,6 +207,7 @@ static void sendSensorValueForAllComponents() {
   }
 
   lora.endMsg();
+  Serial.println(F("\nSent sensor values for all components"));
 }
 
 static void sendSensorValueForComponentsWhereReportIsDue() {
@@ -239,14 +240,16 @@ static void sendConfigValues(const IComponent* component) {
     return;
   }
 
-  ConfigItemValueT items[13];
-  uint8_t numberOfConfigValues = component->getConfigItemValues(items, 13);
+  ValueItemT items[13];
+  uint8_t numberOfConfigValues = component->getConfigValueItems(items, 13);
 
-  lora.beginConfigsValueMsg(component->getEntityId());
   if (numberOfConfigValues > 0) {
-    lora.addConfigItemValues(items, numberOfConfigValues);
+    lora.beginValueMsg();
+    for (uint8_t i = 0; i < numberOfConfigValues; i++) {
+      lora.addValueItem(items[i]);
+    }
+    lora.endMsg();
   }
-  lora.endMsg();
 }
 
 static void sendConfigValuesForAllComponents() {
@@ -268,21 +271,24 @@ static void sendDiscoveryMsg(const IComponent* component) {
   }
 
   Serial.print(F("\nSending discovery for entityId="));
-  Serial.print(component-> getEntityId());
+  Serial.println(component-> getEntityId());
 
-  DiscoveryItemT item;
-  component->getDiscoveryItem(&item);
+  DiscoveryEntityItemT items[13];
+  uint8_t numItems = component->getDiscoveryItems(items, 13);
 
-  lora.beginDiscoveryMsg();
-  lora.addDiscoveryItem(item);
-  lora.endMsg();
+  for (uint8_t i = 0; i < numItems; i++) {
+    lora.beginDiscoveryMsg();
+    lora.addDiscoveryItem(items[i]);
+    lora.endMsg();
+    delay(500);
+  }
 }
 
 static void sendDiscoveryMsgForAllComponents() {
   for (uint8_t i = 0; i < device.getSize(); i++) {
+    delay(1000);
     const IComponent* c = device.getComponent(i);
     sendDiscoveryMsg(c);
-    delay(500);
   }
 }
 
@@ -305,6 +311,8 @@ static void printAllSensors(Print& p) { device.printTo(p); }
 #endif
 
 void setup() {
+  LoRa.setPins(LORA_SS_PIN, LORA_RESET_PIN, LORA_DIO0_PIN);
+
   Serial.begin(115200);
   while (!Serial) {
     // Do nothing
@@ -335,29 +343,29 @@ void setup() {
   loadConfigValuesForAllComponents();
   EEPROM.write(EE_ADDRESS_CONFIG_MAGIC, CONFIG_MAGIC);
 
-  dht.begin();
+  dhtReader.begin();
 
   // ctrAes128.clear();
   // ctrAes128.setCounterSize(4);
   // ctrAes128.setKey(AES_KEY, ctrAes128.keySize());
   // ctrAes128.setIV(CTR_IV, ctrAes128.ivSize());
 
-  if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onConfigReqMsg,
-                  &onConfigSetReqMsg, &onServiceReqMsg)) {
+  if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg,
+                  &onValueSetReqMsg, &onServiceReqMsg)) {
     Serial.print(F("\nStarting LoRa failed!"));
     while (1) {
       // Do nothing
     }
   }
 
-  sendDiscoveryMsgForAllComponents();
+  // sendDiscoveryMsgForAllComponents();
+  Serial.println(F("\nSetup complete!"));
 }
 
 void loop() {
   auto curMillis = millis();
   if (curMillis - lastRunTime >= UPDATE_SENSORS_INTERVAL) {
     lastRunTime += UPDATE_SENSORS_INTERVAL;
-
     updateSensors();
 
 #ifdef DEBUG_SENSOR_VALUES
@@ -365,9 +373,9 @@ void loop() {
     printAllSensors(Serial);
 #endif
 
-    if (isReportDue()) {
-      sendSensorValueForAllComponents();
-    }
+    // if (isReportDue()) {
+    //   sendSensorValueForAllComponents();
+    // }
   }
 
   (void)lora.loraRx();
@@ -383,18 +391,10 @@ void onDiscoveryReqMsg(uint8_t entityId) {
 
 void onValueReqMsg(void) { sendSensorValueForAllComponents(); }
 
-void onConfigReqMsg(uint8_t entityId) {
-  if (entityId == 255) {
-    sendConfigValuesForAllComponents();
-    return;
-  }
-  sendConfigValuesForEntity(entityId);
-}
-
-void onConfigSetReqMsg(const ConfigValuePayloadT& payload) {
-  IComponent* c = device.getComponentByEntityId(payload.entityId);
+void onValueSetReqMsg(const ValueItemT& valueItem) {
+  IComponent* c = device.getComponentByEntityId(valueItem.entityId);
   if (c) {
-    c->setConfigItemValues(payload.configValues, payload.numberOfConfigs);
+    c->setValueItem(valueItem);
   }
 }
 

@@ -10,53 +10,53 @@
 
 // From https://www.home-assistant.io/integrations/sensor/ at 2023-01-17
 enum class SensorDeviceClass : uint8_t {
-  none,
-  apparent_power,
-  aqi,
-  atmospheric_pressure,
-  battery,
-  carbon_dioxide,
-  carbon_monoxide,
-  current,
-  data_rate,
-  data_size,
-  date,
-  distance,
-  duration,
-  energy,
-  enum_class,
-  frequency,
-  gas,
-  humidity,
-  illuminance,
-  irradiance,
-  moisture,
-  monetary,
-  nitrogen_dioxide,
-  nitrogen_monoxide,
-  nitrous_oxide,
-  ozone,
-  pm1,
-  pm10,
-  pm25,
-  power_factor,
-  power,
-  precipitation,
-  precipitation_intensity,
-  pressure,
-  reactive_power,
-  signal_strength,
-  sound_pressure,
-  speed,
-  sulphur_dioxide,
-  temperature,
-  timestamp,
-  volatile_organic_compounds,
-  voltage,
-  volume,
-  water,
-  weight,
-  wind_speed
+  NONE,
+  APPARENT_POWER,
+  AQI,
+  ATMOSPHERIC_PRESSURE,
+  BATTERY,
+  CARBON_DIOXIDE,
+  CARBON_MONOXIDE,
+  CURRENT,
+  DATA_RATE,
+  DATA_SIZE,
+  DATE,
+  DISTANCE,
+  DURATION,
+  ENERGY,
+  ENUM_CLASS,
+  FREQUENCY,
+  GAS,
+  HUMIDITY,
+  ILLUMINANCE,
+  IRRADIANCE,
+  MOISTURE,
+  MONETARY,
+  NITROGEN_DIOXIDE,
+  NITROGEN_MONOXIDE,
+  NITROUS_OXIDE,
+  OZONE,
+  PM1,
+  PM10,
+  PM25,
+  POWER_FACTOR,
+  POWER,
+  PRECIPITATION,
+  PRECIPITATION_INTENSITY,
+  PRESSURE,
+  REACTIVE_POWER,
+  SIGNAL_STRENGTH,
+  SOUND_PRESSURE,
+  SPEED,
+  SULPHUR_DIOXIDE,
+  TEMPERATURE,
+  TIMESTAMP,
+  VOLATILE_ORGANIC_COMPOUNDS,
+  VOLTAGE,
+  VOLUME,
+  WATER,
+  WEIGHT,
+  WIND_SPEED
 };
 
 template <class T>
@@ -67,14 +67,14 @@ class Sensor : public Printable {
   explicit Sensor(uint8_t entityId) : mBaseComponent{BaseComponent(entityId)} {}
 
   Sensor(uint8_t entityId, const char* name,
-         SensorDeviceClass deviceClass = SensorDeviceClass::none,
+         SensorDeviceClass deviceClass = SensorDeviceClass::NONE,
          Unit::Type unitType = Unit::Type::none, uint8_t precision = 0)
-      : mBaseComponent{BaseComponent(entityId, name)},
+      : mBaseComponent{BaseComponent(entityId, name, BaseComponent::Category::DIAGNOSTIC)},
         mDeviceClass{deviceClass},
         mValueItem{ValueItem<T>(unitType, precision)} {}
 
   BaseComponent::Type getComponentType() const {
-    return BaseComponent::Type::sensor;
+    return BaseComponent::Type::SENSOR;
   }
 
   SensorDeviceClass getDeviceClass() const { return mDeviceClass; }
@@ -129,7 +129,7 @@ class Sensor : public Printable {
 
  private:
   BaseComponent mBaseComponent;
-  const SensorDeviceClass mDeviceClass{SensorDeviceClass::none};
+  const SensorDeviceClass mDeviceClass{SensorDeviceClass::NONE};
   ValueItem<T> mValueItem;
   T mLastReportedValue{};
 };

@@ -7,8 +7,8 @@
  *   Byte 3:    flags
  *     Bit 7:     Acknowledge response
  *     Bit 6:     Acknowledge request
- *     Bit 5:     Reserved
- *     Bit 4:     Reserved
+ *     Bit 5:     Reserved for future use
+ *     Bit 4:     Reserved for future use
  *     Bit 3-0:   Message type
  *       0:     ping_req
  *       1:     ping_msg
@@ -16,11 +16,9 @@
  *       3:     discovery_msg
  *       4:     value_req
  *       5:     value_msg
- *       6:     config_req
- *       7:     config_msg
- *       8:     configSet_req
- *       9:     service_req
- *       10-15: Reserved
+ *       6:     valueSet_req
+ *       7:     service_req
+ *       8-15:  Reserved for future message types
  *
  * Payloads:
  *   Ping request:
@@ -30,48 +28,43 @@
  *     Byte 0-1:   RSSI of ping request message as big endian (2 bytes)
  *
  *   Discovery request:
- *     Byte 0:     EntityId (0-254, 255 is request discovery messages from all
- *                 entities)
+ *     Byte 0:     EntityId (0-254, 255 means all entities)
  *
  *   Discovery message:
- *     Byte 0:      Entity Id (0-254, 255 is reserved for broadcast)
- *     Byte 1:      BaseComponent Type - 0=BinarySensor, 1=Sensor, 2=Cover)
+ *     Byte 0:      Entity Id (0-254)
+ *     Byte 1:      Entity Domain - BaseComponent::Type, Examples: BINARY_SENSOR, SENSOR, COVER
  *     Byte 2:      Device Class - BinarySensorDeviceClass, SensorDeviceClass or CoverDeviceClass
- *     Byte 3:      Unit (Unit::TypeE)
- *     Byte 4:      Bit 4:    0=UnSigned, 1=Signed
- *                  Bit 3-2:  Size (0=1 byte, 1=2 bytes or 2=4 bytes)
- *                  Bit 1-0:  Precision (Number of decimals 0-3)
- *     Byte 5:      Number of config items (0-?)
- *     Byte 6:      Config Id (0-254, 255 is reserved for all)
- *     Byte 7:      Unit (Unit::TypeE)
- *     Byte 8:      Bit 4:    0=UnSigned, 1=Signed
- *                  Bit 3-2:  Size (0=1 byte, 1=2 bytes or 2=4 bytes)
- *                  Bit 1-0:  Precision (Number of decimals 0-3)
- *     Byte 9-12:   Minimum value in big endian (4 bytes)
- *     Byte 13-16:  Maximum value in big endian (4 bytes)
- *     Byte 17-m:   Repeat byte 17-m for more config items until payload is full
+ *     Byte 3:      Category - BaseComponent::Category, 0=NONE, 1=CONFIG, 2=DIAGNOSTIC
+ *     Byte 4:      Unit (Unit::TypeE)
+ *     Byte 5:      Format 
+ *     Byte 6-9:    Minimum value in big endian (4 bytes)
+ *     Byte 10-13:  Maximum value in big endian (4 bytes)
+ *     Byte 14-m:   Entity Name as zero-terminated string
+ *
+ *     Format byte:
+ *       Bit 7-5:  Reserved (zeroes)
+ *       Bit 4:    0=UnSigned, 1=Signed
+ *       Bit 3-2:  Size (0=1 byte, 1=2 bytes or 2=4 bytes)
+ *       Bit 1-0:  Precision (Number of decimals 0-3)
  *
  *   Value request:
- *     Empty payload
+ *     Byte 0:    Entity Id (0-254, 255 means all entities)
  *
  *   Value message:
  *     Byte 0:    Number of entities
- *     Byte 1:    Entity Id (0-254, 255 is reserved for broadcast)
- *     Byte 2-5:  Value in big endian (4 bytes)
- *     Byte 6-m:  Repeat byte 1-5 for more entities until payload is full
+ *     Byte 1-m:  Array of value items
  *
- *   Config request:
- *     Byte 0:    EntityId (0-254, 255 is request configs from all entities)
+ *     Value item:
+ *       Byte 1:    Entity Id (0-254)
+ *       Byte 2-5:  Value in big endian (4 bytes)
  *
- *   Config message:
- *     Byte 0:    Entity Id (0-254, 255 is reserved for broadcast)
- *     Byte 1:    Number of config items (1-?)
- *     Byte 2:    ConfigId
- *     Byte 3-6:  Value in big endian (4 bytes)
- *     Byte 7-m:  Repeat byte 2-6 for more config items until payload is full
+ *   Value set request:
+ *     Byte 0:    Number of entities
+ *     Byte 1-m:  Array of value items
  *
- *   ConfigSet request:
- *     Same as Config message.
+ *     Value item:
+ *       Byte 1:    Entity Id (0-254)
+ *       Byte 2-5:  Value in big endian (4 bytes)
  *
  *   Service request
  *     Byte 0:    EntityId (0-254)
@@ -96,7 +89,7 @@
 // #define LORA_DRY_RUN
 
 #define LORA_FREQUENCY 868e6
-#define LORA_MAX_MESSAGE_LENGTH 100
+#define LORA_MAX_MESSAGE_LENGTH 150
 
 #define LORA_HEADER_LENGTH 4
 #define LORA_MAX_PAYLOAD_LENGTH (LORA_MAX_MESSAGE_LENGTH - LORA_HEADER_LENGTH)
@@ -118,9 +111,7 @@ enum class LoRaMsgType : uint8_t {
   discovery_msg,
   value_req,
   value_msg,
-  config_req,
-  config_msg,
-  configSet_req,
+  valueSet_req,
   service_req
 };
 
@@ -249,26 +240,21 @@ class LoRaHandler {
 
   using OnDiscoveryReqMsgFunc = void (*)(uint8_t);
   using OnValueReqMsgFunc = void (*)(void);
-  using OnConfigReqMsgFunc = void (*)(uint8_t);
-  using OnConfigSetReqMsgFunc = void (*)(const ConfigValuePayloadT&);
+  using OnValueSetReqMsgFunc = void (*)(const ValueItemT&);
   using OnServiceReqMsgFunc = void (*)(const LoRaServiceItemT&);
 
   int16_t begin(OnDiscoveryReqMsgFunc onDiscoveryReqMsgFunc = nullptr,
                 OnValueReqMsgFunc onValueReqMsgFunc = nullptr,
-                OnConfigReqMsgFunc onConfigReqMsgFunc = nullptr,
-                OnConfigSetReqMsgFunc onConfigSetReqMsgFunc = nullptr,
+                OnValueSetReqMsgFunc onValueSetReqMsgFunc = nullptr,
                 OnServiceReqMsgFunc onServiceReqMsgFunc = nullptr);
 
   int16_t loraRx();
 
   void beginDiscoveryMsg();
-  void addDiscoveryItem(const DiscoveryItemT& item);
+  void addDiscoveryItem(const DiscoveryEntityItemT& item);
 
   void beginValueMsg();
   void addValueItem(const ValueItemT& item);
-
-  void beginConfigsValueMsg(uint8_t entityId);
-  void addConfigItemValues(const ConfigItemValueT* items, uint8_t length);
 
   void endMsg();
 
@@ -302,7 +288,6 @@ class LoRaHandler {
 
   OnDiscoveryReqMsgFunc mOnDiscoveryReqMsgFunc{nullptr};
   OnValueReqMsgFunc mOnValueReqMsgFunc{nullptr};
-  OnConfigReqMsgFunc mOnConfigReqMsgFunc{nullptr};
-  OnConfigSetReqMsgFunc mOnConfigSetReqMsgFunc{nullptr};
+  OnValueSetReqMsgFunc mOnValueSetReqMsgFunc{nullptr};
   OnServiceReqMsgFunc mOnServiceReqMsgFunc{nullptr};
 };

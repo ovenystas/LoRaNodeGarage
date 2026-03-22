@@ -46,3 +46,52 @@ cmake --build build
 ```bash
 cd build/tests && ctest; cd -
 ```
+
+## Entities
+
+### GarageCover
+
+Component: Cover
+DeviceClass: Garage
+
+#### Config Items
+
+0. Name: Report interval
+   Unit: s
+   Data type: uint16
+   Min: 0
+   Max: 43200 (12 hours)
+   Precision: 0 decimals
+   
+### TemperatureSensor
+
+Component: Sensor
+DeviceClass: Temperature
+Unit: °C
+
+#### Config Items
+
+0. Name: Report hysteresis
+   Unit: °C
+   Data type: int16
+   Min: 0
+   Max: 100
+   Precision: 1 decimal
+1. Name: Measure interval
+   Unit: s
+   Data type: uint16
+   Min: 0
+   Max: 3600 (1 hour)
+   Precision: 0 decimals
+2. Name: Report interval
+   Unit: s
+   Data type: uint16
+   Min: 0
+   Max: 43200 (12 hours)
+   Precision: 0 decimals
+3. Name: Compensation
+   Unit: °C
+   Data type: int16
+   Min: -100
+   Max: 100
+   Precision: 1 decimal

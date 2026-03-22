@@ -3,9 +3,9 @@
 #include <stdint.h>
 
 #include "Component.h"
-#include "ConfigItem.h"
 #include "DistanceSensor.h"
-#include "EeAdressMap.h"
+#include "NewPing.h"
+#include "Number.h"
 #include "Sensor.h"
 #include "Unit.h"
 #include "Util.h"
@@ -17,6 +17,11 @@ static const int16_t CONFIG_REPORT_HYSTERESIS_DEFAULT = 10;
 static const uint16_t CONFIG_REPORT_INTERVAL_DEFAULT = 300;
 static const uint16_t CONFIG_STABLE_TIME_DEFAULT = 5000;
 static const HeightT CONFIG_ZERO_VALUE_DEFAULT = 60;
+
+static const char reportHysteresisName[] PROGMEM = "Report Hysteresis";
+static const char reportIntervalName[] PROGMEM = "Report Interval";
+static const char stableTimeName[] PROGMEM = "Stable Time";
+static const char zeroValueName[] PROGMEM = "Zero Value";
 }  // namespace HeightSensorConstants
 
 class HeightSensor : public IComponent {
@@ -25,28 +30,52 @@ class HeightSensor : public IComponent {
 
   HeightSensor(uint8_t entityId, const char* name,
                Sensor<DistanceT>& distanceSensor)
-      : mSensor{Sensor<HeightT>(entityId, name, SensorDeviceClass::distance,
+      : mSensor{Sensor<HeightT>(entityId, name, SensorDeviceClass::DISTANCE,
                                 Unit::Type::cm)},
+
+        mReportHysteresis{Number<HeightT>(
+            entityId + 1, HeightSensorConstants::reportHysteresisName, NumberDeviceClass::DISTANCE, Unit::Type::cm, 0,
+            BaseComponent::Category::CONFIG, HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT, 0,
+            MAX_SENSOR_DISTANCE)},
+
+        mReportInterval{Number<uint16_t>(
+            entityId + 2, HeightSensorConstants::reportIntervalName, NumberDeviceClass::DURATION, Unit::Type::s, 0,
+            BaseComponent::Category::CONFIG, HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, 0,
+            Util::ONE_HOUR_IN_SECONDS)},
+
+        mStableTime{Number<uint16_t>(
+            entityId + 3, HeightSensorConstants::stableTimeName, NumberDeviceClass::DURATION, Unit::Type::ms, 0,
+            BaseComponent::Category::CONFIG, HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT, 0,
+            Util::ONE_MINUTE_IN_MILLISECONDS)},
+
+        mZeroValue{Number<HeightT>(
+            entityId + 4, HeightSensorConstants::zeroValueName, NumberDeviceClass::DISTANCE, Unit::Type::cm, 0,
+            BaseComponent::Category::CONFIG, HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT, -MAX_SENSOR_DISTANCE,
+            MAX_SENSOR_DISTANCE)},
+
         mDistanceSensor{distanceSensor} {}
 
   void callService(uint8_t service) final { (void)service; }
 
-  uint8_t getConfigItemValues(ConfigItemValueT* items,
-                              uint8_t length) const final;
+  uint8_t getConfigValueItems(ValueItemT* items, uint8_t length) const final;
 
-  void getDiscoveryItem(DiscoveryItemT* item) const final;
+  void loadConfigValues() final;
+  
+  uint8_t getDiscoveryItems(DiscoveryEntityItemT* item, uint8_t length) const final;
 
   uint8_t getEntityId() const final { return mSensor.getEntityId(); }
+  
+  uint8_t getNumEntities() const final { return sNumItems; };
 
   Sensor<HeightT>& getSensor() { return mSensor; }
 
   void getValueItem(ValueItemT* item) const final {
-    return mSensor.getValueItem(item);
-  }
-
+      return mSensor.getValueItem(item);
+    }
+    
+  bool setValueItem(const ValueItemT &item) final;
+  
   bool isReportDue() const final { return mSensor.isReportDue(); }
-
-  void loadConfigValues() final;
 
   size_t printTo(Print& p) const final { return mSensor.printTo(p); };
 
@@ -56,39 +85,17 @@ class HeightSensor : public IComponent {
     return 0;
   };
 
-  bool setConfigItemValues(const ConfigItemValueT* items, uint8_t length) final;
-
   void setReported() final { mSensor.setReported(); }
 
   bool update() final;
 
  private:
-  struct Config {
-    // cppcheck-suppress unusedStructMember
-    const uint8_t numberOfConfigItems = {4};
-
-    ConfigItem<int16_t> reportHysteresis = {ConfigItem<int16_t>(
-        0, EE_ADDRESS_CONFIG_HEIGHT_SENSOR_0,
-        HeightSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT, 0,
-        MAX_SENSOR_DISTANCE, Unit::Type::cm)};
-
-    ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        1, EE_ADDRESS_CONFIG_HEIGHT_SENSOR_1,
-        HeightSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, 0,
-        Util::ONE_HOUR_IN_SECONDS, Unit::Type::s)};
-
-    ConfigItem<uint16_t> stableTime = {ConfigItem<uint16_t>(
-        2, EE_ADDRESS_CONFIG_HEIGHT_SENSOR_2,
-        HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT, 0,
-        Util::ONE_MINUTE_IN_MILLISECONDS, Unit::Type::ms)};
-
-    ConfigItem<HeightT> zeroValue = {ConfigItem<HeightT>(
-        3, EE_ADDRESS_CONFIG_HEIGHT_SENSOR_3,
-        HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT, -MAX_SENSOR_DISTANCE,
-        MAX_SENSOR_DISTANCE, Unit::Type::cm)};
-  };
-
+  static constexpr uint8_t sNumConfigItems = 4;
+  static constexpr uint8_t sNumItems = 1 + sNumConfigItems;
   Sensor<HeightT> mSensor;
-  Config mConfig;
+  Number<HeightT> mReportHysteresis;
+  Number<uint16_t> mReportInterval;
+  Number<uint16_t> mStableTime;
+  Number<HeightT> mZeroValue;
   Sensor<DistanceT>& mDistanceSensor;
 };

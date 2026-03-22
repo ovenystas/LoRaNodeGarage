@@ -11,31 +11,31 @@
 // From https://www.home-assistant.io/integrations/binary_sensor/ at
 // 2021-03-21
 enum class BinarySensorDeviceClass : uint8_t {
-  none,
-  battery,
-  batteryCharging,
-  cold,
-  connectivity,
-  door,
-  garageDoor,
-  gas,
-  heat,
-  light,
-  lock,
-  moisture,
-  motion,
-  moving,
-  occupancy,
-  opening,
-  plug,
-  power,
-  presence,
-  problem,
-  safety,
-  smoke,
-  sound,
-  vibration,
-  window
+  NONE,
+  BATTERY,
+  BATTERY_CHARGING,
+  COLD,
+  CONNECTIVITY,
+  DOOR,
+  GARAGE_DOOR,
+  GAS,
+  HEAT,
+  LIGHT,
+  LOCK,
+  MOISTURE,
+  MOTION,
+  MOVING,
+  OCCUPANCY,
+  OPENING,
+  PLUG,
+  POWER,
+  PRESENCE,
+  PROBLEM,
+  SAFETY,
+  SMOKE,
+  SOUND,
+  VIBRATION,
+  WINDOW
 };
 
 class BinarySensor : public Printable {
@@ -44,17 +44,19 @@ class BinarySensor : public Printable {
 
   BinarySensor(
       uint8_t entityId, const char* name,
-      BinarySensorDeviceClass deviceClass = BinarySensorDeviceClass::none,
+      BinarySensorDeviceClass deviceClass = BinarySensorDeviceClass::NONE,
       Unit::Type unitType = Unit::Type::none)
-      : mBaseComponent{BaseComponent(entityId, name)},
+      : mBaseComponent{BaseComponent(entityId, name, BaseComponent::Category::DIAGNOSTIC)},
         mDeviceClass{deviceClass},
         mUnit{Unit(unitType)} {}
 
   BaseComponent::Type getComponentType() const {
-    return BaseComponent::Type::binarySensor;
+    return BaseComponent::Type::BINARY_SENSOR;
   }
 
   BinarySensorDeviceClass getDeviceClass() const { return mDeviceClass; }
+
+  BaseComponent::Category getCategory() const { return mBaseComponent.getCategory(); }
 
   void getDiscoveryEntityItem(DiscoveryEntityItemT* item) const;
 

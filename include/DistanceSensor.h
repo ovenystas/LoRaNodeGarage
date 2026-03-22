@@ -3,8 +3,7 @@
 #include <NewPing.h>
 
 #include "Component.h"
-#include "ConfigItem.h"
-#include "EeAdressMap.h"
+#include "Number.h"
 #include "Sensor.h"
 #include "Util.h"
 
@@ -16,23 +15,46 @@ constexpr uint16_t CONFIG_MEASURE_INTERVAL_DEFAULT = 60;
 constexpr uint16_t CONFIG_REPORT_INTERVAL_DEFAULT = 300;
 }  // namespace DistanceSensorConstants
 
+static const char reportHysteresisName[] PROGMEM = "Report Hysteresis";
+static const char measureIntervalName[] PROGMEM = "Measure Interval";
+static const char reportIntervalName[] PROGMEM = "Report Interval";
+
 class DistanceSensor : public IComponent {
  public:
   DistanceSensor() = delete;
 
   DistanceSensor(uint8_t entityId, const char* name, NewPing& sonar)
-      : mSensor{Sensor<DistanceT>(entityId, name, SensorDeviceClass::distance,
+      : mSensor{Sensor<DistanceT>(entityId, name, SensorDeviceClass::DISTANCE,
                                   Unit::Type::cm)},
+
+        mReportHysteresis{Number<int16_t>(
+            entityId + 1, reportHysteresisName, NumberDeviceClass::DISTANCE, Unit::Type::cm,
+            0, BaseComponent::Category::CONFIG, DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT, 0,
+            MAX_SENSOR_DISTANCE)},
+
+        mMeasureInterval{Number<uint16_t>(
+            entityId + 2, measureIntervalName, NumberDeviceClass::DURATION, Unit::Type::s, 0,
+            BaseComponent::Category::CONFIG, DistanceSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT, 0,
+            Util::ONE_HOUR_IN_SECONDS)},
+
+        mReportInterval{Number<uint16_t>(
+            entityId + 3, reportIntervalName, NumberDeviceClass::DURATION, Unit::Type::s, 0,
+            BaseComponent::Category::CONFIG, DistanceSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, 0,
+            Util::TWELVE_HOURS_IN_SECONDS)},
+
         mSonar{sonar} {}
 
   void callService(uint8_t service) final { (void)service; }
 
-  uint8_t getConfigItemValues(ConfigItemValueT* items,
-                              uint8_t length) const final;
+  uint8_t getConfigValueItems(ValueItemT* items, uint8_t length) const final;
 
-  void getDiscoveryItem(DiscoveryItemT* item) const final;
+  void loadConfigValues() final;
+
+  uint8_t getDiscoveryItems(DiscoveryEntityItemT* item, uint8_t length) const final;
 
   uint8_t getEntityId() const final { return mSensor.getEntityId(); }
+
+  uint8_t getNumEntities() const final { return sNumItems; };
 
   Sensor<DistanceT>& getSensor() { return mSensor; }
 
@@ -40,9 +62,9 @@ class DistanceSensor : public IComponent {
     return mSensor.getValueItem(item);
   }
 
-  bool isReportDue() const final { return mSensor.isReportDue(); }
+  bool setValueItem(const ValueItemT &item) final;
 
-  void loadConfigValues() final;
+  bool isReportDue() const final { return mSensor.isReportDue(); }
 
   size_t printTo(Print& p) const final { return mSensor.printTo(p); };
 
@@ -52,34 +74,16 @@ class DistanceSensor : public IComponent {
     return 0;
   };
 
-  bool setConfigItemValues(const ConfigItemValueT* items, uint8_t length) final;
-
   void setReported() final { mSensor.setReported(); }
 
   bool update() final;
 
  private:
-  struct Config {
-    // cppcheck-suppress unusedStructMember
-    static const uint8_t numberOfConfigItems = {3};
-
-    ConfigItem<int16_t> reportHysteresis = {ConfigItem<int16_t>(
-        0, EE_ADDRESS_CONFIG_DISTANCE_SENSOR_0,
-        DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT, 0,
-        MAX_SENSOR_DISTANCE, Unit::Type::cm)};
-
-    ConfigItem<uint16_t> measureInterval = {ConfigItem<uint16_t>(
-        1, EE_ADDRESS_CONFIG_DISTANCE_SENSOR_1,
-        DistanceSensorConstants::CONFIG_MEASURE_INTERVAL_DEFAULT, 0,
-        Util::ONE_HOUR_IN_SECONDS, Unit::Type::s)};
-
-    ConfigItem<uint16_t> reportInterval = {ConfigItem<uint16_t>(
-        2, EE_ADDRESS_CONFIG_DISTANCE_SENSOR_2,
-        DistanceSensorConstants::CONFIG_REPORT_INTERVAL_DEFAULT, 0,
-        Util::TWELVE_HOURS_IN_SECONDS, Unit::Type::s)};
-  };
-
+  static constexpr uint8_t sNumConfigItems = 3;
+  static constexpr uint8_t sNumItems = 1 + sNumConfigItems;
   Sensor<DistanceT> mSensor;
-  Config mConfig;
+  Number<int16_t> mReportHysteresis;
+  Number<uint16_t> mMeasureInterval;
+  Number<uint16_t> mReportInterval;
   NewPing& mSonar;
 };
