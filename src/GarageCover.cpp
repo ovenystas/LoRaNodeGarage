@@ -82,12 +82,12 @@ CoverState GarageCover::determineState() {
   return mCover.getState();  // Error condition, both sensors can't be LOW.
 }
 
-uint8_t GarageCover::getDiscoveryItems(DiscoveryEntityItemT* items, uint8_t length) const {
+uint8_t GarageCover::getDiscoveryItems(DiscoveryEntityItemT* items,
+                                       uint8_t length) const {
   assert(sNumItems <= length);
 
   mCover.getDiscoveryEntityItem(&items[0]);
-  mReportInterval.getDiscoveryEntityItem(&items[1]);
-  
+
   return sNumItems;
 }
 
@@ -95,22 +95,10 @@ uint8_t GarageCover::getConfigValueItems(ValueItemT* items,
                                          uint8_t length) const {
   assert(sNumConfigItems <= length);
 
-  mReportInterval.getValueItem(&items[0]);
-
   return sNumConfigItems;
 }
 
-bool GarageCover::setValueItem(const ValueItemT &item) {
-  switch (item.entityId - mCover.getEntityId() - 1) {
-    case 0:
-      mReportInterval.setValueItem(item);
-      break;
-    default:
-      return false;
-    }
-
-    return true;
-  }
+bool GarageCover::setValueItem(const ValueItemT& item) { return false; }
 
 bool GarageCover::isClosed(bool closedSensor, bool openSensor) {
   return closedSensor == LOW && openSensor == HIGH;
@@ -144,7 +132,4 @@ bool GarageCover::update() {
   return isReportDue;
 }
 
-void GarageCover::loadConfigValues() {
-  Ee::loadValue(EE_ADDRESS_CONFIG_GARAGE_COVER_0, mReportInterval,
-    GarageCoverConstants::CONFIG_REPORT_INTERVAL_DEFAULT);
-}
+void GarageCover::loadConfigValues() {}

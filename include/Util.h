@@ -2,7 +2,7 @@
 
 #include <Print.h>
 
-#define lowWord(ul) (static_cast<uint16_t>((ul)&0xffff))
+#define lowWord(ul) (static_cast<uint16_t>((ul) & 0xffff))
 #define highWord(ul) (static_cast<uint16_t>((ul) >> 16))
 
 #define htons(x) ((((x) << 8) & 0xFF00) | (((x) >> 8) & 0xFF))
@@ -42,7 +42,12 @@ void printArray(Print& printer, const uint8_t* buf, size_t len, int base = DEC,
                 bool prefix = false);
 
 namespace Util {
-constexpr uint16_t ONE_HOUR_IN_SECONDS = 1u * 60u * 60u;
-constexpr uint16_t ONE_MINUTE_IN_MILLISECONDS = 60u * 1000u;
-constexpr uint16_t TWELVE_HOURS_IN_SECONDS = 12u * 60u * 60u;
+constexpr uint16_t MS_PER_MINUTE = 60u * 1000u;
+constexpr uint32_t MS_PER_HOUR = 60u * 60u * 1000u;
+
+constexpr uint16_t SECONDS_PER_HOUR = 1u * 60u * 60u;
+constexpr uint16_t SECONDS_PER_TWELVE_HOURS = 12u * 60u * 60u;
+constexpr uint8_t SECONDS_PER_MINUTE = 60u;
+
+constexpr uint8_t MINUTES_PER_HOUR = 60u;
 }  // namespace Util

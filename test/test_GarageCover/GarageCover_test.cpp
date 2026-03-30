@@ -2,9 +2,9 @@
 
 #include <gtest/gtest.h>
 
-#include "Unit.h"
 #include "Arduino.h"
 #include "BufferSerial.h"
+#include "Unit.h"
 
 // Include source implementation
 #include "../../src/Cover.cpp"
@@ -206,7 +206,7 @@ TEST_F(GarageCover_test, getDiscoveryItem) {
   EXPECT_EQ(item.configItems[0].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[0].precision, 0);
   EXPECT_EQ(item.configItems[0].minValue, 0);
-  EXPECT_EQ(item.configItems[0].maxValue, Util::TWELVE_HOURS_IN_SECONDS);
+  EXPECT_EQ(item.configItems[0].maxValue, Util::SECONDS_PER_TWELVE_HOURS);
 }
 
 TEST_F(GarageCover_test, getEntityId) { EXPECT_EQ(pGc->getEntityId(), 91); }
@@ -231,8 +231,9 @@ TEST_F(GarageCover_test, loadConfigValues_wrong_crc_shall_set_default_values) {
 }
 
 TEST_F(GarageCover_test, loadConfigValues_OK) {
-  (void)EEPROM.put(EE_ADDRESS_CONFIG_GARAGE_COVER_0,
-                   (uint16_t)(GarageCoverConstants::CONFIG_REPORT_INTERVAL_DEFAULT + 1));
+  (void)EEPROM.put(
+      EE_ADDRESS_CONFIG_GARAGE_COVER_0,
+      (uint16_t)(GarageCoverConstants::CONFIG_REPORT_INTERVAL_DEFAULT + 1));
   eeprom_write_byte(EE_ADDRESS_CONFIG_GARAGE_COVER_0 + sizeof(uint16_t),
                     0x40);  // Correct CRC8 of value
 

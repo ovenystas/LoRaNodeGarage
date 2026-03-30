@@ -2,11 +2,11 @@
 
 #include <gtest/gtest.h>
 
-#include "Unit.h"
 #include "Arduino.h"
 #include "BufferSerial.h"
 #include "EEPROM.h"
 #include "NewPing.h"
+#include "Unit.h"
 
 // Include source implementation
 #include "../../src/DistanceSensor.cpp"
@@ -108,7 +108,7 @@ TEST_F(DistanceSensor_test, DISABLED_getDiscoveryItem) {
   EXPECT_EQ(item.configItems[1].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[1].precision, 0);
   EXPECT_EQ(item.configItems[1].minValue, 0);
-  EXPECT_EQ(item.configItems[1].maxValue, Util::ONE_HOUR_IN_SECONDS);
+  EXPECT_EQ(item.configItems[1].maxValue, Util::SECONDS_PER_HOUR);
 
   EXPECT_EQ(item.configItems[2].configId, 2);
   EXPECT_EQ(item.configItems[2].unit, static_cast<uint8_t>(Unit::Type::s));
@@ -116,7 +116,7 @@ TEST_F(DistanceSensor_test, DISABLED_getDiscoveryItem) {
   EXPECT_EQ(item.configItems[2].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[2].precision, 0);
   EXPECT_EQ(item.configItems[2].minValue, 0);
-  EXPECT_EQ(item.configItems[2].maxValue, Util::TWELVE_HOURS_IN_SECONDS);
+  EXPECT_EQ(item.configItems[2].maxValue, Util::SECONDS_PER_TWELVE_HOURS);
 }
 
 TEST_F(DistanceSensor_test, getEntityId) { EXPECT_EQ(pDs->getEntityId(), 7); }
@@ -255,8 +255,9 @@ TEST_F(DistanceSensor_test, setReported) {
   pDs->setReported();
 }
 
-TEST_F(DistanceSensor_test,
-       DISABLED_update_largeValueDiff_largeTimeDiff_withConfigsZero_shall_return_false) {
+TEST_F(
+    DistanceSensor_test,
+    DISABLED_update_largeValueDiff_largeTimeDiff_withConfigsZero_shall_return_false) {
   EXPECT_CALL(*pSonarMock, ping_cm(0))
       .WillOnce(
           Return(DistanceSensorConstants::CONFIG_REPORT_HYSTERESIS_DEFAULT));

@@ -2,11 +2,11 @@
 
 #include <gtest/gtest.h>
 
+#include "BufferSerial.h"
+#include "EEPROM.h"
 #include "Sensor.h"
 #include "Unit.h"
 #include "Util.h"
-#include "BufferSerial.h"
-#include "EEPROM.h"
 
 // Include source implementation
 #include "../../src/HeightSensor.cpp"
@@ -105,7 +105,7 @@ TEST_F(HeightSensor_test, DISABLED_getDiscoveryItem) {
   EXPECT_EQ(item.configItems[1].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[1].precision, 0);
   EXPECT_EQ(item.configItems[1].minValue, 0);
-  EXPECT_EQ(item.configItems[1].maxValue, Util::ONE_HOUR_IN_SECONDS);
+  EXPECT_EQ(item.configItems[1].maxValue, Util::SECONDS_PER_HOUR);
 
   EXPECT_EQ(item.configItems[2].configId, 2);
   EXPECT_EQ(item.configItems[2].unit, static_cast<uint8_t>(Unit::Type::ms));
@@ -113,7 +113,7 @@ TEST_F(HeightSensor_test, DISABLED_getDiscoveryItem) {
   EXPECT_EQ(item.configItems[2].sizeCode, sizeof(uint16_t) / 2);
   EXPECT_EQ(item.configItems[2].precision, 0);
   EXPECT_EQ(item.configItems[2].minValue, 0);
-  EXPECT_EQ(item.configItems[2].maxValue, Util::ONE_MINUTE_IN_MILLISECONDS);
+  EXPECT_EQ(item.configItems[2].maxValue, Util::MS_PER_MINUTE);
 
   EXPECT_EQ(item.configItems[3].configId, 3);
   EXPECT_EQ(item.configItems[3].unit, static_cast<uint8_t>(Unit::Type::cm));
@@ -294,7 +294,8 @@ TEST_F(HeightSensor_test, loadConfigValues_crc_fail_shall_load_defaults) {
   EXPECT_EQ(items[3].value, HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT);
 }
 
-TEST_F(HeightSensor_test, DISABLED_loadConfigValues_crc_ok_shall_load_stored_values) {
+TEST_F(HeightSensor_test,
+       DISABLED_loadConfigValues_crc_ok_shall_load_stored_values) {
   CRC8 crc;
   int eeAddr = 0;
 

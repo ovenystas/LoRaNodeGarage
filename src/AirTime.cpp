@@ -8,26 +8,26 @@
 void AirTime::update() { update(millis()); }
 
 void AirTime::update(uint32_t time) {
-  if (time - mLastUpdate_ms >= MS_PER_HOUR) {
+  if (time - mLastUpdate_ms >= Util::MS_PER_HOUR) {
     mTime_ms = 0;
     mBuf.clear();
     mBuf.fill(0);
-    while (time - mLastUpdate_ms >= MS_PER_HOUR) {
-      mLastUpdate_ms += MS_PER_HOUR;
+    while (time - mLastUpdate_ms >= Util::MS_PER_HOUR) {
+      mLastUpdate_ms += Util::MS_PER_HOUR;
     }
   }
 
-  while (time - mLastUpdate_ms >= MS_PER_MINUTE) {
+  while (time - mLastUpdate_ms >= Util::MS_PER_MINUTE) {
     mTime_ms -= mBuf.pop_back();
     mBuf.push_front(0);
-    mLastUpdate_ms += MS_PER_MINUTE;
+    mLastUpdate_ms += Util::MS_PER_MINUTE;
   }
 }
 
 void AirTime::addToCurrentMinute(uint32_t t) {
-  assert(t <= MS_PER_MINUTE);
+  assert(t <= Util::MS_PER_MINUTE);
   uint16_t currentMinute = mBuf.pop_front();
-  assert(currentMinute + t <= MS_PER_MINUTE);
+  assert(currentMinute + t <= Util::MS_PER_MINUTE);
   currentMinute += t;
   mBuf.push_front(currentMinute);
 }
@@ -37,7 +37,8 @@ void AirTime::update(uint32_t start, uint32_t end) {
 
   do {
     update(t1);
-    uint32_t t2 = (t1 / MS_PER_MINUTE + 1) * MS_PER_MINUTE;  // Minute boundary
+    uint32_t t2 = (t1 / Util::MS_PER_MINUTE + 1) *
+                  Util::MS_PER_MINUTE;  // Minute boundary
     if (t2 > end) {
       t2 = end;
     }

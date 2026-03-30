@@ -58,6 +58,7 @@
 #define DEBUG_SENSOR_VALUES
 #define DEBUG_SENSOR_REPORT
 #define DEBUG_SERVICE
+#define DEBUG_LOOP_HEARTBEAT
 
 #ifdef DEBUG_SENSOR_REPORT
 #define LOG_SENSOR(sensor) \
@@ -113,21 +114,22 @@ const char heightSensorName[] PROGMEM = "Height";
 const char carPresenceSensorName[] PROGMEM = "Car Presence";
 
 GarageCover garageCover = GarageCover(0, garageCoverName, COVER_CLOSED_PIN, COVER_OPEN_PIN, COVER_RELAY_PIN);
-TemperatureSensor temperatureSensor = TemperatureSensor(10, temperatureSensorName, dhtReader);
-HumiditySensor humiditySensor = HumiditySensor(20, humiditySensorName, dhtReader);
+// TemperatureSensor temperatureSensor = TemperatureSensor(10, temperatureSensorName, dhtReader);
+// HumiditySensor humiditySensor = HumiditySensor(20, humiditySensorName, dhtReader);
 DistanceSensor distanceSensor = DistanceSensor(30, distanceSensorName, sonar);
 HeightSensor heightSensor = HeightSensor(40, heightSensorName, distanceSensor.getSensor());
 PresenceBinarySensor carPresenceSensor = PresenceBinarySensor(50, carPresenceSensorName, heightSensor.getSensor());
 
-IComponent* components[NUMBER_OF_COMPONENTS] = {
-    &garageCover,    &temperatureSensor, &humiditySensor,
-    &distanceSensor, &heightSensor,      &carPresenceSensor};
+IComponent* components[4] = {
+    &garageCover, /* &temperatureSensor, &humiditySensor, */
+    &distanceSensor, &heightSensor, &carPresenceSensor}; 
 
 Device device = Device(components, sizeof(components) / sizeof(components[0]));
 
 // CTR<AES128> ctrAes128;
 
 LoRaHandler lora(LoRa, LORA_GATEWAY_ADDRESS, LORA_MY_ADDRESS /*, &ctrAes128*/);
+
 
 const byte AES_KEY[16] PROGMEM = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05,
                                   0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
@@ -155,7 +157,7 @@ static void loadConfigValuesForAllComponents() {
 static void updateSensors() {
   Serial.print('.');
 
-  // dhtReader.update();
+  dhtReader.update();
 
   for (uint8_t i = 0; i < device.getSize(); i++) {
     IComponent* c = device.getComponent(i);
@@ -311,14 +313,17 @@ static void printAllSensors(Print& p) { device.printTo(p); }
 #endif
 
 void setup() {
+  Serial.begin(115200);
+  delay(100);  // Allow serial connection to stabilize
+  
+  Serial.println(F("\n\n=== SETUP START ==="));
+  
+  Serial.println(F("Configuring LoRa pins..."));
   LoRa.setPins(LORA_SS_PIN, LORA_RESET_PIN, LORA_DIO0_PIN);
 
-  Serial.begin(115200);
-  while (!Serial) {
-    // Do nothing
-  }
-
+  Serial.println(F("Welcome message:"));
   printWelcomeMsg();
+  Serial.println();
 
   uint8_t configMagicEe = EEPROM.read(EE_ADDRESS_CONFIG_MAGIC);
   if (configMagicEe != CONFIG_MAGIC) {
@@ -340,30 +345,37 @@ void setup() {
     Serial.print(F("\nConfig magic word in EEPROM OK: "));
     printHex(Serial, configMagicEe);
   }
+  Serial.println();
+  
+  Serial.println(F("Loading config values..."));
   loadConfigValuesForAllComponents();
   EEPROM.write(EE_ADDRESS_CONFIG_MAGIC, CONFIG_MAGIC);
 
+  Serial.println(F("Initializing DHT reader..."));
   dhtReader.begin();
 
   // ctrAes128.clear();
   // ctrAes128.setCounterSize(4);
   // ctrAes128.setKey(AES_KEY, ctrAes128.keySize());
   // ctrAes128.setIV(CTR_IV, ctrAes128.ivSize());
-
+#if 0
+  Serial.println(F("Starting LoRa..."));
   if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg,
                   &onValueSetReqMsg, &onServiceReqMsg)) {
-    Serial.print(F("\nStarting LoRa failed!"));
+    Serial.println(F("ERROR: Starting LoRa failed!"));
     while (1) {
-      // Do nothing
+      delay(1000);
+      Serial.println(F("HALTED"));
     }
   }
-
+#endif
   // sendDiscoveryMsgForAllComponents();
-  Serial.println(F("\nSetup complete!"));
+  Serial.println(F("\n=== SETUP COMPLETE ===\n"));
 }
 
 void loop() {
   auto curMillis = millis();
+  
   if (curMillis - lastRunTime >= UPDATE_SENSORS_INTERVAL) {
     lastRunTime += UPDATE_SENSORS_INTERVAL;
     updateSensors();

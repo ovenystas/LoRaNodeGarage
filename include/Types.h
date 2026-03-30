@@ -22,7 +22,7 @@ struct DiscoveryEntityItemT {
   char name[32]; // Assuming a maximum name length of 31 characters plus null terminator
 
   size_t size() const {
-    return sizeof(*this) - sizeof(name) + strlen(name) + 1; }
+    return 14 + strlen(name) + 1; }
 
   bool operator==(const DiscoveryEntityItemT& rhs) const {
     return entityId == rhs.entityId && componentType == rhs.componentType &&
@@ -36,7 +36,7 @@ struct DiscoveryEntityItemT {
     return !(*this == rhs);
   }
 
-  size_t toByteArray(uint8_t* buf, size_t length) {
+  size_t toByteArray(uint8_t* buf, size_t length) const {
     size_t actualSize = size();
 
     if (length < actualSize) {

@@ -45,7 +45,7 @@ class DHTReader {
  private:
   // Minimum time between DHT reads (in milliseconds)
   // DHT sensors require at least 2000ms between reads
-  static const uint16_t MIN_READ_INTERVAL_MS = 2000;
+  static const uint16_t MIN_READ_INTERVAL_MS = 10000;  // 10 seconds to prevent sensor lockup
 
   DHT& mDht;
   uint32_t mLastReadTime;

@@ -18,25 +18,36 @@ bool DHTReader::update() {
 
   mLastReadTime = now;
 
-  // Attempt to read from the DHT sensor
-  bool retVal = false;
+  // Try to read from the DHT sensor
+  Serial.println(F("DHT: Attempting read..."));
+  Serial.flush();
+  
+  bool readSuccess = false;
+  
   if (mDht.read()) {
+    readSuccess = true;
     mLastTemperature = mDht.readTemperature();
     mLastHumidity = mDht.readHumidity();
+    Serial.print(F("DHT: Read success - T="));
+    Serial.print(mLastTemperature);
+    Serial.print(F("C, H="));
+    Serial.print(mLastHumidity);
+    Serial.println(F("%"));
+  } else {
+    Serial.println(F("DHT: Read failed"));
+    Serial.flush();
+  }
+  
+  if (!readSuccess) {
+    mReadFailureCount++;
+    if (mReadFailureCount == 1) {
+      Serial.println(F("DHT: First read failure detected"));
+    }
+    mReadSuccessful = false;
+  } else {
     mReadSuccessful = true;
     mReadFailureCount = 0;
-    retVal = true;
-  } else {
-    // Read failed (checksum error)
-    mReadFailureCount++;
-    Serial.print(F("DHT read FAILED ("));
-    Serial.print(mReadFailureCount);
-    Serial.println(F(")"));
-    
-    // Mark as unsuccessful only if we have had consecutive failures
-    if (mReadFailureCount > 2) {
-      mReadSuccessful = false;
-    }
   }
-  return retVal;
+  
+  return readSuccess;
 }

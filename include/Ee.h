@@ -51,17 +51,20 @@ inline void save(uint16_t eeAddress, const uint32_t &value) {
 
 template <typename T> void loadValue(uint16_t eeAddress, Number<T>& number, T defaultValue) {
     if (eeAddress >= EEPROM.length()) {
+      number.setValue(defaultValue);
       return;
     }
 
-   ValueItemT item;
-   if (load(eeAddress, item.value)) {
-     number.setValueItem(item);
-   } else {
-     item.value = defaultValue;
-     number.setValueItem(item);
-     save(eeAddress, item.value);
-   }
+    uint32_t storedValue = 0;
+    if (load(eeAddress, storedValue)) {
+      // Cast from uint32_t to the template type T
+      T typedValue = static_cast<T>(storedValue);
+      number.setValue(typedValue);
+    } else {
+      // EEPROM load failed or CRC mismatch, use default and save it
+      number.setValue(defaultValue);
+      save(eeAddress, static_cast<uint32_t>(defaultValue));
+    }
 }
 
 }

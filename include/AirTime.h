@@ -3,12 +3,7 @@
 #include <stdint.h>
 
 #include "RingBuffer.h"
-
-constexpr uint8_t SECONDS_PER_MINUTE = 60;
-constexpr uint8_t MINUTES_PER_HOUR = 60;
-constexpr uint16_t MS_PER_MINUTE = (uint16_t)SECONDS_PER_MINUTE * 1000;
-constexpr uint32_t MS_PER_HOUR =
-    static_cast<uint32_t>(MINUTES_PER_HOUR) * MS_PER_MINUTE;
+#include "Util.h"
 
 class AirTime {
  public:
@@ -30,7 +25,7 @@ class AirTime {
   void update(uint32_t time);
   void addToCurrentMinute(uint32_t t);
 
-  RingBuffer<uint16_t, MINUTES_PER_HOUR> mBuf;
+  RingBuffer<uint16_t, Util::MINUTES_PER_HOUR> mBuf;
   uint32_t mLastUpdate_ms{};
   const uint16_t mLimit_ppm;
   uint32_t mTime_ms{};
