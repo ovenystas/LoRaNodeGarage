@@ -102,7 +102,16 @@ class PersistentNumber {
    * Can be called explicitly if needed.
    */
   void saveToEeprom() const {
-    (void)Ee::save(mEeAddress, static_cast<uint32_t>(mNumber.getValue()));
+    bool saved =
+        Ee::save(mEeAddress, static_cast<uint32_t>(mNumber.getValue()));
+    if (!saved) {
+#ifdef ARDUINO
+      Serial.print(F("[WARN] EEPROM save failed for entity "));
+      Serial.print(mNumber.getEntityId());
+      Serial.print(F(" at address 0x"));
+      Serial.println(mEeAddress, HEX);
+#endif
+    }
   }
 
   // ========== Delegated Number Methods ==========
