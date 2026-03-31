@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #include "Ee.h"
 #include "Number.h"
 
@@ -23,6 +25,12 @@
 template <class T>
 class PersistentNumber {
  public:
+  // Compile-time validation: T must fit in uint32_t and be non-floating-point
+  static_assert(sizeof(T) <= sizeof(uint32_t),
+                "PersistentNumber<T>: T must fit in uint32_t");
+  static_assert(!std::is_floating_point<T>::value,
+                "PersistentNumber<T>: floating point types not supported");
+
   /**
    * @brief Construct persistent number with full parameters
    * @param eeAddress EEPROM address where value will be stored
@@ -74,7 +82,7 @@ class PersistentNumber {
    * Can be called explicitly if needed.
    */
   void saveToEeprom() const {
-    Ee::save(mEeAddress, static_cast<uint32_t>(mNumber.getValue()));
+    (void)Ee::save(mEeAddress, static_cast<uint32_t>(mNumber.getValue()));
   }
 
   // ========== Delegated Number Methods ==========
