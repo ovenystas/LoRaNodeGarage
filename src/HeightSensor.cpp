@@ -61,9 +61,6 @@ bool HeightSensor::setValueItem(const ValueItemT& item) {
 }
 
 void HeightSensor::loadConfigValues() {
-  Ee::loadValue(EE_ADDRESS_CONFIG_HEIGHT_SENSOR_2, mStableTime,
-                HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT);
-
-  Ee::loadValue(EE_ADDRESS_CONFIG_HEIGHT_SENSOR_3, mZeroValue,
-                HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT);
+  mStableTime.loadFromEeprom(HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT);
+  mZeroValue.loadFromEeprom(HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT);
 }

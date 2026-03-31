@@ -79,12 +79,10 @@ bool PresenceBinarySensor::setValueItem(const ValueItemT& item) {
 }
 
 void PresenceBinarySensor::loadConfigValues() {
-  Ee::loadValue(EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_0, mLowLimit,
-                PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT);
-
-  Ee::loadValue(EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_1, mHighLimit,
-                PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT);
-
-  Ee::loadValue(EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_2, mMinStableTime,
-                PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT);
+  mLowLimit.loadFromEeprom(
+      PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT);
+  mHighLimit.loadFromEeprom(
+      PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT);
+  mMinStableTime.loadFromEeprom(
+      PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT);
 }

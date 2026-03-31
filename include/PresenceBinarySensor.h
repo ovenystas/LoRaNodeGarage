@@ -2,8 +2,9 @@
 
 #include "BinarySensor.h"
 #include "Component.h"
+#include "EeAdressMap.h"
 #include "HeightSensor.h"
-#include "Number.h"
+#include "PersistentNumber.h"
 #include "Util.h"
 
 namespace PresenceBinarySensorConstants {
@@ -27,22 +28,25 @@ class PresenceBinarySensor : public IComponent {
       : mBinarySensor{
             BinarySensor(entityId, name, BinarySensorDeviceClass::PRESENCE)},
 
-        mLowLimit{Number<HeightT>(
-            0, PresenceBinarySensorConstants::lowLimitName,
+        mLowLimit{PersistentNumber<HeightT>(
+            EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_0, entityId++,
+            PresenceBinarySensorConstants::lowLimitName,
             NumberDeviceClass::DISTANCE, Unit::Type::cm, 0,
             BaseComponent::Category::CONFIG,
             PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT, 0,
             MAX_SENSOR_DISTANCE)},
 
-        mHighLimit{Number<HeightT>(
-            1, PresenceBinarySensorConstants::highLimitName,
+        mHighLimit{PersistentNumber<HeightT>(
+            EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_1, entityId++,
+            PresenceBinarySensorConstants::highLimitName,
             NumberDeviceClass::DISTANCE, Unit::Type::cm, 0,
             BaseComponent::Category::CONFIG,
             PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT, 0,
             MAX_SENSOR_DISTANCE)},
 
-        mMinStableTime{Number<uint16_t>(
-            2, PresenceBinarySensorConstants::minStableTimeName,
+        mMinStableTime{PersistentNumber<uint16_t>(
+            EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_2, entityId++,
+            PresenceBinarySensorConstants::minStableTimeName,
             NumberDeviceClass::DURATION, Unit::Type::ms, 0,
             BaseComponent::Category::CONFIG,
             PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT, 0,
@@ -87,9 +91,9 @@ class PresenceBinarySensor : public IComponent {
   static constexpr uint8_t sNumConfigItems = 3;
   static constexpr uint8_t sNumItems = 1 + sNumConfigItems;
   BinarySensor mBinarySensor;
-  Number<HeightT> mLowLimit;
-  Number<HeightT> mHighLimit;
-  Number<uint16_t> mMinStableTime;
+  PersistentNumber<HeightT> mLowLimit;
+  PersistentNumber<HeightT> mHighLimit;
+  PersistentNumber<uint16_t> mMinStableTime;
   Sensor<HeightT>& mHeightSensor;
   uint32_t mLastChangedTime{};
   bool mStableState{};

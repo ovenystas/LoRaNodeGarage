@@ -4,8 +4,9 @@
 
 #include "Component.h"
 #include "DistanceSensor.h"
+#include "EeAdressMap.h"
 #include "NewPing.h"
-#include "Number.h"
+#include "PersistentNumber.h"
 #include "Sensor.h"
 #include "Unit.h"
 #include "Util.h"
@@ -30,19 +31,19 @@ class HeightSensor : public IComponent {
                Sensor<DistanceT>& distanceSensor)
       : mSensor{Sensor<HeightT>(entityId, name, SensorDeviceClass::DISTANCE,
                                 Unit::Type::cm)},
-        mStableTime{Number<uint16_t>(
-            entityId + 3, HeightSensorConstants::stableTimeName,
-            NumberDeviceClass::DURATION, Unit::Type::ms, 0,
-            BaseComponent::Category::CONFIG,
+        mStableTime{PersistentNumber<uint16_t>(
+            EE_ADDRESS_CONFIG_HEIGHT_SENSOR_0, entityId++,
+            HeightSensorConstants::stableTimeName, NumberDeviceClass::DURATION,
+            Unit::Type::ms, 0, BaseComponent::Category::CONFIG,
             HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT, 0,
             Util::MS_PER_MINUTE)},
 
-        mZeroValue{
-            Number<HeightT>(entityId + 4, HeightSensorConstants::zeroValueName,
-                            NumberDeviceClass::DISTANCE, Unit::Type::cm, 0,
-                            BaseComponent::Category::CONFIG,
-                            HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT,
-                            -MAX_SENSOR_DISTANCE, MAX_SENSOR_DISTANCE)},
+        mZeroValue{PersistentNumber<HeightT>(
+            EE_ADDRESS_CONFIG_HEIGHT_SENSOR_1, entityId++,
+            HeightSensorConstants::zeroValueName, NumberDeviceClass::DISTANCE,
+            Unit::Type::cm, 0, BaseComponent::Category::CONFIG,
+            HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT,
+            -MAX_SENSOR_DISTANCE, MAX_SENSOR_DISTANCE)},
 
         mDistanceSensor{distanceSensor} {}
 
@@ -85,7 +86,7 @@ class HeightSensor : public IComponent {
   static constexpr uint8_t sNumConfigItems = 2;
   static constexpr uint8_t sNumItems = 1 + sNumConfigItems;
   Sensor<HeightT> mSensor;
-  Number<uint16_t> mStableTime;
-  Number<HeightT> mZeroValue;
+  PersistentNumber<uint16_t> mStableTime;
+  PersistentNumber<HeightT> mZeroValue;
   Sensor<DistanceT>& mDistanceSensor;
 };
