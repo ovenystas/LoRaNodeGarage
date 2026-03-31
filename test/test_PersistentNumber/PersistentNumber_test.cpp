@@ -79,6 +79,119 @@ TEST_F(PersistentNumber_test, construct_with_int64_shall_fail) {
 // Tests: EEPROM Loading
 // ============================================================================
 
+// ============================================================================
+// Tests: LoadStatus Return Values
+// ============================================================================
+
+TEST_F(PersistentNumber_test, loadFromEeprom_empty_returns_crc_failed) {
+  // Empty EEPROM will fail CRC validation, not address check
+  PersistentNumber<uint16_t> pn{0x00, 1, "Test"};
+  Ee::LoadStatus status = pn.loadFromEeprom(512);
+
+  EXPECT_EQ(status, Ee::LoadStatus::CRC_FAILED);
+  EXPECT_FALSE(pn.wasLastLoadSuccessful());
+}
+
+TEST_F(PersistentNumber_test,
+       loadFromEeprom_oob_address_returns_address_out_of_range) {
+  uint16_t oobAddr = EEPROM.length() - 2;  // Not enough space for 5 bytes
+  PersistentNumber<uint16_t> pn{oobAddr, 2, "Test"};
+
+  Ee::LoadStatus status = pn.loadFromEeprom(789);
+
+  EXPECT_EQ(status, Ee::LoadStatus::ADDRESS_OUT_OF_RANGE);
+  EXPECT_EQ(pn.getValue(), 789);
+  EXPECT_FALSE(pn.wasLastLoadSuccessful());
+}
+
+TEST_F(PersistentNumber_test, loadFromEeprom_corrupted_crc_returns_crc_failed) {
+  // Pre-write valid data
+  PersistentNumber<uint16_t> pn1{0x00,
+                                 1,
+                                 "Test1",
+                                 NumberDeviceClass::NONE,
+                                 Unit::Type::none,
+                                 0,
+                                 BaseComponent::Category::NONE,
+                                 0,
+                                 0,
+                                 1000};
+  pn1.setValue(456);
+
+  // Corrupt the CRC byte
+  EEPROM.write(0x00 + Ee::VALUE_SIZE, 0x00);
+
+  // Load with corrupted CRC
+  PersistentNumber<uint16_t> pn2{0x00,
+                                 1,
+                                 "Test1",
+                                 NumberDeviceClass::NONE,
+                                 Unit::Type::none,
+                                 0,
+                                 BaseComponent::Category::NONE,
+                                 0,
+                                 0,
+                                 1000};
+  Ee::LoadStatus status = pn2.loadFromEeprom(999);
+
+  EXPECT_EQ(status, Ee::LoadStatus::CRC_FAILED);
+  EXPECT_EQ(pn2.getValue(), 999);  // Should use default
+  EXPECT_FALSE(pn2.wasLastLoadSuccessful());
+}
+
+TEST_F(PersistentNumber_test, loadFromEeprom_success_returns_success_status) {
+  PersistentNumber<uint16_t> pn1{0x00,
+                                 1,
+                                 "Test",
+                                 NumberDeviceClass::NONE,
+                                 Unit::Type::none,
+                                 0,
+                                 BaseComponent::Category::NONE,
+                                 0,
+                                 0,
+                                 1000};
+  pn1.setValue(789);
+
+  PersistentNumber<uint16_t> pn2{0x00,
+                                 1,
+                                 "Test",
+                                 NumberDeviceClass::NONE,
+                                 Unit::Type::none,
+                                 0,
+                                 BaseComponent::Category::NONE,
+                                 0,
+                                 0,
+                                 1000};
+  Ee::LoadStatus status = pn2.loadFromEeprom(999);
+
+  EXPECT_EQ(status, Ee::LoadStatus::SUCCESS);
+  EXPECT_EQ(pn2.getValue(), 789);
+  EXPECT_TRUE(pn2.wasLastLoadSuccessful());
+}
+
+TEST_F(PersistentNumber_test, getLastLoadStatus_tracks_multiple_loads) {
+  PersistentNumber<uint16_t> pn{0x00,
+                                1,
+                                "Test",
+                                NumberDeviceClass::NONE,
+                                Unit::Type::none,
+                                0,
+                                BaseComponent::Category::NONE,
+                                0,
+                                0,
+                                1000};
+
+  // First load: empty EEPROM -> CRC_FAILED
+  Ee::LoadStatus status1 = pn.loadFromEeprom(100);
+  EXPECT_EQ(status1, Ee::LoadStatus::CRC_FAILED);
+  EXPECT_EQ(pn.getLastLoadStatus(), Ee::LoadStatus::CRC_FAILED);
+
+  // Second load: now has value -> SUCCESS
+  Ee::LoadStatus status2 = pn.loadFromEeprom(200);
+  EXPECT_EQ(status2, Ee::LoadStatus::SUCCESS);
+  EXPECT_EQ(pn.getLastLoadStatus(), Ee::LoadStatus::SUCCESS);
+}
+
 TEST_F(PersistentNumber_test, loadFromEeprom_empty_eeprom_uses_default) {
   PersistentNumber<uint16_t> pn{0x00, 1, "Test"};
   pn.loadFromEeprom(512);

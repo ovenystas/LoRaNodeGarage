@@ -2,6 +2,7 @@
 
 #include <CRC8.h>
 #include <EEPROM.h>
+#include <stdint.h>
 
 #include "EeAdressMap.h"
 #include "Number.h"
@@ -12,6 +13,49 @@ namespace Ee {
 static constexpr uint16_t VALUE_SIZE = sizeof(uint32_t);       // 4 bytes
 static constexpr uint16_t CRC_SIZE = 1;                        // 1 byte
 static constexpr uint16_t TOTAL_SIZE = VALUE_SIZE + CRC_SIZE;  // 5 bytes total
+
+/**
+ * @brief Helper template to get maximum value for a type without <limits>
+ *
+ * Used for truncation detection during type casting.
+ * Specializations for common Arduino integer types.
+ */
+template <typename T>
+inline constexpr uint32_t getMaxValue() {
+  // Default implementation - works for most types
+  return static_cast<uint32_t>(~static_cast<T>(0));
+}
+
+// Specializations for common types
+template <>
+inline constexpr uint32_t getMaxValue<uint8_t>() {
+  return UINT8_MAX;
+}
+template <>
+inline constexpr uint32_t getMaxValue<uint16_t>() {
+  return UINT16_MAX;
+}
+template <>
+inline constexpr uint32_t getMaxValue<int8_t>() {
+  return INT8_MAX;
+}
+template <>
+inline constexpr uint32_t getMaxValue<int16_t>() {
+  return INT16_MAX;
+}
+
+/**
+ * @brief Status codes for EEPROM load operations
+ *
+ * Provides detailed information about why an EEPROM load succeeded or failed.
+ * Useful for debugging and logging in production systems.
+ */
+enum class LoadStatus : uint8_t {
+  SUCCESS = 0,               // Value loaded successfully
+  ADDRESS_OUT_OF_RANGE = 1,  // EEPROM address invalid or out of bounds
+  CRC_FAILED = 2,            // CRC validation failed (data corrupted)
+  CAST_TRUNCATED = 3         // Value would be truncated during type cast
+};
 
 static void addValueToCrc(CRC8& crc, uint32_t value) {
   for (uint8_t i = 0; i < sizeof(uint32_t); i++) {
@@ -58,21 +102,35 @@ inline bool save(uint16_t eeAddress, const uint32_t& value) {
 }
 
 template <typename T>
-void loadValue(uint16_t eeAddress, Number<T>& number, T defaultValue) {
+LoadStatus loadValue(uint16_t eeAddress, Number<T>& number, T defaultValue) {
+  // Check EEPROM address validity
   if (eeAddress + TOTAL_SIZE > EEPROM.length()) {
     number.setValue(defaultValue);
-    return;
+    return LoadStatus::ADDRESS_OUT_OF_RANGE;
   }
 
   uint32_t storedValue = 0;
   if (load(eeAddress, storedValue)) {
-    // Cast from uint32_t to the template type T
+    // Check for potential data loss due to type narrowing (for types smaller
+    // than uint32_t) Only needed when sizeof(T) < sizeof(uint32_t)
+    if (sizeof(T) < sizeof(uint32_t)) {
+      if (storedValue > getMaxValue<T>()) {
+        // Value would be truncated - use default instead
+        number.setValue(defaultValue);
+        (void)save(eeAddress, static_cast<uint32_t>(defaultValue));
+        return LoadStatus::CAST_TRUNCATED;
+      }
+    }
+
+    // Safe to cast and set value
     T typedValue = static_cast<T>(storedValue);
     number.setValue(typedValue);
+    return LoadStatus::SUCCESS;
   } else {
-    // EEPROM load failed or CRC mismatch, use default and save it
+    // EEPROM load failed (CRC mismatch), use default and save it
     number.setValue(defaultValue);
     (void)save(eeAddress, static_cast<uint32_t>(defaultValue));
+    return LoadStatus::CRC_FAILED;
   }
 }
 

@@ -60,39 +60,53 @@ class ValueItem : public Printable {
 
   static constexpr bool isSigned() { return IS_SIGNED_TYPE(T); }
 
+  /**
+   * @brief Helper: Check if value is negative
+   *
+   * Works safely for both signed and unsigned types.
+   * For unsigned types, always returns false.
+   * Uses IS_SIGNED_TYPE macro for compile-time optimization.
+   */
+  bool isNegative() const {
+    // Macro-based check: returns false for unsigned types at compile time
+    return IS_SIGNED_TYPE(T) && mValue < 0;
+  }
+
+  /**
+   * @brief Helper: Get absolute value
+   *
+   * For negative values, returns negated value.
+   * For positive/unsigned values, returns the value itself.
+   */
+  T getAbsoluteValue() const {
+    if (isNegative()) {
+      return -mValue;
+    }
+    return mValue;
+  }
+
   size_t printTo(Print& p) const final {
     size_t n = 0;
 
     const uint16_t scaleFactor = getScaleFactor();
-    // cppcheck-suppress unsignedLessThanZero
-    // cppcheck-suppress unmatchedSuppression
-    if (IS_SIGNED_TYPE(T) && mValue < 0) {
+
+    // Print negative sign if needed
+    if (isNegative()) {
       n += p.print('-');
     }
 
-    uint32_t integer;
-    // cppcheck-suppress unsignedLessThanZero
-    // cppcheck-suppress unmatchedSuppression
-    if (IS_SIGNED_TYPE(T) && mValue < 0) {
-      integer = -(mValue / scaleFactor);
-    } else {
-      integer = mValue / scaleFactor;
-    }
-
+    // Get absolute value and calculate integer part
+    T absValue = getAbsoluteValue();
+    uint32_t integer = absValue / scaleFactor;
     n += p.print(integer);
 
+    // Print fractional part if needed
     if (scaleFactor != 1) {
       n += p.print('.');
 
-      uint32_t fractional;
-      // cppcheck-suppress unsignedLessThanZero
-      // cppcheck-suppress unmatchedSuppression
-      if (IS_SIGNED_TYPE(T) && mValue < 0) {
-        fractional = -(mValue % scaleFactor);
-      } else {
-        fractional = mValue % scaleFactor;
-      }
+      uint32_t fractional = absValue % scaleFactor;
 
+      // Pad leading zeros in fractional part
       if (scaleFactor >= 1000 && fractional < 100) {
         n += p.print('0');
       }

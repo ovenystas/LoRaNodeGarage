@@ -1,9 +1,8 @@
 #pragma once
 
-#include <type_traits>
-
 #include "Ee.h"
 #include "Number.h"
+#include "Types.h"
 
 /**
  * @brief Decorator class that adds EEPROM persistence to Number<T>
@@ -25,11 +24,9 @@
 template <class T>
 class PersistentNumber {
  public:
-  // Compile-time validation: T must fit in uint32_t and be non-floating-point
+  // Compile-time validation: T must fit in uint32_t
   static_assert(sizeof(T) <= sizeof(uint32_t),
                 "PersistentNumber<T>: T must fit in uint32_t");
-  static_assert(!std::is_floating_point<T>::value,
-                "PersistentNumber<T>: floating point types not supported");
 
   /**
    * @brief Construct persistent number with full parameters
@@ -67,12 +64,35 @@ class PersistentNumber {
   /**
    * @brief Load value from EEPROM during setup
    * @param defaultValue Value to use if EEPROM load fails or CRC mismatch
+   * @return LoadStatus indicating success or reason for failure
    *
    * Call this once in setup() to restore persisted values.
    * If the value in EEPROM is invalid (CRC mismatch), uses defaultValue.
+   * Returns status information useful for debugging.
    */
-  void loadFromEeprom(T defaultValue) {
-    Ee::loadValue(mEeAddress, mNumber, defaultValue);
+  Ee::LoadStatus loadFromEeprom(T defaultValue) {
+    mLastLoadStatus = Ee::loadValue(mEeAddress, mNumber, defaultValue);
+
+    // Log errors if they occurred
+    if (mLastLoadStatus != Ee::LoadStatus::SUCCESS) {
+      logLoadError();
+    }
+
+    return mLastLoadStatus;
+  }
+
+  /**
+   * @brief Get the status of the last EEPROM load operation
+   * @return LoadStatus from most recent loadFromEeprom() call
+   */
+  Ee::LoadStatus getLastLoadStatus() const { return mLastLoadStatus; }
+
+  /**
+   * @brief Check if last load was successful
+   * @return true if last load succeeded, false otherwise
+   */
+  bool wasLastLoadSuccessful() const {
+    return mLastLoadStatus == Ee::LoadStatus::SUCCESS;
   }
 
   /**
@@ -139,6 +159,52 @@ class PersistentNumber {
   const Number<T>& getNumber() const { return mNumber; }
 
  private:
+  Ee::LoadStatus mLastLoadStatus = Ee::LoadStatus::SUCCESS;
   uint16_t mEeAddress;
   Number<T> mNumber;
+
+  /**
+   * @brief Log EEPROM load error to Serial
+   *
+   * Provides diagnostic information about EEPROM failures.
+   * This helps identify configuration corruption or EEPROM issues in the field.
+   */
+  void logLoadError() const {
+    // Only log if Serial is available (Arduino environment)
+#ifdef ARDUINO
+    Serial.print(F("[EEPROM] Load failed for entity "));
+    Serial.print(mNumber.getEntityId());
+    Serial.print(F(" at 0x"));
+    Serial.print(mEeAddress, HEX);
+    Serial.print(F(" - Reason: "));
+
+    switch (mLastLoadStatus) {
+      case Ee::LoadStatus::ADDRESS_OUT_OF_RANGE:
+        Serial.println(F("Address out of range"));
+        break;
+      case Ee::LoadStatus::CRC_FAILED:
+        Serial.println(F("CRC validation failed (data corrupted)"));
+        break;
+      case Ee::LoadStatus::CAST_TRUNCATED:
+        Serial.println(F("Value would be truncated during cast"));
+        break;
+      case Ee::LoadStatus::SUCCESS:
+        // Should not reach here, but handle it anyway
+        Serial.println(F("Success"));
+        break;
+      default:
+        Serial.println(F("Unknown error"));
+        break;
+    }
+#endif
+  }
 };
+
+// Prevent instantiation with floating-point types (incomplete forward
+// declarations)
+template <>
+class PersistentNumber<float>;
+template <>
+class PersistentNumber<double>;
+template <>
+class PersistentNumber<long double>;

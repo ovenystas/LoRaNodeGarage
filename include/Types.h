@@ -5,6 +5,7 @@
 #include "Util.h"
 
 #define IS_SIGNED_TYPE(type) (type(-1) < type(0))
+
 static const uint8_t CONFIGVALUES_MAX = 8;
 
 struct DiscoveryEntityItemT {
@@ -17,18 +18,21 @@ struct DiscoveryEntityItemT {
   uint8_t sizeCode : 2;
   uint8_t isSigned : 1;
   uint8_t reserved : 3;
-  uint32_t minValue; // Converted to uint32_t for easier transmission, should be interpreted as signed if isSigned is true
-  uint32_t maxValue; // Converted to uint32_t for easier transmission, should be interpreted as signed if isSigned is true
-  char name[32]; // Assuming a maximum name length of 31 characters plus null terminator
+  uint32_t minValue;  // Converted to uint32_t for easier transmission, should
+                      // be interpreted as signed if isSigned is true
+  uint32_t maxValue;  // Converted to uint32_t for easier transmission, should
+                      // be interpreted as signed if isSigned is true
+  char name[32];  // Assuming a maximum name length of 31 characters plus null
+                  // terminator
 
-  size_t size() const {
-    return 14 + strlen(name) + 1; }
+  size_t size() const { return 14 + strlen(name) + 1; }
 
   bool operator==(const DiscoveryEntityItemT& rhs) const {
     return entityId == rhs.entityId && componentType == rhs.componentType &&
            deviceClass == rhs.deviceClass && category == rhs.category &&
-           unit == rhs.unit && isSigned == rhs.isSigned && sizeCode == rhs.sizeCode &&
-           precision == rhs.precision && minValue == rhs.minValue && maxValue == rhs.maxValue &&
+           unit == rhs.unit && isSigned == rhs.isSigned &&
+           sizeCode == rhs.sizeCode && precision == rhs.precision &&
+           minValue == rhs.minValue && maxValue == rhs.maxValue &&
            strcmp(name, rhs.name) == 0;
   }
 
