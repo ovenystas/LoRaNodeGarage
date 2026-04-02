@@ -69,7 +69,8 @@ class Sensor : public Printable {
   Sensor(uint8_t entityId, const char* name,
          SensorDeviceClass deviceClass = SensorDeviceClass::NONE,
          Unit::Type unitType = Unit::Type::none, uint8_t precision = 0)
-      : mBaseComponent{BaseComponent(entityId, name, BaseComponent::Category::DIAGNOSTIC)},
+      : mBaseComponent{
+            BaseComponent(entityId, name, BaseComponent::Category::DIAGNOSTIC)},
         mDeviceClass{deviceClass},
         mValueItem{ValueItem<T>(unitType, precision)} {}
 
@@ -83,10 +84,15 @@ class Sensor : public Printable {
     item->entityId = mBaseComponent.getEntityId();
     item->componentType = static_cast<uint8_t>(getComponentType());
     item->deviceClass = static_cast<uint8_t>(getDeviceClass());
+    item->category = static_cast<uint8_t>(mBaseComponent.getCategory());
     item->unit = static_cast<uint8_t>(mValueItem.getUnit().type());
-    item->isSigned = mValueItem.isSigned();
-    item->sizeCode = static_cast<uint8_t>(mValueItem.getValueSize()) / 2;
     item->precision = mValueItem.getPrecision();
+    item->sizeCode = static_cast<uint8_t>(mValueItem.getValueSize()) / 2;
+    item->isSigned = mValueItem.isSigned();
+    item->minValue = static_cast<uint32_t>(mValueItem.getMinValue());
+    item->maxValue = static_cast<uint32_t>(mValueItem.getMaxValue());
+    strncpy(item->name, mBaseComponent.getName(), sizeof(item->name) - 1);
+    item->name[sizeof(item->name) - 1] = '\0';
   }
 
   uint8_t getEntityId() const { return mBaseComponent.getEntityId(); }

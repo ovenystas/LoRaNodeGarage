@@ -59,6 +59,12 @@ class DistanceSensor : public IComponent {
 
   bool update() final;
 
+  /**
+   * @brief Get the number of entities this component provides
+   * @return Number of entities (used for entity ID assignment in main.cpp)
+   */
+  static constexpr uint8_t getEntityCount() { return sNumItems; }
+
  private:
   static constexpr uint8_t sNumConfigItems = 3;
   static constexpr uint8_t sNumItems = 1 + sNumConfigItems;

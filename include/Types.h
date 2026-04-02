@@ -43,6 +43,13 @@ struct DiscoveryEntityItemT {
   size_t toByteArray(uint8_t* buf, size_t length) const {
     size_t actualSize = size();
 
+    Serial.print(F("DiscoveryEntityItemT: entityId="));
+    Serial.print(entityId);
+    Serial.print(F(", length="));
+    Serial.print(length);
+    Serial.print(F(", actualSize="));
+    Serial.println(actualSize);
+
     if (length < actualSize) {
       return 0;
     }

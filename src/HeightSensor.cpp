@@ -29,8 +29,8 @@ uint8_t HeightSensor::getDiscoveryItems(DiscoveryEntityItemT* items,
   assert(sNumItems <= length);
 
   mSensor.getDiscoveryEntityItem(&items[0]);
-  mStableTime.getDiscoveryEntityItem(&items[3]);
-  mZeroValue.getDiscoveryEntityItem(&items[4]);
+  mStableTime.getDiscoveryEntityItem(&items[1]);
+  mZeroValue.getDiscoveryEntityItem(&items[2]);
 
   return sNumItems;
 }
@@ -39,8 +39,8 @@ uint8_t HeightSensor::getConfigValueItems(ValueItemT* items,
                                           uint8_t length) const {
   assert(sNumConfigItems <= length);
 
-  mStableTime.getValueItem(&items[2]);
-  mZeroValue.getValueItem(&items[3]);
+  mStableTime.getValueItem(&items[0]);
+  mZeroValue.getValueItem(&items[1]);
 
   return sNumConfigItems;
 }

@@ -78,12 +78,12 @@ enum class NumberDeviceClass : uint8_t {
   VOLUME,  // Generic volume in L, mL, gal, fl. oz., m³, ft³, CCF, or MCF
   VOLUME_FLOW_RATE,  // Volume flow rate in m³/h, m³/min, m³/s, ft³/min, L/h,
                      // L/min, L/s, gal/d, gal/h, gal/min, or mL/s
-  VOLUME_STORAGE,  // Generic stored volume in L, mL, gal, fl. oz., m³, ft³,
-                   // CCF, or MCF
-  WATER,           // Water consumption in L, gal, m³, ft³, CCF, or MCF
-  WEIGHT,          // Generic mass in kg, g, mg, µg, oz, lb, or st
-  WIND_DIRECTION,  // Wind direction in °
-  WIND_SPEED,      // Wind speed in Beaufort, ft/s, km/h, kn, m/s, or mph
+  VOLUME_STORAGE,    // Generic stored volume in L, mL, gal, fl. oz., m³, ft³,
+                     // CCF, or MCF
+  WATER,             // Water consumption in L, gal, m³, ft³, CCF, or MCF
+  WEIGHT,            // Generic mass in kg, g, mg, µg, oz, lb, or st
+  WIND_DIRECTION,    // Wind direction in °
+  WIND_SPEED,        // Wind speed in Beaufort, ft/s, km/h, kn, m/s, or mph
 };
 
 template <class T>
@@ -113,10 +113,15 @@ class Number : public Printable {
     item->entityId = mBaseComponent.getEntityId();
     item->componentType = static_cast<uint8_t>(getComponentType());
     item->deviceClass = static_cast<uint8_t>(getDeviceClass());
+    item->category = static_cast<uint8_t>(mBaseComponent.getCategory());
     item->unit = static_cast<uint8_t>(mValueItem.getUnit().type());
-    item->isSigned = mValueItem.isSigned();
-    item->sizeCode = static_cast<uint8_t>(mValueItem.getValueSize()) / 2;
     item->precision = mValueItem.getPrecision();
+    item->sizeCode = static_cast<uint8_t>(mValueItem.getValueSize()) / 2;
+    item->isSigned = mValueItem.isSigned();
+    item->minValue = static_cast<uint32_t>(mValueItem.getMinValue());
+    item->maxValue = static_cast<uint32_t>(mValueItem.getMaxValue());
+    strncpy(item->name, mBaseComponent.getName(), sizeof(item->name) - 1);
+    item->name[sizeof(item->name) - 1] = '\0';
   }
 
   uint8_t getEntityId() const { return mBaseComponent.getEntityId(); }

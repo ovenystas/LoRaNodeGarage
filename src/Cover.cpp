@@ -49,10 +49,15 @@ void Cover::getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
   item->entityId = mBaseComponent.getEntityId();
   item->componentType = static_cast<uint8_t>(getComponentType());
   item->deviceClass = static_cast<uint8_t>(getDeviceClass());
+  item->category = static_cast<uint8_t>(mBaseComponent.getCategory());
   item->unit = static_cast<uint8_t>(Unit::Type::none);
-  item->isSigned = false;
-  item->sizeCode = 0;
   item->precision = 0;
+  item->sizeCode = 0;
+  item->isSigned = false;
+  item->minValue = 0;
+  item->maxValue = 0;
+  strncpy(item->name, mBaseComponent.getName(), sizeof(item->name) - 1);
+  item->name[sizeof(item->name) - 1] = '\0';
 }
 
 void Cover::getValueItem(ValueItemT* item) const {

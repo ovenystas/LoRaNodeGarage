@@ -57,6 +57,12 @@ class GarageCover final : public IComponent {
 
   bool update() final;
 
+  /**
+   * @brief Get the number of entities this component provides
+   * @return Number of entities (used for entity ID assignment in main.cpp)
+   */
+  static constexpr uint8_t getEntityCount() { return sNumItems; }
+
  private:
   CoverState determineState();
 

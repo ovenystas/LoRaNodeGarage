@@ -59,13 +59,13 @@ void BinarySensor::getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
   item->deviceClass = static_cast<uint8_t>(getDeviceClass());
   item->category = static_cast<uint8_t>(getCategory());
   item->unit = static_cast<uint8_t>(mUnit.type());
-  item->isSigned = false;
-  item->sizeCode = 0;
   item->precision = 0;
+  item->sizeCode = 0;
+  item->isSigned = false;
   item->minValue = 0;
   item->maxValue = 1;
-  strncpy(item->name, mBaseComponent.getName(), sizeof(item->name));
-  item->name[sizeof(item->name) - 1] = '\0'; // Ensure null termination
+  strncpy(item->name, mBaseComponent.getName(), sizeof(item->name) - 1);
+  item->name[sizeof(item->name) - 1] = '\0';  // Ensure null termination
 }
 
 void BinarySensor::getValueItem(ValueItemT* item) const {

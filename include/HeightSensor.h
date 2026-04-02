@@ -31,6 +31,7 @@ class HeightSensor : public IComponent {
                Sensor<DistanceT>& distanceSensor)
       : mSensor{Sensor<HeightT>(entityId, name, SensorDeviceClass::DISTANCE,
                                 Unit::Type::cm)},
+
         mStableTime{PersistentNumber<uint16_t>(
             EE_ADDRESS_CONFIG_HEIGHT_SENSOR_0, entityId++,
             HeightSensorConstants::stableTimeName, NumberDeviceClass::DURATION,
@@ -81,6 +82,12 @@ class HeightSensor : public IComponent {
   void setReported() final { mSensor.setReported(); }
 
   bool update() final;
+
+  /**
+   * @brief Get the number of entities this component provides
+   * @return Number of entities (used for entity ID assignment in main.cpp)
+   */
+  static constexpr uint8_t getEntityCount() { return sNumItems; }
 
  private:
   static constexpr uint8_t sNumConfigItems = 2;
