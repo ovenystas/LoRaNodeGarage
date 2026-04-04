@@ -2,8 +2,8 @@
 
 #include <stdint.h>
 
+#include "AHTReader.h"
 #include "Component.h"
-#include "DHTReader.h"
 #include "Number.h"
 #include "Sensor.h"
 #include "Util.h"
@@ -21,10 +21,10 @@ class HumiditySensor : public IComponent {
  public:
   HumiditySensor() = delete;
 
-  HumiditySensor(uint8_t entityId, const char* name, DHTReader& dhtReader)
+  HumiditySensor(uint8_t entityId, const char* name, AHTReader& ahtReader)
       : mSensor{Sensor<HumidityT>(entityId, name, SensorDeviceClass::HUMIDITY,
                                   Unit::Type::percent)},
-        mDhtReader{dhtReader} {}
+        mAhtReader{ahtReader} {}
 
   void callService(uint8_t service) final { (void)service; }
 
@@ -69,5 +69,5 @@ class HumiditySensor : public IComponent {
   static constexpr uint8_t sNumConfigItems = 0;
   static constexpr uint8_t sNumItems = 1 + sNumConfigItems;
   Sensor<HumidityT> mSensor;
-  DHTReader& mDhtReader;
+  AHTReader& mAhtReader;
 };

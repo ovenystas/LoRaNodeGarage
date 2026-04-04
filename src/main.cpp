@@ -13,7 +13,7 @@
  *
  * External libraries used:
  *   Adafruit Unified Sensor by Adafruit v1.1.15
- *   DHT sensor library by Adafruit v1.4.6
+ *   Adafruit AHTX0 library by Adafruit v2.0.6
  *   LoRa by Sandeep Mistry v0.8.0
  *   NewPing by Tim Eckel v1.9.7
  *   CRC by Rob Tillaart v1.0.3
@@ -27,16 +27,16 @@
  * - Use message sequence frCnt in LoRa header
  */
 
-#include <AES.h>  // Crypto by Rhys Weatherley
+#include <AES.h>             // Crypto by Rhys Weatherley
+#include <Adafruit_AHTX0.h>  // Adafruit AHTX0 library
 #include <Arduino.h>
 #include <CTR.h>  // Crypto by Rhys Weatherley
-#include <DHT.h>  // DHT sensor library by Adafruit
 #include <EEPROM.h>
 #include <NewPing.h>  // NewPing by Tim Eckel
 #include <SPI.h>
 
+#include "AHTReader.h"
 #include "Component.h"
-#include "DHTReader.h"
 #include "Device.h"
 #include "DistanceSensor.h"
 #include "EeAdressMap.h"
@@ -55,12 +55,11 @@
 // Increment when breaking changes of configuration are made.
 #define CONFIG_MAGIC 0x00
 
-#define DEBUG_SENSOR_VALUES
-#define DEBUG_SENSOR_REPORT
-#define DEBUG_SERVICE
-#define DEBUG_LOOP_HEARTBEAT
+#define DEBUG_SENSOR_VALUES true
+#define DEBUG_SENSOR_REPORT false
+#define DEBUG_SERVICE true
 
-#ifdef DEBUG_SENSOR_REPORT
+#if (DEBUG_SENSOR_REPORT)
 #define LOG_SENSOR(sensor) \
   printMillis(Serial);     \
   (sensor)->printTo(Serial);
@@ -68,16 +67,13 @@
 #define LOG_SENSOR(sensor)
 #endif
 
-#ifdef DEBUG_SERVICE
+#if (DEBUG_SERVICE)
 #define LOG_SERVICE(component, service) \
   printMillis(Serial);                  \
   (component)->printTo(Serial, (service));
 #else
 #define LOG_SERVICE(component, service)
 #endif
-
-#define DHT_PIN 4
-#define DHT_TYPE DHT22
 
 #define SONAR_TRIGGER_PIN 7
 #define SONAR_ECHO_PIN 6
@@ -87,6 +83,9 @@
 #define COVER_CLOSED_PIN 9
 #define COVER_RELAY_PIN A0
 
+#define AHT20_SENSOR_ENABLED true
+
+#define LORA_ENABLED true
 #define LORA_RESET_PIN 5
 #define LORA_SS_PIN LORA_DEFAULT_SS_PIN
 #define LORA_DIO0_PIN LORA_DEFAULT_DIO0_PIN
@@ -100,8 +99,8 @@
 
 // Local variables
 // ----------------------------------------------------------------
-DHT dht(DHT_PIN, DHT_TYPE);
-DHTReader dhtReader(dht);
+Adafruit_AHTX0 aht;
+AHTReader ahtReader(aht);
 NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 
 uint32_t lastRunTime = 0;
@@ -127,12 +126,10 @@ constexpr uint8_t ENTITY_ID_CAR_PRESENCE_SENSOR =
 
 GarageCover garageCover = GarageCover(0, garageCoverName, COVER_CLOSED_PIN,
                                       COVER_OPEN_PIN, COVER_RELAY_PIN);
-#if 0  // Waiting for new DHT20 sensor to replace DHT22
 TemperatureSensor temperatureSensor = TemperatureSensor(
-    ENTITY_ID_TEMPERATURE_SENSOR, temperatureSensorName, dhtReader);
+    ENTITY_ID_TEMPERATURE_SENSOR, temperatureSensorName, ahtReader);
 HumiditySensor humiditySensor =
-    HumiditySensor(ENTITY_ID_HUMIDITY_SENSOR, humiditySensorName, dhtReader);
-#endif
+    HumiditySensor(ENTITY_ID_HUMIDITY_SENSOR, humiditySensorName, ahtReader);
 DistanceSensor distanceSensor =
     DistanceSensor(ENTITY_ID_DISTANCE_SENSOR, distanceSensorName, sonar);
 HeightSensor heightSensor = HeightSensor(
@@ -141,12 +138,9 @@ PresenceBinarySensor carPresenceSensor =
     PresenceBinarySensor(ENTITY_ID_CAR_PRESENCE_SENSOR, carPresenceSensorName,
                          heightSensor.getSensor());
 
-IComponent* components[] = {&garageCover,
-#if 0  // Waiting for new DHT20 sensor to replace DHT22
-    &temperatureSensor,
-    &humiditySensor,
-#endif
-                            &distanceSensor, &heightSensor, &carPresenceSensor};
+IComponent* components[] = {&garageCover,    &temperatureSensor,
+                            &humiditySensor, &distanceSensor,
+                            &heightSensor,   &carPresenceSensor};
 
 Device device = Device(components, sizeof(components) / sizeof(components[0]));
 
@@ -167,6 +161,7 @@ void onDiscoveryReqMsg(uint8_t entityId);
 void onValueReqMsg(void);
 void onValueSetReqMsg(const ValueItemT& item);
 void onServiceReqMsg(const LoRaServiceItemT& item);
+int freeRam();
 
 // Local function definitions
 // ----------------------------------------------------------------
@@ -184,7 +179,9 @@ static void loadConfigValuesForAllComponents() {
 static void updateSensors() {
   Serial.print('.');
 
-  dhtReader.update();
+#if (AHT20_SENSOR_ENABLED)
+  ahtReader.update();
+#endif
 
   for (uint8_t i = 0; i < device.getSize(); i++) {
     IComponent* c = device.getComponent(i);
@@ -349,7 +346,7 @@ static void printWelcomeMsg() {
   Serial.print(LORA_GATEWAY_ADDRESS);
 }
 
-#ifdef DEBUG_SENSOR_VALUES
+#if (DEBUG_SENSOR_VALUES)
 static void printAllSensors(Print& p) { device.printTo(p); }
 #endif
 
@@ -391,14 +388,19 @@ void setup() {
   loadConfigValuesForAllComponents();
   EEPROM.write(EE_ADDRESS_CONFIG_MAGIC, CONFIG_MAGIC);
 
-  Serial.println(F("Initializing DHT reader..."));
-  dhtReader.begin();
+#if (AHT20_SENSOR_ENABLED)
+  Serial.println(F("Initializing AHT reader..."));
+  ahtReader.begin();
+#else
+  Serial.println(F("AHT20 sensor is disabled"));
+#endif
 
   // ctrAes128.clear();
   // ctrAes128.setCounterSize(4);
   // ctrAes128.setKey(AES_KEY, ctrAes128.keySize());
   // ctrAes128.setIV(CTR_IV, ctrAes128.ivSize());
 
+#if (LORA_ENABLED)
   Serial.println(F("Starting LoRa..."));
   if (!lora.begin(&onDiscoveryReqMsg, &onValueReqMsg, &onValueSetReqMsg,
                   &onServiceReqMsg)) {
@@ -409,8 +411,22 @@ void setup() {
     }
   }
 
-  sendDiscoveryMsgForAllComponents();
+  // sendDiscoveryMsgForAllComponents();
+#else
+  Serial.println(F("LoRa is disabled"));
+#endif
+
+  // Memory diagnostics
+  Serial.print(F("Free RAM: "));
+  Serial.println(freeRam());
+
   Serial.println(F("\n=== SETUP COMPLETE ===\n"));
+}
+
+int freeRam() {
+  extern int __heap_start, *__brkval;
+  int v;
+  return (int)&v - (__brkval == 0 ? (int)&__heap_start : (int)__brkval);
 }
 
 void loop() {
@@ -420,17 +436,22 @@ void loop() {
     lastRunTime += UPDATE_SENSORS_INTERVAL;
     updateSensors();
 
-#ifdef DEBUG_SENSOR_VALUES
+#if (DEBUG_SENSOR_VALUES)
     printMillis(Serial);
     printAllSensors(Serial);
 #endif
 
-    // if (isReportDue()) {
-    //   sendSensorValueForAllComponents();
-    // }
+#if (LORA_ENABLED)
+    if (isReportDue()) {
+      sendSensorValueForEntity(1);
+      // sendSensorValueForAllComponents();
+    }
+#endif
   }
 
+#if (LORA_ENABLED)
   (void)lora.loraRx();
+#endif
 }
 
 void onDiscoveryReqMsg(uint8_t entityId) {

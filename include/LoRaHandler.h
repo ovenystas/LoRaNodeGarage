@@ -284,6 +284,7 @@ class LoRaHandler {
   uint8_t mMsgIdUp{};
   uint8_t mMsgIdDown{};
   LoRaTxMessageT mMsgTx{};
+  uint8_t mBuffer[LORA_MAX_MESSAGE_LENGTH]{};  // Shared buffer for RX and TX
   AirTime mAirTime{AirTime(AIRTIME_LIMIT_PPM)};
 
   OnDiscoveryReqMsgFunc mOnDiscoveryReqMsgFunc{nullptr};

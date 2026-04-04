@@ -1,25 +1,25 @@
 #pragma once
 
-#include <DHT.h>
+#include <Adafruit_AHTX0.h>
 #include <stdint.h>
 
 #include "Util.h"
 
-class DHTReader {
+class AHTReader {
  public:
-  DHTReader() = delete;
+  AHTReader() = delete;
 
-  DHTReader(DHT& dht) : mDht{dht}, mLastReadTime{0xFFFFFFFFUL}, mLastTemperature{0.0f}, mLastHumidity{0.0f}, mReadSuccessful{false}, mReadFailureCount{0} {}
+  AHTReader(Adafruit_AHTX0& aht) : mAht{aht} {}
 
   /**
-   * Initialize the DHT sensor. Must be called during setup.
+   * Initialize the AHT sensor. Must be called during setup.
    */
-  void begin() { mDht.begin(); }
+  void begin();
 
   /**
-   * Update the DHT reader, reading from the sensor if the minimum
+   * Update the AHT reader, reading from the sensor if the minimum
    * interval (2000ms) has elapsed since the last read.
-   * 
+   *
    * @return true if a new read was performed, false otherwise
    */
   bool update();
@@ -43,14 +43,11 @@ class DHTReader {
   bool isReadSuccessful() const { return mReadSuccessful; }
 
  private:
-  // Minimum time between DHT reads (in milliseconds)
-  // DHT sensors require at least 2000ms between reads
-  static const uint16_t MIN_READ_INTERVAL_MS = 10000;  // 10 seconds to prevent sensor lockup
+  static const uint16_t MIN_READ_INTERVAL_MS = 2000;
 
-  DHT& mDht;
-  uint32_t mLastReadTime;
-  float mLastTemperature;
-  float mLastHumidity;
-  bool mReadSuccessful;
-  uint8_t mReadFailureCount;
+  Adafruit_AHTX0& mAht;
+  uint32_t mLastReadTime{-MIN_READ_INTERVAL_MS};
+  float mLastTemperature{0.0f};
+  float mLastHumidity{0.0f};
+  bool mReadSuccessful{false};
 };

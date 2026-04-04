@@ -14,8 +14,8 @@ extern BufferSerial Serial;
 #endif
 
 bool HumiditySensor::update() {
-  if (mDhtReader.isReadSuccessful()) {
-    int16_t newValue = round(mDhtReader.getHumidity());
+  if (mAhtReader.isReadSuccessful()) {
+    int16_t newValue = round(mAhtReader.getHumidity());
     if (newValue < 0) {
       newValue = 0;
     }

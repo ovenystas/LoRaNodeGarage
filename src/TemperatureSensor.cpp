@@ -14,10 +14,12 @@ extern BufferSerial Serial;
 #endif
 
 bool TemperatureSensor::update() {
-  if (mDhtReader.isReadSuccessful()) {
-    TemperatureT newValue = round(mDhtReader.getTemperature() * 10);
-
+  if (mAhtReader.isReadSuccessful()) {
+    TemperatureT newValue = round(mAhtReader.getTemperature() * 10);
     mSensor.setValue(newValue);
+  } else {
+    Serial.println(
+        F("TemperatureSensor: AHT read unsuccessful, not updating value"));
   }
 
   bool largeChange =

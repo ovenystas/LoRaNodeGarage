@@ -35,7 +35,6 @@ int16_t LoRaHandler::loraRx() {
 #endif
 
   // read packet
-  uint8_t buf[LORA_MAX_MESSAGE_LENGTH];
   for (int16_t i = 0; i < packetSize; i++) {
     int b = mLoRa.read();
     if (b < 0) {
@@ -45,27 +44,27 @@ int16_t LoRaHandler::loraRx() {
       Serial.println(packetSize);
       return -1;
     }
-    buf[i] = b;
+    mBuffer[i] = b;
   }
 
   uint8_t payload_length = packetSize - LORA_HEADER_LENGTH;
 
   // Decrypt packet
   if (mCipher) {
-    mCipher->decrypt(&buf[LORA_HEADER_LENGTH - 1], &buf[LORA_HEADER_LENGTH - 1],
-                     payload_length + 1);
+    mCipher->decrypt(&mBuffer[LORA_HEADER_LENGTH - 1],
+                     &mBuffer[LORA_HEADER_LENGTH - 1], payload_length + 1);
   }
 
   // Parse header
   LoRaRxMessageT rxMsg;
-  rxMsg.header.fromByteArray(buf);
+  rxMsg.header.fromByteArray(mBuffer);
   rxMsg.payload_length = payload_length;
 
 #ifdef DEBUG_LORA_MESSAGE
   // Print message as HEX
-  printArray(Serial, buf, LORA_HEADER_LENGTH, HEX);
+  printArray(Serial, mBuffer, LORA_HEADER_LENGTH, HEX);
   Serial.print(", ");
-  printArray(Serial, &buf[LORA_HEADER_LENGTH], rxMsg.payload_length, HEX);
+  printArray(Serial, &mBuffer[LORA_HEADER_LENGTH], rxMsg.payload_length, HEX);
 
   // print RSSI of packet
   Serial.print(F("' with RSSI "));
@@ -76,7 +75,8 @@ int16_t LoRaHandler::loraRx() {
 #endif
 
   // Check if it is addressed to me or broadcast
-  if (rxMsg.header.dst != mMyAddress && rxMsg.header.dst != LORA_BROADCAST_ADDRESS) {
+  if (rxMsg.header.dst != mMyAddress &&
+      rxMsg.header.dst != LORA_BROADCAST_ADDRESS) {
 #ifdef DEBUG_LORA_MESSAGE
     Serial.print(F(", not for me, drop msg."));
 #endif
@@ -109,7 +109,7 @@ int16_t LoRaHandler::loraRx() {
   }
 
   // Parse message
-  if (parseMsg(rxMsg, &buf[LORA_HEADER_LENGTH]) == -1) {
+  if (parseMsg(rxMsg, &mBuffer[LORA_HEADER_LENGTH]) == -1) {
 #ifdef DEBUG_LORA_MESSAGE
     Serial.print(F(", Error: Failed to parse msg"));
 #endif
@@ -215,18 +215,18 @@ void LoRaHandler::sendMsg(const LoRaTxMessageT& msg) {
   return;
 #endif
 
-  uint8_t buf[LORA_MAX_MESSAGE_LENGTH];
-  uint8_t n = msg.header.toByteArray(buf);
-  memcpy(&buf[n], msg.payload, msg.payload_length);
+  uint8_t n = msg.header.toByteArray(mBuffer);
+  memcpy(&mBuffer[n], msg.payload, msg.payload_length);
   n += msg.payload_length;
 
   if (mCipher) {
-    mCipher->encrypt(&buf[LORA_HEADER_LENGTH - 1], &buf[LORA_HEADER_LENGTH - 1],
+    mCipher->encrypt(&mBuffer[LORA_HEADER_LENGTH - 1],
+                     &mBuffer[LORA_HEADER_LENGTH - 1],
                      n - LORA_HEADER_LENGTH + 1);
   }
 
   (void)mLoRa.beginPacket();
-  (void)mLoRa.write(buf, n);
+  (void)mLoRa.write(mBuffer, n);
 
   uint32_t sendStartTime = millis();
   (void)mLoRa.endPacket();
