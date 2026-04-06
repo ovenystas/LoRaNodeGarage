@@ -28,18 +28,19 @@ class GarageCover final : public IComponent {
 
   void callService(uint8_t service) final;
 
-  uint8_t getConfigValueItems(ValueItemT* items, uint8_t length) const final;
+  bool getConfigValue(ValueItemT& item, uint8_t index) const final;
 
   void loadConfigValues() final;
 
-  uint8_t getDiscoveryItems(DiscoveryEntityItemT* item,
-                            uint8_t length) const final;
+  bool getDiscoveryEntity(DiscoveryEntityT& item, uint8_t index) const final;
 
   uint8_t getEntityId() const final { return mCover.getEntityId(); }
 
   uint8_t getNumEntities() const final { return sNumItems; };
 
-  void getValueItem(ValueItemT* item) const final {
+  uint8_t getNumConfigItems() const final { return sNumConfigItems; }
+
+  void getValueItem(ValueItemT& item) const final {
     return mCover.getValueItem(item);
   }
 

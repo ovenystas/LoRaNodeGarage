@@ -53,24 +53,23 @@ const __FlashStringHelper* BinarySensor::getStateName() const {
   }
 }
 
-void BinarySensor::getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
-  item->entityId = mBaseComponent.getEntityId();
-  item->componentType = static_cast<uint8_t>(getComponentType());
-  item->deviceClass = static_cast<uint8_t>(getDeviceClass());
-  item->category = static_cast<uint8_t>(getCategory());
-  item->unit = static_cast<uint8_t>(mUnit.type());
-  item->precision = 0;
-  item->sizeCode = 0;
-  item->isSigned = false;
-  item->minValue = 0;
-  item->maxValue = 1;
-  strncpy(item->name, mBaseComponent.getName(), sizeof(item->name) - 1);
-  item->name[sizeof(item->name) - 1] = '\0';  // Ensure null termination
+void BinarySensor::getDiscoveryEntity(DiscoveryEntityT& item) const {
+  item.entityId = mBaseComponent.getEntityId();
+  item.componentType = static_cast<uint8_t>(getComponentType());
+  item.deviceClass = static_cast<uint8_t>(getDeviceClass());
+  item.category = static_cast<uint8_t>(getCategory());
+  item.unit = static_cast<uint8_t>(mUnit.type());
+  item.precision = 0;
+  item.sizeCode = 0;
+  item.isSigned = false;
+  item.minValue = 0;
+  item.maxValue = 1;
+  item.name = mBaseComponent.getName();
 }
 
-void BinarySensor::getValueItem(ValueItemT* item) const {
-  item->entityId = mBaseComponent.getEntityId();
-  item->value = static_cast<uint32_t>(mState);
+void BinarySensor::getValueItem(ValueItemT& item) const {
+  item.entityId = mBaseComponent.getEntityId();
+  item.value = static_cast<uint32_t>(mState);
 }
 
 size_t BinarySensor::printTo(Print& p) const {

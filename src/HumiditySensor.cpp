@@ -38,22 +38,26 @@ bool HumiditySensor::update() {
   return isReportDue;
 }
 
-uint8_t HumiditySensor::getConfigValueItems(ValueItemT* items,
-                                            uint8_t length) const {
-  assert(sNumConfigItems <= length);
+bool HumiditySensor::getConfigValue(ValueItemT& item, uint8_t index) const {
+  if (index >= sNumConfigItems) {
+    return false;
+  }
 
-  return sNumConfigItems;
+  // HumiditySensor has no config items
+
+  return true;
 }
 
 bool HumiditySensor::setValueItem(const ValueItemT& item) { return false; }
 
-uint8_t HumiditySensor::getDiscoveryItems(DiscoveryEntityItemT* items,
-                                          uint8_t length) const {
-  assert(sNumItems <= length);
+bool HumiditySensor::getDiscoveryEntity(DiscoveryEntityT& item,
+                                        uint8_t index) const {
+  if (index >= sNumItems) {
+    return false;
+  }
 
-  mSensor.getDiscoveryEntityItem(&items[0]);
-
-  return sNumItems;
+  mSensor.getDiscoveryEntity(item);
+  return true;
 }
 
 void HumiditySensor::loadConfigValues() {}

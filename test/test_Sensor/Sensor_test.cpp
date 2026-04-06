@@ -2,10 +2,10 @@
 
 #include <gtest/gtest.h>
 
-#include "Types.h"
-#include "Unit.h"
 #include "Arduino.h"
 #include "BufferSerial.h"
+#include "Types.h"
+#include "Unit.h"
 
 using ::testing::Return;
 
@@ -129,10 +129,10 @@ TEST_F(SensorInt32BatteryPercent_test, getUnitType_percent) {
   EXPECT_EQ(sc.getUnitType(), Unit::Type::percent);
 }
 
-TEST_F(SensorInt8_test, getDiscoveryEntityItem) {
-  DiscoveryEntityItemT item;
+TEST_F(SensorInt8_test, getDiscoveryEntity) {
+  DiscoveryEntityT item;
 
-  sc.getDiscoveryEntityItem(&item);
+  sc.getDiscoveryEntity(item);
 
   EXPECT_EQ(item.entityId, 108);
   EXPECT_EQ(item.componentType,
@@ -144,10 +144,10 @@ TEST_F(SensorInt8_test, getDiscoveryEntityItem) {
   EXPECT_EQ(item.precision, 0);
 }
 
-TEST_F(SensorUInt16_test, getDiscoveryEntityItem) {
-  DiscoveryEntityItemT item;
+TEST_F(SensorUInt16_test, getDiscoveryEntity) {
+  DiscoveryEntityT item;
 
-  sc.getDiscoveryEntityItem(&item);
+  sc.getDiscoveryEntity(item);
 
   EXPECT_EQ(item.entityId, 116);
   EXPECT_EQ(item.componentType,
@@ -159,10 +159,10 @@ TEST_F(SensorUInt16_test, getDiscoveryEntityItem) {
   EXPECT_EQ(item.precision, 0);
 }
 
-TEST_F(SensorInt32_test, getDiscoveryEntityItem) {
-  DiscoveryEntityItemT item;
+TEST_F(SensorInt32_test, getDiscoveryEntity) {
+  DiscoveryEntityT item;
 
-  sc.getDiscoveryEntityItem(&item);
+  sc.getDiscoveryEntity(item);
 
   EXPECT_EQ(item.entityId, 132);
   EXPECT_EQ(item.componentType,
@@ -174,12 +174,12 @@ TEST_F(SensorInt32_test, getDiscoveryEntityItem) {
   EXPECT_EQ(item.precision, 0);
 }
 
-TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision0) {
+TEST_F(SensorInt32_test, getDiscoveryEntity_precision0) {
   Sensor<int32_t> sc2 = Sensor<int32_t>(
       132, "Sensor32", SensorDeviceClass::battery, Unit::Type::none, 0);
-  DiscoveryEntityItemT item;
+  DiscoveryEntityT item;
 
-  sc2.getDiscoveryEntityItem(&item);
+  sc2.getDiscoveryEntity(item);
 
   EXPECT_EQ(item.entityId, 132);
   EXPECT_EQ(item.componentType,
@@ -191,12 +191,12 @@ TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision0) {
   EXPECT_EQ(item.precision, 0);
 }
 
-TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision1) {
+TEST_F(SensorInt32_test, getDiscoveryEntity_precision1) {
   Sensor<int32_t> sc2 = Sensor<int32_t>(
       132, "Sensor32", SensorDeviceClass::battery, Unit::Type::none, 1);
-  DiscoveryEntityItemT item;
+  DiscoveryEntityT item;
 
-  sc2.getDiscoveryEntityItem(&item);
+  sc2.getDiscoveryEntity(item);
 
   EXPECT_EQ(item.entityId, 132);
   EXPECT_EQ(item.componentType,
@@ -208,12 +208,12 @@ TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision1) {
   EXPECT_EQ(item.precision, 1);
 }
 
-TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision2) {
+TEST_F(SensorInt32_test, getDiscoveryEntity_precision2) {
   Sensor<int32_t> sc2 = Sensor<int32_t>(
       132, "Sensor32", SensorDeviceClass::battery, Unit::Type::none, 2);
-  DiscoveryEntityItemT item;
+  DiscoveryEntityT item;
 
-  sc2.getDiscoveryEntityItem(&item);
+  sc2.getDiscoveryEntity(item);
 
   EXPECT_EQ(item.entityId, 132);
   EXPECT_EQ(item.componentType,
@@ -225,12 +225,12 @@ TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision2) {
   EXPECT_EQ(item.precision, 2);
 }
 
-TEST_F(SensorInt32_test, getDiscoveryEntityItem_precision3) {
+TEST_F(SensorInt32_test, getDiscoveryEntity_precision3) {
   Sensor<int32_t> sc2 = Sensor<int32_t>(
       132, "Sensor32", SensorDeviceClass::battery, Unit::Type::none, 3);
-  DiscoveryEntityItemT item;
+  DiscoveryEntityT item;
 
-  sc2.getDiscoveryEntityItem(&item);
+  sc2.getDiscoveryEntity(item);
 
   EXPECT_EQ(item.entityId, 132);
   EXPECT_EQ(item.componentType,

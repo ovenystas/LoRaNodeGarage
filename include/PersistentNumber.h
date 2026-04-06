@@ -122,8 +122,8 @@ class PersistentNumber {
 
   NumberDeviceClass getDeviceClass() const { return mNumber.getDeviceClass(); }
 
-  void getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
-    mNumber.getDiscoveryEntityItem(item);
+  void getDiscoveryEntity(DiscoveryEntityT& item) const {
+    mNumber.getDiscoveryEntity(item);
   }
 
   uint8_t getEntityId() const { return mNumber.getEntityId(); }
@@ -132,7 +132,7 @@ class PersistentNumber {
 
   T getValue() const { return mNumber.getValue(); }
 
-  void getValueItem(ValueItemT* item) const { mNumber.getValueItem(item); }
+  void getValueItem(ValueItemT& item) const { mNumber.getValueItem(item); }
 
   void setValueItem(const ValueItemT& item) {
     mNumber.setValueItem(item);

@@ -46,7 +46,8 @@ class BinarySensor : public Printable {
       uint8_t entityId, const char* name,
       BinarySensorDeviceClass deviceClass = BinarySensorDeviceClass::NONE,
       Unit::Type unitType = Unit::Type::none)
-      : mBaseComponent{BaseComponent(entityId, name, BaseComponent::Category::DIAGNOSTIC)},
+      : mBaseComponent{
+            BaseComponent(entityId, name, BaseComponent::Category::DIAGNOSTIC)},
         mDeviceClass{deviceClass},
         mUnit{Unit(unitType)} {}
 
@@ -56,9 +57,11 @@ class BinarySensor : public Printable {
 
   BinarySensorDeviceClass getDeviceClass() const { return mDeviceClass; }
 
-  BaseComponent::Category getCategory() const { return mBaseComponent.getCategory(); }
+  BaseComponent::Category getCategory() const {
+    return mBaseComponent.getCategory();
+  }
 
-  void getDiscoveryEntityItem(DiscoveryEntityItemT* item) const;
+  void getDiscoveryEntity(DiscoveryEntityT& item) const;
 
   uint8_t getEntityId() const { return mBaseComponent.getEntityId(); }
 
@@ -66,7 +69,7 @@ class BinarySensor : public Printable {
 
   const __FlashStringHelper* getStateName() const;
 
-  void getValueItem(ValueItemT* item) const;
+  void getValueItem(ValueItemT& item) const;
 
   bool isDiffLastReportedState() const { return mState != mLastReportedState; }
 

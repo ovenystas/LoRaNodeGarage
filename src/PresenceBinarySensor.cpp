@@ -37,27 +37,47 @@ bool PresenceBinarySensor::update() {
   return isReportDue;
 }
 
-uint8_t PresenceBinarySensor::getConfigValueItems(ValueItemT* items,
-                                                  uint8_t length) const {
-  assert(sNumConfigItems <= length);
+bool PresenceBinarySensor::getConfigValue(ValueItemT& item,
+                                          uint8_t index) const {
+  assert(index < sNumConfigItems);
 
-  mLowLimit.getValueItem(&items[0]);
-  mHighLimit.getValueItem(&items[1]);
-  mMinStableTime.getValueItem(&items[2]);
+  switch (index) {
+    case 0:
+      mLowLimit.getValueItem(item);
+      break;
+    case 1:
+      mHighLimit.getValueItem(item);
+      break;
+    case 2:
+      mMinStableTime.getValueItem(item);
+      break;
+    default:
+      return false;
+  }
 
-  return sNumConfigItems;
+  return true;
 }
 
-uint8_t PresenceBinarySensor::getDiscoveryItems(DiscoveryEntityItemT* items,
-                                                uint8_t length) const {
-  assert(sNumItems <= length);
+bool PresenceBinarySensor::getDiscoveryEntity(DiscoveryEntityT& item,
+                                              uint8_t index) const {
+  switch (index) {
+    case 0:
+      mBinarySensor.getDiscoveryEntity(item);
+      break;
+    case 1:
+      mLowLimit.getDiscoveryEntity(item);
+      break;
+    case 2:
+      mHighLimit.getDiscoveryEntity(item);
+      break;
+    case 3:
+      mMinStableTime.getDiscoveryEntity(item);
+      break;
+    default:
+      return false;
+  }
 
-  mBinarySensor.getDiscoveryEntityItem(&items[0]);
-  mLowLimit.getDiscoveryEntityItem(&items[1]);
-  mHighLimit.getDiscoveryEntityItem(&items[2]);
-  mMinStableTime.getDiscoveryEntityItem(&items[3]);
-
-  return sNumItems;
+  return true;
 }
 
 bool PresenceBinarySensor::setValueItem(const ValueItemT& item) {

@@ -27,20 +27,24 @@ bool DistanceSensor::update() {
   return isReportDue;
 }
 
-uint8_t DistanceSensor::getDiscoveryItems(DiscoveryEntityItemT* items,
-                                          uint8_t length) const {
-  assert(sNumItems <= length);
+bool DistanceSensor::getDiscoveryEntity(DiscoveryEntityT& item,
+                                        uint8_t index) const {
+  if (index >= sNumItems) {
+    return false;
+  }
 
-  mSensor.getDiscoveryEntityItem(&items[0]);
-
-  return sNumItems;
+  mSensor.getDiscoveryEntity(item);
+  return true;
 }
 
-uint8_t DistanceSensor::getConfigValueItems(ValueItemT* items,
-                                            uint8_t length) const {
-  assert(sNumConfigItems <= length);
+bool DistanceSensor::getConfigValue(ValueItemT& item, uint8_t index) const {
+  if (index >= sNumConfigItems) {
+    return false;
+  }
 
-  return sNumConfigItems;
+  // DistanceSensor has no config items
+
+  return true;
 }
 
 bool DistanceSensor::setValueItem(const ValueItemT& item) { return false; }

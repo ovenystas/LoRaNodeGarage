@@ -28,12 +28,8 @@ bool AHTReader::update() {
 
   mLastReadTime = now;
 
-  sensors_event_t humidity, temp;
-
-  if (mAht.getEvent(&humidity, &temp)) {
+  if (mAht.getMeasurements(&mLastHumidity, &mLastTemperature)) {
     mReadSuccessful = true;
-    mLastTemperature = temp.temperature;
-    mLastHumidity = humidity.relative_humidity;
   } else {
     mReadSuccessful = false;
     Serial.println(F("\nAHT: Read failed"));

@@ -8,7 +8,7 @@
 
 static const uint8_t CONFIGVALUES_MAX = 8;
 
-struct DiscoveryEntityItemT {
+struct DiscoveryEntityT {
   uint8_t entityId;
   uint8_t componentType;
   uint8_t deviceClass;
@@ -22,33 +22,12 @@ struct DiscoveryEntityItemT {
                       // be interpreted as signed if isSigned is true
   uint32_t maxValue;  // Converted to uint32_t for easier transmission, should
                       // be interpreted as signed if isSigned is true
-  char name[32];  // Assuming a maximum name length of 31 characters plus null
-                  // terminator
+  const char* name;   // Null-terminated string
 
-  size_t size() const { return 14 + strlen(name) + 1; }
-
-  bool operator==(const DiscoveryEntityItemT& rhs) const {
-    return entityId == rhs.entityId && componentType == rhs.componentType &&
-           deviceClass == rhs.deviceClass && category == rhs.category &&
-           unit == rhs.unit && isSigned == rhs.isSigned &&
-           sizeCode == rhs.sizeCode && precision == rhs.precision &&
-           minValue == rhs.minValue && maxValue == rhs.maxValue &&
-           strcmp(name, rhs.name) == 0;
-  }
-
-  bool operator!=(const DiscoveryEntityItemT& rhs) const {
-    return !(*this == rhs);
-  }
+  size_t size() const { return 14 + strlen_P(name) + 1; }
 
   size_t toByteArray(uint8_t* buf, size_t length) const {
     size_t actualSize = size();
-
-    Serial.print(F("DiscoveryEntityItemT: entityId="));
-    Serial.print(entityId);
-    Serial.print(F(", length="));
-    Serial.print(length);
-    Serial.print(F(", actualSize="));
-    Serial.println(actualSize);
 
     if (length < actualSize) {
       return 0;
@@ -60,9 +39,9 @@ struct DiscoveryEntityItemT {
     buf[3] = category;
     buf[4] = unit;
     buf[5] = (isSigned << 4) | (sizeCode << 2) | precision;
-    *(reinterpret_cast<uint32_t*>(&buf[3])) = hton(minValue);
-    *(reinterpret_cast<uint32_t*>(&buf[7])) = hton(maxValue);
-    memcpy(&buf[11], name, strlen(name) + 1);
+    *(reinterpret_cast<uint32_t*>(&buf[6])) = hton(minValue);
+    *(reinterpret_cast<uint32_t*>(&buf[10])) = hton(maxValue);
+    strcpy_P((char*)&buf[14], name);
 
     return actualSize;
   }

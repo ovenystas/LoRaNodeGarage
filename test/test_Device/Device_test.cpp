@@ -2,8 +2,8 @@
 
 #include <gtest/gtest.h>
 
-#include "Component.h"
 #include "BufferSerial.h"
+#include "Component.h"
 #include "Print.h"
 
 // Include source implementation
@@ -26,7 +26,7 @@ class ComponentChild : public IComponent {
 
   uint8_t getEntityId() const final { return mEntityId; }
 
-  void getValueItem(ValueItemT* item) const final { (void)item; }
+  void getValueItem(ValueItemT& item) const final { (void)item; }
 
   bool isReportDue() const final { return false; }
 

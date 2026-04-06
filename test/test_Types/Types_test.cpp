@@ -1,40 +1,38 @@
 #include "Types.h"
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 using ::testing::ElementsAre;
 
-#define DISCOVERY_ENTITY_ITEM \
-  { 1, 2, 3, 4, 3, 2, 1, 0 }
-#define CONFIG_ITEM \
-  { 1, 2, 3, 2, 1, 0, 123456, 654321 }
-#define DISCOVERY_ITEM_TWO_CONFIG_ITEMS                                        \
-  {                                                                            \
-    1, 2, 3, 4, 3, 2, 1, 0, 2, {                                               \
-      {0, 1, 3, 2, 1, 0, 123456, 654321}, { 1, 4, 3, 2, 1, 0, 123456, 654321 } \
-    }                                                                          \
+#define DISCOVERY_ENTITY_ITEM {1, 2, 3, 4, 3, 2, 1, 0}
+#define CONFIG_ITEM {1, 2, 3, 2, 1, 0, 123456, 654321}
+#define DISCOVERY_ITEM_TWO_CONFIG_ITEMS                                      \
+  {                                                                          \
+    1, 2, 3, 4, 3, 2, 1, 0, 2, {                                             \
+      {0, 1, 3, 2, 1, 0, 123456, 654321}, {1, 4, 3, 2, 1, 0, 123456, 654321} \
+    }                                                                        \
   }
 #define BE_HEX_OF_123456 0x00, 0x01, 0xE2, 0x40
 #define BE_HEX_OF_654321 0x00, 0x09, 0xFB, 0xF1
 
-TEST(Type_test, DiscoveryEntityItemT_equal) {
-  const DiscoveryEntityItemT item1 = DISCOVERY_ENTITY_ITEM;
-  const DiscoveryEntityItemT item2 = item1;
+TEST(Type_test, DiscoveryEntityT_equal) {
+  const DiscoveryEntityT item1 = DISCOVERY_ENTITY_ITEM;
+  const DiscoveryEntityT item2 = item1;
 
   EXPECT_EQ(item1, item2);
 }
 
-TEST(Type_test, DiscoveryEntityItemT_not_equal) {
-  const DiscoveryEntityItemT item1 = DISCOVERY_ENTITY_ITEM;
-  DiscoveryEntityItemT item2 = item1;
+TEST(Type_test, DiscoveryEntityT_not_equal) {
+  const DiscoveryEntityT item1 = DISCOVERY_ENTITY_ITEM;
+  DiscoveryEntityT item2 = item1;
   item2.precision++;
 
   EXPECT_NE(item1, item2);
 }
 
-TEST(Type_test, DiscoveryEntityItemT_toByteArray) {
-  const DiscoveryEntityItemT item1 = DISCOVERY_ENTITY_ITEM;
+TEST(Type_test, DiscoveryEntityT_toByteArray) {
+  const DiscoveryEntityT item1 = DISCOVERY_ENTITY_ITEM;
   uint8_t actual[5]{};
 
   size_t size = item1.toByteArray(actual, sizeof(actual));
@@ -44,8 +42,8 @@ TEST(Type_test, DiscoveryEntityItemT_toByteArray) {
   EXPECT_EQ(size, 5);
 }
 
-TEST(Type_test, DiscoveryEntityItemT_toByteArray_tooSmallBuf) {
-  const DiscoveryEntityItemT item1 = DISCOVERY_ENTITY_ITEM;
+TEST(Type_test, DiscoveryEntityT_toByteArray_tooSmallBuf) {
+  const DiscoveryEntityT item1 = DISCOVERY_ENTITY_ITEM;
   uint8_t actual[5]{};
 
   size_t size = item1.toByteArray(actual, sizeof(actual) - 1);

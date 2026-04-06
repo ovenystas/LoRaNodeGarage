@@ -33,14 +33,14 @@ class HeightSensor : public IComponent {
                                 Unit::Type::cm)},
 
         mStableTime{PersistentNumber<uint16_t>(
-            EE_ADDRESS_CONFIG_HEIGHT_SENSOR_0, entityId++,
+            EE_ADDRESS_CONFIG_HEIGHT_SENSOR_0, ++entityId,
             HeightSensorConstants::stableTimeName, NumberDeviceClass::DURATION,
             Unit::Type::ms, 0, BaseComponent::Category::CONFIG,
             HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT, 0,
             Util::MS_PER_MINUTE)},
 
         mZeroValue{PersistentNumber<HeightT>(
-            EE_ADDRESS_CONFIG_HEIGHT_SENSOR_1, entityId++,
+            EE_ADDRESS_CONFIG_HEIGHT_SENSOR_1, ++entityId,
             HeightSensorConstants::zeroValueName, NumberDeviceClass::DISTANCE,
             Unit::Type::cm, 0, BaseComponent::Category::CONFIG,
             HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT,
@@ -50,20 +50,21 @@ class HeightSensor : public IComponent {
 
   void callService(uint8_t service) final { (void)service; }
 
-  uint8_t getConfigValueItems(ValueItemT* items, uint8_t length) const final;
+  bool getConfigValue(ValueItemT& item, uint8_t index) const final;
 
   void loadConfigValues() final;
 
-  uint8_t getDiscoveryItems(DiscoveryEntityItemT* item,
-                            uint8_t length) const final;
+  bool getDiscoveryEntity(DiscoveryEntityT& item, uint8_t index) const final;
 
   uint8_t getEntityId() const final { return mSensor.getEntityId(); }
 
   uint8_t getNumEntities() const final { return sNumItems; };
 
+  uint8_t getNumConfigItems() const final { return sNumConfigItems; }
+
   Sensor<HeightT>& getSensor() { return mSensor; }
 
-  void getValueItem(ValueItemT* item) const final {
+  void getValueItem(ValueItemT& item) const final {
     return mSensor.getValueItem(item);
   }
 

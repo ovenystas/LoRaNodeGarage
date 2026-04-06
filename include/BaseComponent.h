@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdint.h>
 #include <Arduino.h>
+#include <stdint.h>
 
 #include "Util.h"
 
@@ -33,11 +33,7 @@ class BaseComponent {
     WATER_HEATER
   };
 
-  enum class Category : uint8_t {
-    NONE,
-    CONFIG,
-    DIAGNOSTIC
-  };
+  enum class Category : uint8_t { NONE, CONFIG, DIAGNOSTIC };
 
   BaseComponent() = delete;
 
@@ -77,7 +73,7 @@ class BaseComponent {
 
  private:
   uint32_t mLastReportTime{};  // ms
-  const char* mName{""};
+  const char* mName{nullptr};
   const uint8_t mEntityId{};
   const Category mCategory{Category::NONE};
   bool mIsReportDue{true};

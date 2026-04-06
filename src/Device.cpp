@@ -17,13 +17,18 @@ IComponent* Device::getComponentByEntityId(uint8_t entityId) {
 }
 
 size_t Device::printTo(Print& p) const {
-  uint8_t i;
   size_t n = 0;
-  for (i = 0; i < mSize; i++) {
+
+  for (uint8_t i = 0; i < mSize; i++) {
     if (i > 0) {
       n += p.print(", ");
     }
+    n += p.print(mComponents[i]->getEntityId());
+    n += p.print(':');
     n += mComponents[i]->printTo(p);
   }
+
+  n += p.println();
+
   return n;
 }

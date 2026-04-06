@@ -3,10 +3,10 @@
 #include <gtest/gtest.h>
 #include <string.h>
 
-#include "Types.h"
-#include "Unit.h"
 #include "Arduino.h"
 #include "BufferSerial.h"
+#include "Types.h"
+#include "Unit.h"
 
 // Include source implementation
 #include "../../src/Cover.cpp"
@@ -48,10 +48,10 @@ TEST_F(Cover_test, getDeviceClass) {
   EXPECT_EQ(pC->getDeviceClass(), CoverDeviceClass::none);
 }
 
-TEST_F(Cover_test, getDiscoveryEntityItem) {
-  DiscoveryEntityItemT item;
+TEST_F(Cover_test, getDiscoveryEntity) {
+  DiscoveryEntityT item;
 
-  pC->getDiscoveryEntityItem(&item);
+  pC->getDiscoveryEntity(item);
 
   EXPECT_EQ(item.entityId, 34);
   EXPECT_EQ(item.componentType,

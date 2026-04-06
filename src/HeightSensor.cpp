@@ -24,25 +24,44 @@ bool HeightSensor::update() {
   return isReportDue;
 }
 
-uint8_t HeightSensor::getDiscoveryItems(DiscoveryEntityItemT* items,
-                                        uint8_t length) const {
-  assert(sNumItems <= length);
+bool HeightSensor::getDiscoveryEntity(DiscoveryEntityT& item,
+                                      uint8_t index) const {
+  if (index >= sNumItems) {
+    return false;
+  }
 
-  mSensor.getDiscoveryEntityItem(&items[0]);
-  mStableTime.getDiscoveryEntityItem(&items[1]);
-  mZeroValue.getDiscoveryEntityItem(&items[2]);
+  switch (index) {
+    case 0:
+      mSensor.getDiscoveryEntity(item);
+      break;
+    case 1:
+      mStableTime.getDiscoveryEntity(item);
+      break;
+    case 2:
+      mZeroValue.getDiscoveryEntity(item);
+      break;
+    default:
+      return false;
+  }
 
-  return sNumItems;
+  return true;
 }
 
-uint8_t HeightSensor::getConfigValueItems(ValueItemT* items,
-                                          uint8_t length) const {
-  assert(sNumConfigItems <= length);
+bool HeightSensor::getConfigValue(ValueItemT& item, uint8_t index) const {
+  assert(index < sNumConfigItems);
 
-  mStableTime.getValueItem(&items[0]);
-  mZeroValue.getValueItem(&items[1]);
+  switch (index) {
+    case 0:
+      mStableTime.getValueItem(item);
+      break;
+    case 1:
+      mZeroValue.getValueItem(item);
+      break;
+    default:
+      return false;
+  }
 
-  return sNumConfigItems;
+  return true;
 }
 
 bool HeightSensor::setValueItem(const ValueItemT& item) {

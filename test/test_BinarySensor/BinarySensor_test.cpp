@@ -2,10 +2,10 @@
 
 #include <gtest/gtest.h>
 
-#include "Types.h"
-#include "Unit.h"
 #include "Arduino.h"
 #include "BufferSerial.h"
+#include "Types.h"
+#include "Unit.h"
 
 // Include source implementation
 #include "../../src/BinarySensor.cpp"
@@ -235,10 +235,10 @@ TEST_F(BinarySensor_test, getDeviceClass) {
   EXPECT_EQ(pBS->getDeviceClass(), BinarySensorDeviceClass::none);
 }
 
-TEST_F(BinarySensor_test, getDiscoveryEntityItem) {
-  DiscoveryEntityItemT item;
+TEST_F(BinarySensor_test, getDiscoveryEntity) {
+  DiscoveryEntityT item;
 
-  pBS->getDiscoveryEntityItem(&item);
+  pBS->getDiscoveryEntity(item);
 
   EXPECT_EQ(item.entityId, 34);
   EXPECT_EQ(item.componentType,

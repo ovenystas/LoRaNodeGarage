@@ -1,15 +1,15 @@
 #pragma once
 
-#include <Adafruit_AHTX0.h>
 #include <stdint.h>
 
+#include "AHT20.h"
 #include "Util.h"
 
 class AHTReader {
  public:
   AHTReader() = delete;
 
-  AHTReader(Adafruit_AHTX0& aht) : mAht{aht} {}
+  AHTReader(AHT20& aht) : mAht{aht} {}
 
   /**
    * Initialize the AHT sensor. Must be called during setup.
@@ -45,7 +45,7 @@ class AHTReader {
  private:
   static const uint16_t MIN_READ_INTERVAL_MS = 2000;
 
-  Adafruit_AHTX0& mAht;
+  AHT20& mAht;
   uint32_t mLastReadTime{-MIN_READ_INTERVAL_MS};
   float mLastTemperature{0.0f};
   float mLastHumidity{0.0f};

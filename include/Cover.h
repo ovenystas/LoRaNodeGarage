@@ -40,13 +40,13 @@ class Cover : public Printable {
 
   CoverDeviceClass getDeviceClass() const { return mDeviceClass; }
 
-  void getDiscoveryEntityItem(DiscoveryEntityItemT* item) const;
+  void getDiscoveryEntity(DiscoveryEntityT& item) const;
 
   uint8_t getEntityId() const { return mBaseComponent.getEntityId(); }
 
   CoverState getState() const { return mState; }
 
-  void getValueItem(ValueItemT* item) const;
+  void getValueItem(ValueItemT& item) const;
 
   bool isDiffLastReportedState() const { return mState != mLastReportedState; }
 

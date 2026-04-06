@@ -29,7 +29,7 @@ class PresenceBinarySensor : public IComponent {
             BinarySensor(entityId, name, BinarySensorDeviceClass::PRESENCE)},
 
         mLowLimit{PersistentNumber<HeightT>(
-            EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_0, entityId++,
+            EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_0, ++entityId,
             PresenceBinarySensorConstants::lowLimitName,
             NumberDeviceClass::DISTANCE, Unit::Type::cm, 0,
             BaseComponent::Category::CONFIG,
@@ -37,7 +37,7 @@ class PresenceBinarySensor : public IComponent {
             MAX_SENSOR_DISTANCE)},
 
         mHighLimit{PersistentNumber<HeightT>(
-            EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_1, entityId++,
+            EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_1, ++entityId,
             PresenceBinarySensorConstants::highLimitName,
             NumberDeviceClass::DISTANCE, Unit::Type::cm, 0,
             BaseComponent::Category::CONFIG,
@@ -45,7 +45,7 @@ class PresenceBinarySensor : public IComponent {
             MAX_SENSOR_DISTANCE)},
 
         mMinStableTime{PersistentNumber<uint16_t>(
-            EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_2, entityId++,
+            EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_2, ++entityId,
             PresenceBinarySensorConstants::minStableTimeName,
             NumberDeviceClass::DURATION, Unit::Type::ms, 0,
             BaseComponent::Category::CONFIG,
@@ -56,18 +56,19 @@ class PresenceBinarySensor : public IComponent {
 
   void callService(uint8_t service) final { (void)service; }
 
-  uint8_t getConfigValueItems(ValueItemT* items, uint8_t length) const final;
+  bool getConfigValue(ValueItemT& item, uint8_t index) const final;
 
   void loadConfigValues() final;
 
-  uint8_t getDiscoveryItems(DiscoveryEntityItemT* item,
-                            uint8_t length) const final;
+  bool getDiscoveryEntity(DiscoveryEntityT& item, uint8_t index) const final;
 
   uint8_t getEntityId() const final { return mBinarySensor.getEntityId(); }
 
   uint8_t getNumEntities() const final { return sNumItems; };
 
-  void getValueItem(ValueItemT* item) const final {
+  uint8_t getNumConfigItems() const final { return sNumConfigItems; }
+
+  void getValueItem(ValueItemT& item) const final {
     return mBinarySensor.getValueItem(item);
   }
 

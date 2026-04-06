@@ -251,7 +251,7 @@ class LoRaHandler {
   int16_t loraRx();
 
   void beginDiscoveryMsg();
-  void addDiscoveryItem(const DiscoveryEntityItemT& item);
+  void addDiscoveryEntity(const DiscoveryEntityT& item);
 
   void beginValueMsg();
   void addValueItem(const ValueItemT& item);

@@ -109,19 +109,18 @@ class Number : public Printable {
 
   NumberDeviceClass getDeviceClass() const { return mDeviceClass; }
 
-  void getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
-    item->entityId = mBaseComponent.getEntityId();
-    item->componentType = static_cast<uint8_t>(getComponentType());
-    item->deviceClass = static_cast<uint8_t>(getDeviceClass());
-    item->category = static_cast<uint8_t>(mBaseComponent.getCategory());
-    item->unit = static_cast<uint8_t>(mValueItem.getUnit().type());
-    item->precision = mValueItem.getPrecision();
-    item->sizeCode = static_cast<uint8_t>(mValueItem.getValueSize()) / 2;
-    item->isSigned = mValueItem.isSigned();
-    item->minValue = static_cast<uint32_t>(mValueItem.getMinValue());
-    item->maxValue = static_cast<uint32_t>(mValueItem.getMaxValue());
-    strncpy(item->name, mBaseComponent.getName(), sizeof(item->name) - 1);
-    item->name[sizeof(item->name) - 1] = '\0';
+  void getDiscoveryEntity(DiscoveryEntityT& item) const {
+    item.entityId = mBaseComponent.getEntityId();
+    item.componentType = static_cast<uint8_t>(getComponentType());
+    item.deviceClass = static_cast<uint8_t>(getDeviceClass());
+    item.category = static_cast<uint8_t>(mBaseComponent.getCategory());
+    item.unit = static_cast<uint8_t>(mValueItem.getUnit().type());
+    item.precision = mValueItem.getPrecision();
+    item.sizeCode = static_cast<uint8_t>(mValueItem.getValueSize()) / 2;
+    item.isSigned = mValueItem.isSigned();
+    item.minValue = static_cast<uint32_t>(mValueItem.getMinValue());
+    item.maxValue = static_cast<uint32_t>(mValueItem.getMaxValue());
+    item.name = mBaseComponent.getName();
   }
 
   uint8_t getEntityId() const { return mBaseComponent.getEntityId(); }
@@ -130,9 +129,9 @@ class Number : public Printable {
 
   T getValue() const { return mValueItem.getValue(); }
 
-  void getValueItem(ValueItemT* item) const {
-    item->entityId = mBaseComponent.getEntityId();
-    item->value = static_cast<uint32_t>(mValueItem.getValue());
+  void getValueItem(ValueItemT& item) const {
+    item.entityId = mBaseComponent.getEntityId();
+    item.value = static_cast<uint32_t>(mValueItem.getValue());
   }
 
   void setValueItem(const ValueItemT& item) {

@@ -26,20 +26,21 @@ class DistanceSensor : public IComponent {
 
   void callService(uint8_t service) final { (void)service; }
 
-  uint8_t getConfigValueItems(ValueItemT* items, uint8_t length) const final;
+  bool getConfigValue(ValueItemT& item, uint8_t index) const final;
 
   void loadConfigValues() final;
 
-  uint8_t getDiscoveryItems(DiscoveryEntityItemT* item,
-                            uint8_t length) const final;
+  bool getDiscoveryEntity(DiscoveryEntityT& item, uint8_t index) const final;
 
   uint8_t getEntityId() const final { return mSensor.getEntityId(); }
 
   uint8_t getNumEntities() const final { return sNumItems; };
 
+  uint8_t getNumConfigItems() const final { return sNumConfigItems; }
+
   Sensor<DistanceT>& getSensor() { return mSensor; }
 
-  void getValueItem(ValueItemT* item) const final {
+  void getValueItem(ValueItemT& item) const final {
     return mSensor.getValueItem(item);
   }
 
@@ -66,7 +67,7 @@ class DistanceSensor : public IComponent {
   static constexpr uint8_t getEntityCount() { return sNumItems; }
 
  private:
-  static constexpr uint8_t sNumConfigItems = 3;
+  static constexpr uint8_t sNumConfigItems = 0;
   static constexpr uint8_t sNumItems = 1 + sNumConfigItems;
   Sensor<DistanceT> mSensor;
   NewPing& mSonar;

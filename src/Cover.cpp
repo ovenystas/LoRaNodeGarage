@@ -45,24 +45,23 @@ const __FlashStringHelper* Cover::getServiceName(CoverService service) const {
 static const char CoverServiceName[][8] PROGMEM = {"open", "close", "stop",
                                                    "toggle", "unknown"};
 
-void Cover::getDiscoveryEntityItem(DiscoveryEntityItemT* item) const {
-  item->entityId = mBaseComponent.getEntityId();
-  item->componentType = static_cast<uint8_t>(getComponentType());
-  item->deviceClass = static_cast<uint8_t>(getDeviceClass());
-  item->category = static_cast<uint8_t>(mBaseComponent.getCategory());
-  item->unit = static_cast<uint8_t>(Unit::Type::none);
-  item->precision = 0;
-  item->sizeCode = 0;
-  item->isSigned = false;
-  item->minValue = 0;
-  item->maxValue = 0;
-  strncpy(item->name, mBaseComponent.getName(), sizeof(item->name) - 1);
-  item->name[sizeof(item->name) - 1] = '\0';
+void Cover::getDiscoveryEntity(DiscoveryEntityT& item) const {
+  item.entityId = mBaseComponent.getEntityId();
+  item.componentType = static_cast<uint8_t>(getComponentType());
+  item.deviceClass = static_cast<uint8_t>(getDeviceClass());
+  item.category = static_cast<uint8_t>(mBaseComponent.getCategory());
+  item.unit = static_cast<uint8_t>(Unit::Type::none);
+  item.precision = 0;
+  item.sizeCode = 0;
+  item.isSigned = false;
+  item.minValue = 0;
+  item.maxValue = 0;
+  item.name = mBaseComponent.getName();
 }
 
-void Cover::getValueItem(ValueItemT* item) const {
-  item->entityId = mBaseComponent.getEntityId();
-  item->value = static_cast<uint32_t>(mState);
+void Cover::getValueItem(ValueItemT& item) const {
+  item.entityId = mBaseComponent.getEntityId();
+  item.value = static_cast<uint32_t>(mState);
 }
 
 size_t Cover::printTo(Print& p) const {
