@@ -32,7 +32,7 @@ class TemperatureSensor : public IComponent {
 
   void loadConfigValues() final;
 
-  bool getDiscoveryEntity(DiscoveryEntityT &item, uint8_t index) const final;
+  bool getDiscoveryEntity(DiscoveryEntityT &item) const final;
 
   uint8_t getEntityId() const final { return mSensor.getEntityId(); }
 

@@ -28,9 +28,9 @@ class DistanceSensor : public IComponent {
 
   bool getConfigValue(ValueItemT& item, uint8_t index) const final;
 
-  void loadConfigValues() final;
+  void loadConfigValues() final {};
 
-  bool getDiscoveryEntity(DiscoveryEntityT& item, uint8_t index) const final;
+  bool getDiscoveryEntity(DiscoveryEntityT& item) const final;
 
   uint8_t getEntityId() const final { return mSensor.getEntityId(); }
 

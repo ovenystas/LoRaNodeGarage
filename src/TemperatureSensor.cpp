@@ -50,20 +50,8 @@ bool TemperatureSensor::getConfigValue(ValueItemT& item, uint8_t index) const {
 
 bool TemperatureSensor::setValueItem(const ValueItemT& item) { return false; }
 
-bool TemperatureSensor::getDiscoveryEntity(DiscoveryEntityT& item,
-                                           uint8_t index) const {
-  if (index >= sNumItems) {
-    return false;
-  }
-
-  switch (index) {
-    case 0:
-      mSensor.getDiscoveryEntity(item);
-      break;
-    default:
-      return false;
-  }
-
+bool TemperatureSensor::getDiscoveryEntity(DiscoveryEntityT& item) const {
+  mSensor.getDiscoveryEntity(item);
   return true;
 }
 

@@ -27,12 +27,7 @@ bool DistanceSensor::update() {
   return isReportDue;
 }
 
-bool DistanceSensor::getDiscoveryEntity(DiscoveryEntityT& item,
-                                        uint8_t index) const {
-  if (index >= sNumItems) {
-    return false;
-  }
-
+bool DistanceSensor::getDiscoveryEntity(DiscoveryEntityT& item) const {
   mSensor.getDiscoveryEntity(item);
   return true;
 }
@@ -48,5 +43,3 @@ bool DistanceSensor::getConfigValue(ValueItemT& item, uint8_t index) const {
 }
 
 bool DistanceSensor::setValueItem(const ValueItemT& item) { return false; }
-
-void DistanceSensor::loadConfigValues() {}

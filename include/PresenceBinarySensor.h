@@ -4,18 +4,11 @@
 #include "Component.h"
 #include "EeAdressMap.h"
 #include "HeightSensor.h"
-#include "PersistentNumber.h"
+#include "PersistentNumberComponent.h"
 #include "Util.h"
 
 namespace PresenceBinarySensorConstants {
-static const HeightT CONFIG_LOW_LIMIT_DEFAULT = 180;
-static const HeightT CONFIG_HIGH_LIMIT_DEFAULT = 200;
-static const uint16_t CONFIG_MIN_STABLE_TIME_DEFAULT = 10000;
 static const uint16_t CONFIG_REPORT_INTERVAL_DEFAULT = 300;
-
-static const char lowLimitName[] PROGMEM = "Low Limit";
-static const char highLimitName[] PROGMEM = "High Limit";
-static const char minStableTimeName[] PROGMEM = "Min Stable Time";
 static const char reportIntervalName[] PROGMEM = "Report Interval";
 }  // namespace PresenceBinarySensorConstants
 
@@ -24,43 +17,24 @@ class PresenceBinarySensor : public IComponent {
   PresenceBinarySensor() = delete;
 
   PresenceBinarySensor(uint8_t entityId, const char* name,
-                       Sensor<HeightT>& heightSensor)
+                       Sensor<HeightT>& heightSensor,
+                       PersistentNumberComponent<HeightT>& lowLimit,
+                       PersistentNumberComponent<HeightT>& highLimit,
+                       PersistentNumberComponent<uint16_t>& minStableTime)
       : mBinarySensor{
             BinarySensor(entityId, name, BinarySensorDeviceClass::PRESENCE)},
-
-        mLowLimit{PersistentNumber<HeightT>(
-            EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_0, ++entityId,
-            PresenceBinarySensorConstants::lowLimitName,
-            NumberDeviceClass::DISTANCE, Unit::Type::cm, 0,
-            BaseComponent::Category::CONFIG,
-            PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT, 0,
-            MAX_SENSOR_DISTANCE)},
-
-        mHighLimit{PersistentNumber<HeightT>(
-            EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_1, ++entityId,
-            PresenceBinarySensorConstants::highLimitName,
-            NumberDeviceClass::DISTANCE, Unit::Type::cm, 0,
-            BaseComponent::Category::CONFIG,
-            PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT, 0,
-            MAX_SENSOR_DISTANCE)},
-
-        mMinStableTime{PersistentNumber<uint16_t>(
-            EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_2, ++entityId,
-            PresenceBinarySensorConstants::minStableTimeName,
-            NumberDeviceClass::DURATION, Unit::Type::ms, 0,
-            BaseComponent::Category::CONFIG,
-            PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT, 0,
-            Util::MS_PER_MINUTE)},
-
-        mHeightSensor{heightSensor} {}
+        mHeightSensor{heightSensor},
+        mLowLimit{lowLimit},
+        mHighLimit{highLimit},
+        mMinStableTime{minStableTime} {}
 
   void callService(uint8_t service) final { (void)service; }
 
   bool getConfigValue(ValueItemT& item, uint8_t index) const final;
 
-  void loadConfigValues() final;
+  void loadConfigValues() final {};
 
-  bool getDiscoveryEntity(DiscoveryEntityT& item, uint8_t index) const final;
+  bool getDiscoveryEntity(DiscoveryEntityT& item) const final;
 
   uint8_t getEntityId() const final { return mBinarySensor.getEntityId(); }
 
@@ -98,10 +72,10 @@ class PresenceBinarySensor : public IComponent {
   static constexpr uint8_t sNumConfigItems = 3;
   static constexpr uint8_t sNumItems = 1 + sNumConfigItems;
   BinarySensor mBinarySensor;
-  PersistentNumber<HeightT> mLowLimit;
-  PersistentNumber<HeightT> mHighLimit;
-  PersistentNumber<uint16_t> mMinStableTime;
   Sensor<HeightT>& mHeightSensor;
+  PersistentNumberComponent<HeightT>& mLowLimit;
+  PersistentNumberComponent<HeightT>& mHighLimit;
+  PersistentNumberComponent<uint16_t>& mMinStableTime;
   uint32_t mLastChangedTime{};
   bool mStableState{};
 };

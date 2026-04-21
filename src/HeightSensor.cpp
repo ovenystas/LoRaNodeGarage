@@ -25,26 +25,8 @@ bool HeightSensor::update() {
   return isReportDue;
 }
 
-bool HeightSensor::getDiscoveryEntity(DiscoveryEntityT& item,
-                                      uint8_t index) const {
-  if (index >= sNumItems) {
-    return false;
-  }
-
-  switch (index) {
-    case 0:
-      mSensor.getDiscoveryEntity(item);
-      break;
-    case 1:
-      mStableTime.getDiscoveryEntity(item);
-      break;
-    case 2:
-      mZeroValue.getDiscoveryEntity(item);
-      break;
-    default:
-      return false;
-  }
-
+bool HeightSensor::getDiscoveryEntity(DiscoveryEntityT& item) const {
+  mSensor.getDiscoveryEntity(item);
   return true;
 }
 
@@ -78,9 +60,4 @@ bool HeightSensor::setValueItem(const ValueItemT& item) {
   }
 
   return true;
-}
-
-void HeightSensor::loadConfigValues() {
-  mStableTime.loadFromEeprom(HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT);
-  mZeroValue.loadFromEeprom(HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT);
 }

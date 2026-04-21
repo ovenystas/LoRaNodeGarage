@@ -30,14 +30,11 @@ class IComponent : public Printable {
   virtual void loadConfigValues() = 0;
 
   /**
-   * @brief Get one discovery item.
-   *        Use getNumEntities() to know how many discovery items to retrieve.
+   * @brief Get the discovery entity.
    * @param[out] item The discovery item to write to.
-   * @param index The index of the discovery item to retrieve.
    * @return true if the item was retrieved successfully, false otherwise.
    */
-  virtual bool getDiscoveryEntity(DiscoveryEntityT& item,
-                                  uint8_t index) const = 0;
+  virtual bool getDiscoveryEntity(DiscoveryEntityT& item) const = 0;
 
   /**
    * @brief Get the entityId.

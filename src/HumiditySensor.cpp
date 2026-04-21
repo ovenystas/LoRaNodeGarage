@@ -50,12 +50,7 @@ bool HumiditySensor::getConfigValue(ValueItemT& item, uint8_t index) const {
 
 bool HumiditySensor::setValueItem(const ValueItemT& item) { return false; }
 
-bool HumiditySensor::getDiscoveryEntity(DiscoveryEntityT& item,
-                                        uint8_t index) const {
-  if (index >= sNumItems) {
-    return false;
-  }
-
+bool HumiditySensor::getDiscoveryEntity(DiscoveryEntityT& item) const {
   mSensor.getDiscoveryEntity(item);
   return true;
 }

@@ -45,6 +45,7 @@
 #include "HeightSensor.h"
 #include "HumiditySensor.h"
 #include "LoRaHandler.h"
+#include "PersistentNumberComponent.h"
 #include "PresenceBinarySensor.h"
 #include "TemperatureSensor.h"
 #include "Util.h"
@@ -117,7 +118,19 @@ const char temperatureSensorName[] PROGMEM = "Temperature";
 const char humiditySensorName[] PROGMEM = "Humidity";
 const char distanceSensorName[] PROGMEM = "Distance";
 const char heightSensorName[] PROGMEM = "Height";
+const char heightSensorStableTimeName[] PROGMEM = "Height Stable Time";
+const char heightSensorZeroValueName[] PROGMEM = "Height Zero Value";
 const char carPresenceSensorName[] PROGMEM = "Car Presence";
+const char carPresenceSensorLowLimitName[] PROGMEM = "Car Presence Low Limit";
+const char carPresenceSensorHighLimitName[] PROGMEM = "Car Presence High Limit";
+const char carPresenceSensorMinStableTimeName[] PROGMEM =
+    "Car Presence Min Stable Time";
+
+static const uint16_t HEIGHT_SENSOR_STABLE_TIME_DEFAULT = 5000;
+static const HeightT HEIGHT_SENSOR_ZERO_VALUE_DEFAULT = 60;
+static const HeightT CAR_PRESENCE_SENSOR_LOW_LIMIT_DEFAULT = 180;
+static const HeightT CAR_PRESENCE_SENSOR_HIGH_LIMIT_DEFAULT = 200;
+static const uint16_t CAR_PRESENCE_SENSOR_MIN_STABLE_TIME_DEFAULT = 10000;
 
 // Entity IDs for components
 constexpr uint8_t ENTITY_ID_GARAGE_COVER = 0;
@@ -150,26 +163,80 @@ uint32_t lastSentConfigValuesTime = 0;
 GarageCover garageCover = GarageCover(0, garageCoverName, COVER_CLOSED_PIN,
                                       COVER_OPEN_PIN, COVER_RELAY_PIN);
 
-TemperatureSensor temperatureSensor = TemperatureSensor(
-    ENTITY_ID_TEMPERATURE_SENSOR, temperatureSensorName, ahtReader);
+TemperatureSensor temperatureSensor =
+    TemperatureSensor(1, temperatureSensorName, ahtReader);
 
 HumiditySensor humiditySensor =
-    HumiditySensor(ENTITY_ID_HUMIDITY_SENSOR, humiditySensorName, ahtReader);
+    HumiditySensor(2, humiditySensorName, ahtReader);
 
-DistanceSensor distanceSensor =
-    DistanceSensor(ENTITY_ID_DISTANCE_SENSOR, distanceSensorName, sonar);
+DistanceSensor distanceSensor = DistanceSensor(3, distanceSensorName, sonar);
 
-HeightSensor heightSensor = HeightSensor(
-    ENTITY_ID_HEIGHT_SENSOR, heightSensorName, distanceSensor.getSensor());
+PersistentNumber<uint16_t> configStableTime = PersistentNumber<uint16_t>(
+    EE_ADDRESS_CONFIG_HEIGHT_SENSOR_0, 4, heightSensorStableTimeName,
+    NumberDeviceClass::DURATION, Unit::Type::ms, 0,
+    BaseComponent::Category::CONFIG, HEIGHT_SENSOR_STABLE_TIME_DEFAULT, 0,
+    Util::MS_PER_MINUTE);
+
+PersistentNumber<HeightT> configZeroValue = PersistentNumber<HeightT>(
+    EE_ADDRESS_CONFIG_HEIGHT_SENSOR_1, 5, heightSensorZeroValueName,
+    NumberDeviceClass::DISTANCE, Unit::Type::cm, 0,
+    BaseComponent::Category::CONFIG, HEIGHT_SENSOR_ZERO_VALUE_DEFAULT,
+    -MAX_SENSOR_DISTANCE, MAX_SENSOR_DISTANCE);
+
+PersistentNumberComponent<uint16_t> heightSensorStableTime =
+    PersistentNumberComponent<uint16_t>(configStableTime);
+
+PersistentNumberComponent<HeightT> heightSensorZeroValue =
+    PersistentNumberComponent<HeightT>(configZeroValue);
+
+HeightSensor heightSensor =
+    HeightSensor(6, heightSensorName, distanceSensor.getSensor(),
+                 heightSensorStableTime, heightSensorZeroValue);
+
+PersistentNumber<HeightT> configLowLimit = PersistentNumber<HeightT>(
+    EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_0, 7,
+    carPresenceSensorLowLimitName, NumberDeviceClass::DISTANCE, Unit::Type::cm,
+    0, BaseComponent::Category::CONFIG, CAR_PRESENCE_SENSOR_LOW_LIMIT_DEFAULT,
+    0, MAX_SENSOR_DISTANCE);
+
+PersistentNumber<HeightT> configHighLimit = PersistentNumber<HeightT>(
+    EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_1, 8,
+    carPresenceSensorHighLimitName, NumberDeviceClass::DISTANCE, Unit::Type::cm,
+    0, BaseComponent::Category::CONFIG, CAR_PRESENCE_SENSOR_HIGH_LIMIT_DEFAULT,
+    0, MAX_SENSOR_DISTANCE);
+
+PersistentNumber<uint16_t> configMinStableTime = PersistentNumber<uint16_t>(
+    EE_ADDRESS_CONFIG_PRESENCE_BINARY_SENSOR_2, 9,
+    carPresenceSensorMinStableTimeName, NumberDeviceClass::DURATION,
+    Unit::Type::ms, 0, BaseComponent::Category::CONFIG,
+    CAR_PRESENCE_SENSOR_MIN_STABLE_TIME_DEFAULT, 0, Util::MS_PER_MINUTE);
+
+PersistentNumberComponent<HeightT> carPresenceSensorLowLimit =
+    PersistentNumberComponent<HeightT>(configLowLimit);
+
+PersistentNumberComponent<HeightT> carPresenceSensorHighLimit =
+    PersistentNumberComponent<HeightT>(configHighLimit);
+
+PersistentNumberComponent<uint16_t> carPresenceSensorMinStableTime =
+    PersistentNumberComponent<uint16_t>(configMinStableTime);
 
 PresenceBinarySensor carPresenceSensor =
-    PresenceBinarySensor(ENTITY_ID_CAR_PRESENCE_SENSOR, carPresenceSensorName,
-                         heightSensor.getSensor());
+    PresenceBinarySensor(10, carPresenceSensorName, heightSensor.getSensor(),
+                         carPresenceSensorLowLimit, carPresenceSensorHighLimit,
+                         carPresenceSensorMinStableTime);
 
 // Array of all components for easy iteration
-IComponent* components[] = {&garageCover,    &temperatureSensor,
-                            &humiditySensor, &distanceSensor,
-                            &heightSensor,   &carPresenceSensor};
+IComponent* components[] = {&garageCover,
+                            &temperatureSensor,
+                            &humiditySensor,
+                            &distanceSensor,
+                            &heightSensorStableTime,
+                            &heightSensorZeroValue,
+                            &heightSensor,
+                            &carPresenceSensorLowLimit,
+                            &carPresenceSensorHighLimit,
+                            &carPresenceSensorMinStableTime,
+                            &carPresenceSensor};
 
 // Device instance that holds all components and provides helper functions to
 // access them
@@ -391,18 +458,9 @@ static void sendDiscoveryMsgForComponent(const IComponent* component) {
     return;
   }
 
-  const uint8_t numEntities = component->getNumEntities();
-
-  for (uint8_t i = 0; i < numEntities; i++) {
-    if (i > 0) {
-      delay(500);
-    }
-
-    DiscoveryEntityT discovery_entity;
-    if (component->getDiscoveryEntity(discovery_entity, i)) {
-      sendDiscoveryMsg(discovery_entity);
-    }
-  }
+  DiscoveryEntityT discovery_entity;
+  component->getDiscoveryEntity(discovery_entity);
+  sendDiscoveryMsg(discovery_entity);
 }
 
 static void sendDiscoveryMsgForAllComponents() {

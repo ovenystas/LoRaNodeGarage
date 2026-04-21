@@ -82,12 +82,7 @@ CoverState GarageCover::determineState() {
   return mCover.getState();  // Error condition, both sensors can't be LOW.
 }
 
-bool GarageCover::getDiscoveryEntity(DiscoveryEntityT& item,
-                                     uint8_t index) const {
-  if (index >= sNumItems) {
-    return false;
-  }
-
+bool GarageCover::getDiscoveryEntity(DiscoveryEntityT& item) const {
   mCover.getDiscoveryEntity(item);
   return true;
 }

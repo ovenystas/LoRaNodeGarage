@@ -6,7 +6,7 @@
 #include "DistanceSensor.h"
 #include "EeAdressMap.h"
 #include "NewPing.h"
-#include "PersistentNumber.h"
+#include "PersistentNumberComponent.h"
 #include "Sensor.h"
 #include "Unit.h"
 #include "Util.h"
@@ -16,11 +16,6 @@ using HeightT = int16_t;  // cm
 namespace HeightSensorConstants {
 static const int16_t CONFIG_REPORT_HYSTERESIS_DEFAULT = 10;
 static const uint16_t CONFIG_REPORT_INTERVAL_DEFAULT = 300;
-static const uint16_t CONFIG_STABLE_TIME_DEFAULT = 5000;
-static const HeightT CONFIG_ZERO_VALUE_DEFAULT = 60;
-
-static const char stableTimeName[] PROGMEM = "Stable Time";
-static const char zeroValueName[] PROGMEM = "Zero Value";
 }  // namespace HeightSensorConstants
 
 class HeightSensor : public IComponent {
@@ -28,33 +23,22 @@ class HeightSensor : public IComponent {
   HeightSensor() = delete;
 
   HeightSensor(uint8_t entityId, const char* name,
-               Sensor<DistanceT>& distanceSensor)
+               Sensor<DistanceT>& distanceSensor,
+               PersistentNumberComponent<uint16_t>& stableTime,
+               PersistentNumberComponent<HeightT>& zeroValue)
       : mSensor{Sensor<HeightT>(entityId, name, SensorDeviceClass::DISTANCE,
                                 Unit::Type::cm)},
-
-        mStableTime{PersistentNumber<uint16_t>(
-            EE_ADDRESS_CONFIG_HEIGHT_SENSOR_0, ++entityId,
-            HeightSensorConstants::stableTimeName, NumberDeviceClass::DURATION,
-            Unit::Type::ms, 0, BaseComponent::Category::CONFIG,
-            HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT, 0,
-            Util::MS_PER_MINUTE)},
-
-        mZeroValue{PersistentNumber<HeightT>(
-            EE_ADDRESS_CONFIG_HEIGHT_SENSOR_1, ++entityId,
-            HeightSensorConstants::zeroValueName, NumberDeviceClass::DISTANCE,
-            Unit::Type::cm, 0, BaseComponent::Category::CONFIG,
-            HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT,
-            -MAX_SENSOR_DISTANCE, MAX_SENSOR_DISTANCE)},
-
-        mDistanceSensor{distanceSensor} {}
+        mDistanceSensor{distanceSensor},
+        mStableTime{stableTime},
+        mZeroValue{zeroValue} {}
 
   void callService(uint8_t service) final { (void)service; }
 
   bool getConfigValue(ValueItemT& item, uint8_t index) const final;
 
-  void loadConfigValues() final;
+  void loadConfigValues() final {};
 
-  bool getDiscoveryEntity(DiscoveryEntityT& item, uint8_t index) const final;
+  bool getDiscoveryEntity(DiscoveryEntityT& item) const final;
 
   uint8_t getEntityId() const final { return mSensor.getEntityId(); }
 
@@ -96,7 +80,7 @@ class HeightSensor : public IComponent {
   static constexpr uint8_t sNumConfigItems = 2;
   static constexpr uint8_t sNumItems = 1 + sNumConfigItems;
   Sensor<HeightT> mSensor;
-  PersistentNumber<uint16_t> mStableTime;
-  PersistentNumber<HeightT> mZeroValue;
   Sensor<DistanceT>& mDistanceSensor;
+  PersistentNumberComponent<uint16_t>& mStableTime;
+  PersistentNumberComponent<HeightT>& mZeroValue;
 };

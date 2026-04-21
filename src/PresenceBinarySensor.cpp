@@ -58,25 +58,8 @@ bool PresenceBinarySensor::getConfigValue(ValueItemT& item,
   return true;
 }
 
-bool PresenceBinarySensor::getDiscoveryEntity(DiscoveryEntityT& item,
-                                              uint8_t index) const {
-  switch (index) {
-    case 0:
-      mBinarySensor.getDiscoveryEntity(item);
-      break;
-    case 1:
-      mLowLimit.getDiscoveryEntity(item);
-      break;
-    case 2:
-      mHighLimit.getDiscoveryEntity(item);
-      break;
-    case 3:
-      mMinStableTime.getDiscoveryEntity(item);
-      break;
-    default:
-      return false;
-  }
-
+bool PresenceBinarySensor::getDiscoveryEntity(DiscoveryEntityT& item) const {
+  mBinarySensor.getDiscoveryEntity(item);
   return true;
 }
 
@@ -96,13 +79,4 @@ bool PresenceBinarySensor::setValueItem(const ValueItemT& item) {
   }
 
   return true;
-}
-
-void PresenceBinarySensor::loadConfigValues() {
-  mLowLimit.loadFromEeprom(
-      PresenceBinarySensorConstants::CONFIG_LOW_LIMIT_DEFAULT);
-  mHighLimit.loadFromEeprom(
-      PresenceBinarySensorConstants::CONFIG_HIGH_LIMIT_DEFAULT);
-  mMinStableTime.loadFromEeprom(
-      PresenceBinarySensorConstants::CONFIG_MIN_STABLE_TIME_DEFAULT);
 }

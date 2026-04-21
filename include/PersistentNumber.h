@@ -49,7 +49,8 @@ class PersistentNumber {
       T value = T{}, T min_value = T{}, T max_value = T{})
       : mEeAddress{eeAddress},
         mNumber{Number<T>(entityId, name, deviceClass, unitType, precision,
-                          category, value, min_value, max_value)} {}
+                          category, value, min_value, max_value)},
+        mDefaultValue{value} {}
 
   /**
    * @brief Construct persistent number with minimal parameters
@@ -70,8 +71,8 @@ class PersistentNumber {
    * If the value in EEPROM is invalid (CRC mismatch), uses defaultValue.
    * Returns status information useful for debugging.
    */
-  Ee::LoadStatus loadFromEeprom(T defaultValue) {
-    mLastLoadStatus = Ee::loadValue(mEeAddress, mNumber, defaultValue);
+  Ee::LoadStatus loadFromEeprom() {
+    mLastLoadStatus = Ee::loadValue(mEeAddress, mNumber, mDefaultValue);
 
     // Log errors if they occurred
     if (mLastLoadStatus != Ee::LoadStatus::SUCCESS) {
@@ -171,6 +172,7 @@ class PersistentNumber {
   Ee::LoadStatus mLastLoadStatus = Ee::LoadStatus::SUCCESS;
   uint16_t mEeAddress;
   Number<T> mNumber;
+  T mDefaultValue{0};
 
   /**
    * @brief Log EEPROM load error to Serial
