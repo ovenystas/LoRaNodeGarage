@@ -12,10 +12,6 @@ IComponent* Device::getComponentByEntityId(uint8_t entityId) {
     if (mComponents[i]->getEntityId() == entityId) {
       return mComponents[i];
     }
-    IComponent* c = mComponents[i]->getComponentByEntityId(entityId);
-    if (c) {
-      return c;
-    }
   }
   return nullptr;
 }
