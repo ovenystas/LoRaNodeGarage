@@ -23,7 +23,7 @@ class HumiditySensor : public IComponent {
 
   HumiditySensor(uint8_t entityId, const char* name, AHTReader& ahtReader)
       : mSensor{Sensor<HumidityT>(entityId, name, SensorDeviceClass::HUMIDITY,
-                                  Unit::Type::percent)},
+                                  Unit::Type::percent, 0, 0, 0, 100)},
         mAhtReader{ahtReader} {}
 
   void callService(uint8_t service) final { (void)service; }

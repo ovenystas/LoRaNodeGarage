@@ -13,7 +13,6 @@
  *
  * External libraries used:
  *   Adafruit BusIO by Adafruit v1.17.4
- *   Adafruit Sensor by Adafruit v1.1.
  *   LoRa by Sandeep Mistry v0.8.0
  *   NewPing by Tim Eckel v1.9.7
  *   CRC by Rob Tillaart v1.0.3
@@ -105,7 +104,10 @@
 #define LORA_GATEWAY_ADDRESS 0
 
 // Sensor update interval
-#define UPDATE_SENSORS_INTERVAL 1000
+#define UPDATE_SENSORS_INTERVAL (uint32_t)(1000u)  // Ones per second
+
+#define SEND_CONFIG_VALUES_INTERVAL \
+  ((uint32_t)1000u * 60u * 15u)  // Once per 15 minutes
 
 // Local constants
 // ----------------------------------------------------------------
@@ -141,7 +143,8 @@ AHT20 aht;
 AHTReader ahtReader(aht);
 NewPing sonar(SONAR_TRIGGER_PIN, SONAR_ECHO_PIN, SONAR_MAX_DISTANCE_CM);
 
-uint32_t lastRunTime = 0;
+uint32_t lastUpdateSensorsTime = 0;
+uint32_t lastSentConfigValuesTime = 0;
 
 // Components
 GarageCover garageCover = GarageCover(0, garageCoverName, COVER_CLOSED_PIN,
@@ -343,11 +346,26 @@ static void sendConfigValues(const IComponent* component) {
 }
 
 static void sendConfigValuesForAllComponents() {
+  lora.beginValueMsg();
+
   for (uint8_t i = 0; i < device.getSize(); i++) {
-    const IComponent* c = device.getComponent(i);
-    sendConfigValues(c);
-    delay(500);
+    IComponent* c = device.getComponent(i);
+    if (c == nullptr) {
+      continue;
+    }
+
+    const uint8_t numConfigItems = c->getNumConfigItems();
+    for (uint8_t j = 0; j < numConfigItems; j++) {
+      ValueItemT item;
+      c->getConfigValue(item, j);
+      lora.addValueItem(item);
+    }
   }
+
+  lora.endMsg();
+
+  printMillis(Serial);
+  Serial.println(F("Sent config values for all components"));
 }
 
 void sendConfigValuesForEntity(uint8_t entityId) {
@@ -512,8 +530,13 @@ void setup() {
 void loop() {
   auto curMillis = millis();
 
-  if (curMillis - lastRunTime >= UPDATE_SENSORS_INTERVAL) {
-    lastRunTime += UPDATE_SENSORS_INTERVAL;
+  if (curMillis - lastSentConfigValuesTime >= SEND_CONFIG_VALUES_INTERVAL) {
+    lastSentConfigValuesTime += SEND_CONFIG_VALUES_INTERVAL;
+    sendConfigValuesForAllComponents();
+  }
+
+  if (curMillis - lastUpdateSensorsTime >= UPDATE_SENSORS_INTERVAL) {
+    lastUpdateSensorsTime += UPDATE_SENSORS_INTERVAL;
     updateSensors();
 
 #if (DEBUG_SENSOR_VALUES)
@@ -548,6 +571,13 @@ void onValueSetReqMsg(const ValueItemT& valueItem) {
   IComponent* c = device.getComponentByEntityId(valueItem.entityId);
   if (c) {
     c->setValueItem(valueItem);
+    Serial.print(F("Set value item for entityId "));
+    Serial.print(valueItem.entityId);
+    Serial.print(F(": "));
+    Serial.println(valueItem.value);
+  } else {
+    Serial.print(F("Received value set request for unknown entityId "));
+    Serial.println(valueItem.entityId);
   }
 }
 

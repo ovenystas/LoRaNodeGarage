@@ -68,11 +68,13 @@ class Sensor : public Printable {
 
   Sensor(uint8_t entityId, const char* name,
          SensorDeviceClass deviceClass = SensorDeviceClass::NONE,
-         Unit::Type unitType = Unit::Type::none, uint8_t precision = 0)
+         Unit::Type unitType = Unit::Type::none, uint8_t precision = 0,
+         T value = 0, T min_value = MIN_OF(T), T max_value = MAX_OF(T))
       : mBaseComponent{
             BaseComponent(entityId, name, BaseComponent::Category::DIAGNOSTIC)},
         mDeviceClass{deviceClass},
-        mValueItem{ValueItem<T>(unitType, precision)} {}
+        mValueItem{
+            ValueItem<T>(unitType, precision, value, min_value, max_value)} {}
 
   BaseComponent::Type getComponentType() const {
     return BaseComponent::Type::SENSOR;

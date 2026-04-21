@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <assert.h>
 
+#include "Component.h"
 #include "Ee.h"
 #include "Sensor.h"
 #include "Util.h"
@@ -82,4 +83,20 @@ bool HeightSensor::setValueItem(const ValueItemT& item) {
 void HeightSensor::loadConfigValues() {
   mStableTime.loadFromEeprom(HeightSensorConstants::CONFIG_STABLE_TIME_DEFAULT);
   mZeroValue.loadFromEeprom(HeightSensorConstants::CONFIG_ZERO_VALUE_DEFAULT);
+}
+
+IComponent* HeightSensor::getComponentByEntityId(uint8_t entityId) {
+  IComponent* c = nullptr;
+  switch (entityId - mSensor.getEntityId() - 1) {
+    case 0:
+      c = this;
+      break;
+    case 1:
+      c = &mZeroValue;
+      break;
+    default:
+      break;
+  }
+
+  return c;
 }

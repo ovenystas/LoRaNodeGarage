@@ -71,6 +71,14 @@ class IComponent : public Printable {
   virtual uint8_t getNumConfigItems() const = 0;
 
   /**
+   * @brief Get a component by entity ID.
+   * @param entityId The entity ID to search for.
+   * @return A pointer to the component with the given entity ID, or nullptr if
+   * not found.
+   */
+  virtual IComponent* getComponentByEntityId(uint8_t entityId) = 0;
+
+  /**
    * @brief Check if the component's state is due for reporting.
    * @return true if the state is due for reporting, false otherwise.
    */

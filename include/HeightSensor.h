@@ -64,6 +64,8 @@ class HeightSensor : public IComponent {
 
   Sensor<HeightT>& getSensor() { return mSensor; }
 
+  IComponent* getComponentByEntityId(uint8_t entityId);
+
   void getValueItem(ValueItemT& item) const final {
     return mSensor.getValueItem(item);
   }

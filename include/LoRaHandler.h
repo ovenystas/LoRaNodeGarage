@@ -33,7 +33,8 @@
  *   Discovery message:
  *     Byte 0:      Entity Id (0-254)
  *     Byte 1:      Entity Domain - BaseComponent::Type, Examples: BINARY_SENSOR, SENSOR, COVER
- *     Byte 2:      Device Class - BinarySensorDeviceClass, SensorDeviceClass or CoverDeviceClass
+ *     Byte 2:      Device Class - BinarySensor::BinarySensorDeviceClass, Sensor::SensorDeviceClass,
+ *                                 Cover::CoverDeviceClass or Number::NumberDeviceClass
  *     Byte 3:      Category - BaseComponent::Category, 0=NONE, 1=CONFIG, 2=DIAGNOSTIC
  *     Byte 4:      Unit (Unit::TypeE)
  *     Byte 5:      Format 

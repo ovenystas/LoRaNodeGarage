@@ -125,7 +125,7 @@ int16_t LoRaHandler::loraRx() {
 int8_t LoRaHandler::parseMsg(const LoRaRxMessageT& rxMsg, uint8_t* payload) {
   printMillis(Serial);
   Serial.print(F("Parsing msg type="));
-  Serial.print(static_cast<uint8_t>(rxMsg.header.flags.msgType));
+  Serial.println(static_cast<uint8_t>(rxMsg.header.flags.msgType));
 
   switch (rxMsg.header.flags.msgType) {
     case LoRaMsgType::ping_req:
@@ -153,6 +153,8 @@ int8_t LoRaHandler::parseMsg(const LoRaRxMessageT& rxMsg, uint8_t* payload) {
 
     case LoRaMsgType::valueSet_req:
       if (mOnValueSetReqMsgFunc) {
+        Serial.print(F("Value set request for entityId "));
+        Serial.println(payload[0]);
         ValueItemT valueItem;
         valueItem.fromByteArray(payload, rxMsg.payload_length);
         mOnValueSetReqMsgFunc(valueItem);
