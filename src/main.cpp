@@ -491,7 +491,7 @@ void setup() {
   // ctrAes128.setIV(CTR_IV, ctrAes128.ivSize());
 
   printMillis(Serial);
-  Serial.print(F("Starting LoRa..."));
+  Serial.println(F("Starting LoRa..."));
 
   LoRa.setPins(LORA_SS_PIN, LORA_RESET_PIN, LORA_DIO0_PIN);
 
@@ -503,7 +503,7 @@ void setup() {
     }
   } else {
     printMillis(Serial);
-    Serial.print(F("LoRa started"));
+    Serial.println(F("LoRa started"));
   }
 
   printMillis(Serial);

@@ -307,22 +307,30 @@ void LoRaHandler::addDiscoveryEntity(const DiscoveryEntityT& item) {
 
 void LoRaHandler::beginValueMsg() {
   setDefaultHeader(mMsgTx.header);
-  mMsgTx.payload_length = 0;
   mMsgTx.header.flags.msgType = LoRaMsgType::value_msg;
+  mMsgTx.payload[0] = 0;  // numberOfEntities
+  mMsgTx.payload_length = 1;
 
-  LoRaValuePayloadT payload;
-  payload.numberOfEntities = 0;
-
-  mMsgTx.payload_length =
-      payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
+  printMillis(Serial);
+  Serial.print(F("Begin value msg: mMsgTx.payload[0]="));
+  Serial.print(mMsgTx.payload[0], HEX);
+  Serial.print(F(", mMsgTx.payload_length="));
+  Serial.println(mMsgTx.payload_length, DEC);
 }
 
 void LoRaHandler::addValueItem(const ValueItemT& item) {
-  LoRaValuePayloadT payload;
-  payload.fromByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
+  mMsgTx.payload_length +=
+      item.toByteArray(&mMsgTx.payload[mMsgTx.payload_length],
+                       sizeof(mMsgTx.payload) - mMsgTx.payload_length);
+  mMsgTx.payload[0]++;
 
-  payload.valueItems[payload.numberOfEntities++] = item;
-  mMsgTx.payload_length += item.size();
-
-  payload.toByteArray(mMsgTx.payload, sizeof(mMsgTx.payload));
+  printMillis(Serial);
+  Serial.print(F("Add value item: entityId="));
+  Serial.print(item.entityId, DEC);
+  Serial.print(F(", value="));
+  Serial.print(item.value, HEX);
+  Serial.print(F(", mMsgTx.payload[0]="));
+  Serial.print(mMsgTx.payload[0], DEC);
+  Serial.print(F(", mMsgTx.payload_length="));
+  Serial.println(mMsgTx.payload_length, DEC);
 }
