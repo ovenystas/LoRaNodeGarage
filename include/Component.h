@@ -16,15 +16,6 @@ class IComponent : public Printable {
   virtual void callService(uint8_t service) = 0;
 
   /**
-   * @brief Get an array of all config item values.
-   *        Use getNumConfigItems() to know how many config items to retrieve.
-   * @param[out] item The ValueItem where to write the value.
-   * @param index The index of the config item to retrieve.
-   * @return true if the item was retrieved successfully, false otherwise.
-   */
-  virtual bool getConfigValue(ValueItemT& item, uint8_t index) const = 0;
-
-  /**
    * @brief Load the config values from persistent storage.
    */
   virtual void loadConfigValues() = 0;
@@ -60,12 +51,6 @@ class IComponent : public Printable {
    * @return The number of entities.
    */
   virtual uint8_t getNumEntities() const = 0;
-
-  /**
-   * @brief Get the number of config items this component has.
-   * @return The number of config items.
-   */
-  virtual uint8_t getNumConfigItems() const = 0;
 
   /**
    * @brief Check if the component's state is due for reporting.

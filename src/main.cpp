@@ -393,53 +393,6 @@ void sendSensorValueForEntity(uint8_t entityId) {
   sendSensorValueForComponent(c);
 }
 
-static void sendConfigValues(const IComponent* component) {
-  if (component == nullptr) {
-    return;
-  }
-
-  uint8_t numberOfConfigValues = component->getNumConfigItems();
-  if (numberOfConfigValues == 0) {
-    return;
-  }
-
-  lora.beginValueMsg();
-  for (uint8_t i = 0; i < numberOfConfigValues; i++) {
-    ValueItemT item;
-    component->getConfigValue(item, i);
-    lora.addValueItem(item);
-  }
-  lora.endMsg();
-}
-
-static void sendConfigValuesForAllComponents() {
-  lora.beginValueMsg();
-
-  for (uint8_t i = 0; i < device.getSize(); i++) {
-    IComponent* c = device.getComponent(i);
-    if (c == nullptr) {
-      continue;
-    }
-
-    const uint8_t numConfigItems = c->getNumConfigItems();
-    for (uint8_t j = 0; j < numConfigItems; j++) {
-      ValueItemT item;
-      c->getConfigValue(item, j);
-      lora.addValueItem(item);
-    }
-  }
-
-  lora.endMsg();
-
-  printMillis(Serial);
-  Serial.println(F("Sent config values for all components"));
-}
-
-void sendConfigValuesForEntity(uint8_t entityId) {
-  const IComponent* c = device.getComponentByEntityId(entityId);
-  sendConfigValues(c);
-}
-
 static void sendDiscoveryMsg(DiscoveryEntityT& discovery_entity) {
   printMillis(Serial);
   Serial.print(F("Sending discovery for "));
@@ -587,11 +540,6 @@ void setup() {
 
 void loop() {
   auto curMillis = millis();
-
-  if (curMillis - lastSentConfigValuesTime >= SEND_CONFIG_VALUES_INTERVAL) {
-    lastSentConfigValuesTime += SEND_CONFIG_VALUES_INTERVAL;
-    sendConfigValuesForAllComponents();
-  }
 
   if (curMillis - lastUpdateSensorsTime >= UPDATE_SENSORS_INTERVAL) {
     lastUpdateSensorsTime += UPDATE_SENSORS_INTERVAL;

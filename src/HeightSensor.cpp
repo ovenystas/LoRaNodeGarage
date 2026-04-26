@@ -30,23 +30,6 @@ bool HeightSensor::getDiscoveryEntity(DiscoveryEntityT& item) const {
   return true;
 }
 
-bool HeightSensor::getConfigValue(ValueItemT& item, uint8_t index) const {
-  assert(index < sNumConfigItems);
-
-  switch (index) {
-    case 0:
-      mStableTime.getValueItem(item);
-      break;
-    case 1:
-      mZeroValue.getValueItem(item);
-      break;
-    default:
-      return false;
-  }
-
-  return true;
-}
-
 bool HeightSensor::setValueItem(const ValueItemT& item) {
   switch (item.entityId - mSensor.getEntityId() - 1) {
     case 0:

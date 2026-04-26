@@ -32,14 +32,4 @@ bool DistanceSensor::getDiscoveryEntity(DiscoveryEntityT& item) const {
   return true;
 }
 
-bool DistanceSensor::getConfigValue(ValueItemT& item, uint8_t index) const {
-  if (index >= sNumConfigItems) {
-    return false;
-  }
-
-  // DistanceSensor has no config items
-
-  return true;
-}
-
 bool DistanceSensor::setValueItem(const ValueItemT& item) { return false; }

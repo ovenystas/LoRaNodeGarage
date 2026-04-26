@@ -37,27 +37,6 @@ bool PresenceBinarySensor::update() {
   return isReportDue;
 }
 
-bool PresenceBinarySensor::getConfigValue(ValueItemT& item,
-                                          uint8_t index) const {
-  assert(index < sNumConfigItems);
-
-  switch (index) {
-    case 0:
-      mLowLimit.getValueItem(item);
-      break;
-    case 1:
-      mHighLimit.getValueItem(item);
-      break;
-    case 2:
-      mMinStableTime.getValueItem(item);
-      break;
-    default:
-      return false;
-  }
-
-  return true;
-}
-
 bool PresenceBinarySensor::getDiscoveryEntity(DiscoveryEntityT& item) const {
   mBinarySensor.getDiscoveryEntity(item);
   return true;

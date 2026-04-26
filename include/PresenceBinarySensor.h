@@ -30,8 +30,6 @@ class PresenceBinarySensor : public IComponent {
 
   void callService(uint8_t service) final { (void)service; }
 
-  bool getConfigValue(ValueItemT& item, uint8_t index) const final;
-
   void loadConfigValues() final {};
 
   bool getDiscoveryEntity(DiscoveryEntityT& item) const final;
@@ -39,8 +37,6 @@ class PresenceBinarySensor : public IComponent {
   uint8_t getEntityId() const final { return mBinarySensor.getEntityId(); }
 
   uint8_t getNumEntities() const final { return sNumItems; };
-
-  uint8_t getNumConfigItems() const final { return sNumConfigItems; }
 
   void getValueItem(ValueItemT& item) const final {
     return mBinarySensor.getValueItem(item);

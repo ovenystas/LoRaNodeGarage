@@ -36,18 +36,6 @@ bool TemperatureSensor::update() {
   return isReportDue;
 }
 
-bool TemperatureSensor::getConfigValue(ValueItemT& item, uint8_t index) const {
-  switch (index) {
-    case 0:
-      mSensor.getValueItem(item);
-      break;
-    default:
-      return false;
-  }
-
-  return true;
-}
-
 bool TemperatureSensor::setValueItem(const ValueItemT& item) { return false; }
 
 bool TemperatureSensor::getDiscoveryEntity(DiscoveryEntityT& item) const {

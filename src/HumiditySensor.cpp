@@ -38,16 +38,6 @@ bool HumiditySensor::update() {
   return isReportDue;
 }
 
-bool HumiditySensor::getConfigValue(ValueItemT& item, uint8_t index) const {
-  if (index >= sNumConfigItems) {
-    return false;
-  }
-
-  // HumiditySensor has no config items
-
-  return true;
-}
-
 bool HumiditySensor::setValueItem(const ValueItemT& item) { return false; }
 
 bool HumiditySensor::getDiscoveryEntity(DiscoveryEntityT& item) const {

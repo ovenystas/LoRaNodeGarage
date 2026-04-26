@@ -87,16 +87,6 @@ bool GarageCover::getDiscoveryEntity(DiscoveryEntityT& item) const {
   return true;
 }
 
-bool GarageCover::getConfigValue(ValueItemT& item, uint8_t index) const {
-  if (index >= sNumConfigItems) {
-    return false;
-  }
-
-  // GarageCover has no config items
-
-  return true;
-}
-
 bool GarageCover::setValueItem(const ValueItemT& item) { return false; }
 
 bool GarageCover::isClosed(bool closedSensor, bool openSensor) {
