@@ -120,5 +120,3 @@ bool GarageCover::update() {
 
   return isReportDue;
 }
-
-void GarageCover::loadConfigValues() {}

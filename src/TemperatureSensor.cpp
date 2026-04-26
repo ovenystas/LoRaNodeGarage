@@ -42,5 +42,3 @@ bool TemperatureSensor::getDiscoveryEntity(DiscoveryEntityT& item) const {
   mSensor.getDiscoveryEntity(item);
   return true;
 }
-
-void TemperatureSensor::loadConfigValues() {}

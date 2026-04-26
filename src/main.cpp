@@ -132,24 +132,6 @@ static const HeightT CAR_PRESENCE_SENSOR_LOW_LIMIT_DEFAULT = 180;
 static const HeightT CAR_PRESENCE_SENSOR_HIGH_LIMIT_DEFAULT = 200;
 static const uint16_t CAR_PRESENCE_SENSOR_MIN_STABLE_TIME_DEFAULT = 10000;
 
-// Entity IDs for components
-constexpr uint8_t ENTITY_ID_GARAGE_COVER = 0;
-
-constexpr uint8_t ENTITY_ID_TEMPERATURE_SENSOR =
-    ENTITY_ID_GARAGE_COVER + GarageCover::getEntityCount();
-
-constexpr uint8_t ENTITY_ID_HUMIDITY_SENSOR =
-    ENTITY_ID_TEMPERATURE_SENSOR + TemperatureSensor::getEntityCount();
-
-constexpr uint8_t ENTITY_ID_DISTANCE_SENSOR =
-    ENTITY_ID_HUMIDITY_SENSOR + HumiditySensor::getEntityCount();
-
-constexpr uint8_t ENTITY_ID_HEIGHT_SENSOR =
-    ENTITY_ID_DISTANCE_SENSOR + DistanceSensor::getEntityCount();
-
-constexpr uint8_t ENTITY_ID_CAR_PRESENCE_SENSOR =
-    ENTITY_ID_HEIGHT_SENSOR + HeightSensor::getEntityCount();
-
 // Local variables
 // ----------------------------------------------------------------
 AHT20 aht;

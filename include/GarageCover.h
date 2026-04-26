@@ -28,13 +28,11 @@ class GarageCover final : public IComponent {
 
   void callService(uint8_t service) final;
 
-  void loadConfigValues() final;
+  void loadConfigValues() final {};
 
   bool getDiscoveryEntity(DiscoveryEntityT& item) const final;
 
   uint8_t getEntityId() const final { return mCover.getEntityId(); }
-
-  uint8_t getNumEntities() const final { return sNumItems; };
 
   void getValueItem(ValueItemT& item) const final {
     return mCover.getValueItem(item);
@@ -54,12 +52,6 @@ class GarageCover final : public IComponent {
 
   bool update() final;
 
-  /**
-   * @brief Get the number of entities this component provides
-   * @return Number of entities (used for entity ID assignment in main.cpp)
-   */
-  static constexpr uint8_t getEntityCount() { return sNumItems; }
-
  private:
   CoverState determineState();
 
@@ -69,9 +61,6 @@ class GarageCover final : public IComponent {
   bool isOpening(bool closedSensor, bool openSensor);
 
   void activateRelay(uint8_t times);
-
-  static constexpr uint8_t sNumConfigItems = 0;
-  static constexpr uint8_t sNumItems = 1 + sNumConfigItems;
 
 #ifdef PIO_UNIT_TESTING
  public:

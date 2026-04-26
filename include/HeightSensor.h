@@ -40,8 +40,6 @@ class HeightSensor : public IComponent {
 
   uint8_t getEntityId() const final { return mSensor.getEntityId(); }
 
-  uint8_t getNumEntities() const final { return sNumItems; };
-
   Sensor<HeightT>& getSensor() { return mSensor; }
 
   IComponent* getComponentByEntityId(uint8_t entityId);
@@ -66,15 +64,7 @@ class HeightSensor : public IComponent {
 
   bool update() final;
 
-  /**
-   * @brief Get the number of entities this component provides
-   * @return Number of entities (used for entity ID assignment in main.cpp)
-   */
-  static constexpr uint8_t getEntityCount() { return sNumItems; }
-
  private:
-  static constexpr uint8_t sNumConfigItems = 2;
-  static constexpr uint8_t sNumItems = 1 + sNumConfigItems;
   Sensor<HeightT> mSensor;
   Sensor<DistanceT>& mDistanceSensor;
   PersistentNumberComponent<uint16_t>& mStableTime;

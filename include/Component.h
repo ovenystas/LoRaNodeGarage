@@ -47,12 +47,6 @@ class IComponent : public Printable {
   virtual bool setValueItem(const ValueItemT& item) = 0;
 
   /**
-   * @brief Get the number of entities this component has.
-   * @return The number of entities.
-   */
-  virtual uint8_t getNumEntities() const = 0;
-
-  /**
    * @brief Check if the component's state is due for reporting.
    * @return true if the state is due for reporting, false otherwise.
    */

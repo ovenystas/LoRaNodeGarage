@@ -36,8 +36,6 @@ class PresenceBinarySensor : public IComponent {
 
   uint8_t getEntityId() const final { return mBinarySensor.getEntityId(); }
 
-  uint8_t getNumEntities() const final { return sNumItems; };
-
   void getValueItem(ValueItemT& item) const final {
     return mBinarySensor.getValueItem(item);
   }
@@ -58,15 +56,7 @@ class PresenceBinarySensor : public IComponent {
 
   bool update() final;
 
-  /**
-   * @brief Get the number of entities this component provides
-   * @return Number of entities (used for entity ID assignment in main.cpp)
-   */
-  static constexpr uint8_t getEntityCount() { return sNumItems; }
-
  private:
-  static constexpr uint8_t sNumConfigItems = 3;
-  static constexpr uint8_t sNumItems = 1 + sNumConfigItems;
   BinarySensor mBinarySensor;
   Sensor<HeightT>& mHeightSensor;
   PersistentNumberComponent<HeightT>& mLowLimit;

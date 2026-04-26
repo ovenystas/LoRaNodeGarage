@@ -28,13 +28,11 @@ class HumiditySensor : public IComponent {
 
   void callService(uint8_t service) final { (void)service; }
 
-  void loadConfigValues() final;
+  void loadConfigValues() final {};
 
   bool getDiscoveryEntity(DiscoveryEntityT& item) const final;
 
   uint8_t getEntityId() const final { return mSensor.getEntityId(); }
-
-  uint8_t getNumEntities() const final { return sNumItems; };
 
   void getValueItem(ValueItemT& item) const final {
     return mSensor.getValueItem(item);
@@ -56,15 +54,7 @@ class HumiditySensor : public IComponent {
 
   bool update() final;
 
-  /**
-   * @brief Get the number of entities this component provides
-   * @return Number of entities (used for entity ID assignment in main.cpp)
-   */
-  static constexpr uint8_t getEntityCount() { return sNumItems; }
-
  private:
-  static constexpr uint8_t sNumConfigItems = 0;
-  static constexpr uint8_t sNumItems = 1 + sNumConfigItems;
   Sensor<HumidityT> mSensor;
   AHTReader& mAhtReader;
 };

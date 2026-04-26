@@ -13,7 +13,7 @@ class PersistentNumberComponent : public IComponent {
 
   void callService(uint8_t service) final { (void)service; }
 
-  void loadConfigValues() final {};
+  void loadConfigValues() final { mPersistentNumber.loadFromEeprom(); };
 
   bool getDiscoveryEntity(DiscoveryEntityT& item) const final {
     mPersistentNumber.getDiscoveryEntity(item);
@@ -21,8 +21,6 @@ class PersistentNumberComponent : public IComponent {
   }
 
   uint8_t getEntityId() const final { return mPersistentNumber.getEntityId(); }
-
-  uint8_t getNumEntities() const final { return sNumItems; };
 
   T getValue() const { return mPersistentNumber.getValue(); }
 
@@ -51,14 +49,6 @@ class PersistentNumberComponent : public IComponent {
 
   bool update() final { return false; };
 
-  /**
-   * @brief Get the number of entities this component provides
-   * @return Number of entities (used for entity ID assignment in main.cpp)
-   */
-  static constexpr uint8_t getEntityCount() { return sNumItems; }
-
  private:
-  static constexpr uint8_t sNumConfigItems = 3;
-  static constexpr uint8_t sNumItems = 1 + sNumConfigItems;
   PersistentNumber<T>& mPersistentNumber;
 };
