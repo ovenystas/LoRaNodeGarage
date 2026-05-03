@@ -134,20 +134,27 @@ int8_t LoRaHandler::parseMsg(const LoRaRxMessageT& rxMsg, uint8_t* payload) {
       Serial.print(rxMsg.header.src);
       Serial.print(F(", RSSI "));
       Serial.print(rxMsg.rssi);
-      Serial.print(F("dBm"));
+      Serial.println(F("dBm"));
+      delay(10);  // Allow time for remote device to switch to receive mode
+                  // before sending response
       sendPing(rxMsg.header.src, rxMsg.rssi);
       break;
 
     case LoRaMsgType::discovery_req:
       if (mOnDiscoveryReqMsgFunc) {
-        uint8_t entityId = payload[0];
+        delay(10);  // Allow time for remote device to switch to receive mode
+                    // before sending response
+        const uint8_t entityId = payload[0];
         mOnDiscoveryReqMsgFunc(entityId);
       }
       break;
 
     case LoRaMsgType::value_req:
       if (mOnValueReqMsgFunc) {
-        mOnValueReqMsgFunc();
+        delay(10);  // Allow time for remote device to switch to receive mode
+                    // before sending response
+        const uint8_t entityId = payload[0];
+        mOnValueReqMsgFunc(entityId);
       }
       break;
 

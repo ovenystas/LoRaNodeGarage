@@ -240,7 +240,7 @@ class LoRaHandler {
         mCipher{cipher} {}
 
   using OnDiscoveryReqMsgFunc = void (*)(uint8_t);
-  using OnValueReqMsgFunc = void (*)(void);
+  using OnValueReqMsgFunc = void (*)(uint8_t);
   using OnValueSetReqMsgFunc = void (*)(const ValueItemT&);
   using OnServiceReqMsgFunc = void (*)(const LoRaServiceItemT&);
 

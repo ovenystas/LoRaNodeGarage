@@ -241,7 +241,7 @@ LoRaHandler lora(LoRa, LORA_GATEWAY_ADDRESS, LORA_MY_ADDRESS /*, &ctrAes128*/);
 // Local function declarations
 // ----------------------------------------------------------------
 void onDiscoveryReqMsg(uint8_t entityId);
-void onValueReqMsg(void);
+void onValueReqMsg(uint8_t entityId);
 void onValueSetReqMsg(const ValueItemT& item);
 void onServiceReqMsg(const LoRaServiceItemT& item);
 int freeRam();
@@ -467,6 +467,7 @@ void setup() {
   delay(100);  // Allow serial connection to stabilize
 
   printWelcomeMsg();
+  delay(5000);
 
   checkEepromConfig();
 
@@ -553,7 +554,15 @@ void onDiscoveryReqMsg(uint8_t entityId) {
   sendDiscoveryMsgForEntity(entityId);
 }
 
-void onValueReqMsg(void) { sendSensorValueForAllComponents(); }
+void onValueReqMsg(uint8_t entityId) {
+  Serial.print(F("Received value request for entityId "));
+  Serial.println(entityId);
+  if (entityId == 255) {
+    sendSensorValueForAllComponents();
+    return;
+  }
+  sendSensorValueForEntity(entityId);
+}
 
 void onValueSetReqMsg(const ValueItemT& valueItem) {
   IComponent* c = device.getComponentByEntityId(valueItem.entityId);
